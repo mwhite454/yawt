@@ -4,7 +4,7 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { join, normalize } from "jsr:@std/path";
+import { join, normalize, SEPARATOR } from "jsr:@std/path";
 
 const port = 8000;
 const STATIC_DIR = "./static";
@@ -187,8 +187,8 @@ async function handler(req: Request): Promise<Response> {
 
       // Security check: ensure the resolved path is within the static directory
       // Use path separator to ensure we match directory boundaries properly
-      const normalizedStatic = STATIC_DIR_ABS + (STATIC_DIR_ABS.endsWith("/") ? "" : "/");
-      if (!absolutePath.startsWith(normalizedStatic) && absolutePath !== STATIC_DIR_ABS) {
+      const normalizedStatic = STATIC_DIR_ABS + SEPARATOR;
+      if (!absolutePath.startsWith(normalizedStatic)) {
         return new Response("Forbidden", { status: 403 });
       }
 
