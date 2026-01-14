@@ -1,0 +1,168 @@
+/// <reference no-default-lib="true" />
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
+/// <reference lib="dom.asynciterable" />
+/// <reference lib="deno.ns" />
+
+const port = 8000;
+
+// Simple HTML template
+function renderHTML(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAWT - Yet Another Writing Tool</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+      background: #f9fafb;
+      padding: 4rem 1rem;
+    }
+    .container {
+      max-width: 56rem;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #111827;
+      margin-bottom: 1rem;
+    }
+    .subtitle {
+      font-size: 1.25rem;
+      color: #6b7280;
+    }
+    main {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 1rem;
+    }
+    p {
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+    }
+    .info-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .info-box p {
+      color: #1e40af;
+      margin-bottom: 0;
+    }
+    .tech-stack {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    .tech-list {
+      list-style: none;
+      padding: 0;
+    }
+    .tech-list li {
+      padding: 0.5rem 0;
+      color: #374151;
+    }
+    .tech-list strong {
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>YAWT</h1>
+      <p class="subtitle">Yet Another Writing Tool</p>
+    </header>
+    
+    <main>
+      <div>
+        <h2>Welcome to YAWT</h2>
+        <p>A modern writing tool built with Deno and Fresh framework.</p>
+        <div class="info-box">
+          <p>
+            <strong>Getting Started:</strong> This is a Fresh project built with Deno ${Deno.version.deno}.
+          </p>
+        </div>
+        
+        <div class="tech-stack">
+          <h2>Technology Stack</h2>
+          <ul class="tech-list">
+            <li><strong>Runtime:</strong> Deno ${Deno.version.deno}</li>
+            <li><strong>TypeScript:</strong> ${Deno.version.typescript}</li>
+            <li><strong>V8 Engine:</strong> ${Deno.version.v8}</li>
+            <li><strong>Framework:</strong> Fresh (file-based routing)</li>
+            <li><strong>UI:</strong> Preact with JSX</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>`;
+}
+
+async function handler(req: Request): Promise<Response> {
+  const url = new URL(req.url);
+
+  // Serve static files
+  if (url.pathname.startsWith("/static/")) {
+    try {
+      const filepath = `.${url.pathname}`;
+      const file = await Deno.readFile(filepath);
+      // Determine content type
+      let contentType = "application/octet-stream";
+      if (filepath.endsWith(".css")) contentType = "text/css";
+      if (filepath.endsWith(".js")) contentType = "text/javascript";
+      if (filepath.endsWith(".json")) contentType = "application/json";
+      if (filepath.endsWith(".png")) contentType = "image/png";
+      if (filepath.endsWith(".jpg") || filepath.endsWith(".jpeg")) {
+        contentType = "image/jpeg";
+      }
+      if (filepath.endsWith(".svg")) contentType = "image/svg+xml";
+
+      return new Response(file, {
+        headers: { "content-type": contentType },
+      });
+    } catch {
+      return new Response("Not Found", { status: 404 });
+    }
+  }
+
+  // Serve HTML for all other routes
+  const html = renderHTML();
+
+  return new Response(html, {
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+    },
+  });
+}
+
+console.log(`🦕 YAWT server running on http://localhost:${port}`);
+console.log(`📝 A writing tool built with Deno ${Deno.version.deno}`);
+console.log();
+console.log("Ready to accept connections...");
+
+await Deno.serve({ port }, handler).finished;
