@@ -52,9 +52,7 @@ deno task check
 ├── routes/           # Application routes (file-based routing)
 │   ├── _app.tsx     # Root application component
 │   └── index.tsx    # Homepage route
-├── islands/          # Interactive client-side components
-├── components/       # Shared components
-├── static/           # Static assets (served from /)
+├── static/           # Static assets (served from /static/)
 ├── fresh.config.ts   # Fresh framework configuration
 ├── main.ts          # Application entry point (production server)
 ├── dev.ts           # Development server with hot reload

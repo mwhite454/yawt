@@ -4,7 +4,7 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { join, normalize } from "https://deno.land/std@0.216.0/path/mod.ts";
+import { join, normalize } from "jsr:@std/path";
 
 const port = 8000;
 const STATIC_DIR = "./static";
@@ -13,8 +13,11 @@ const STATIC_ROUTE_PREFIX = "/static/";
 // Get absolute path for static directory (create if doesn't exist)
 try {
   await Deno.mkdir(STATIC_DIR, { recursive: true });
-} catch {
-  // Directory already exists
+} catch (error) {
+  // Only ignore if directory already exists, propagate other errors
+  if (!(error instanceof Deno.errors.AlreadyExists)) {
+    throw error;
+  }
 }
 const STATIC_DIR_ABS = Deno.realPathSync(STATIC_DIR);
 
@@ -183,7 +186,9 @@ async function handler(req: Request): Promise<Response> {
       }
 
       // Security check: ensure the resolved path is within the static directory
-      if (!absolutePath.startsWith(STATIC_DIR_ABS)) {
+      // Use path separator to ensure we match directory boundaries properly
+      const normalizedStatic = STATIC_DIR_ABS + (STATIC_DIR_ABS.endsWith("/") ? "" : "/");
+      if (!absolutePath.startsWith(normalizedStatic) && absolutePath !== STATIC_DIR_ABS) {
         return new Response("Forbidden", { status: 403 });
       }
 
