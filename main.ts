@@ -187,7 +187,7 @@ async function handler(req: Request): Promise<Response> {
 
       // Security check: ensure the resolved path is within the static directory
       // Use path separator to ensure we match directory boundaries properly
-      const normalizedStatic = STATIC_DIR_ABS + SEPARATOR;
+      const normalizedStatic = STATIC_DIR_ABS.endsWith(SEPARATOR) ? STATIC_DIR_ABS : STATIC_DIR_ABS + SEPARATOR;
       if (!absolutePath.startsWith(normalizedStatic)) {
         return new Response("Forbidden", { status: 403 });
       }
