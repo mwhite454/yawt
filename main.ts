@@ -4,7 +4,11 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
+import { join, normalize } from "https://deno.land/std@0.216.0/path/mod.ts";
+
 const port = 8000;
+const STATIC_DIR = "./static";
+const STATIC_DIR_ABS = Deno.realPathSync(STATIC_DIR);
 
 // Content type mapping
 const CONTENT_TYPES: Record<string, string> = {
@@ -148,23 +152,31 @@ async function handler(req: Request): Promise<Response> {
   // Serve static files
   if (url.pathname.startsWith("/static/")) {
     try {
-      // Sanitize the pathname to prevent path traversal
-      const safePath = url.pathname.replace(/\.\./g, "").replace(/\/+/g, "/");
+      // Remove /static/ prefix and normalize the path
+      const requestedPath = url.pathname.substring(8); // Remove "/static/"
+      const normalizedPath = normalize(requestedPath);
 
-      // Only allow files under ./static/
-      if (!safePath.startsWith("/static/")) {
+      // Join with static directory and resolve to absolute path
+      const filepath = join(STATIC_DIR, normalizedPath);
+      const absolutePath = Deno.realPathSync(filepath);
+
+      // Security check: ensure the resolved path is within the static directory
+      if (!absolutePath.startsWith(STATIC_DIR_ABS)) {
         return new Response("Forbidden", { status: 403 });
       }
 
-      const filepath = `.${safePath}`;
-      const file = await Deno.readFile(filepath);
+      const file = await Deno.readFile(absolutePath);
       const contentType = getContentType(filepath);
 
       return new Response(file, {
         headers: { "content-type": contentType },
       });
-    } catch {
-      return new Response("Not Found", { status: 404 });
+    } catch (error) {
+      // Return 403 for path traversal attempts, 404 for missing files
+      if (error instanceof Deno.errors.NotFound) {
+        return new Response("Not Found", { status: 404 });
+      }
+      return new Response("Forbidden", { status: 403 });
     }
   }
 
