@@ -1,7 +1,5 @@
-import type { ComponentChildren } from "preact";
-
 interface PageProps {
-  Component: () => ComponentChildren;
+  Component: () => unknown;
   url: URL;
 }
 

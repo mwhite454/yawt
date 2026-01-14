@@ -8,6 +8,14 @@ import { join, normalize } from "https://deno.land/std@0.216.0/path/mod.ts";
 
 const port = 8000;
 const STATIC_DIR = "./static";
+const STATIC_ROUTE_PREFIX = "/static/";
+
+// Get absolute path for static directory (create if doesn't exist)
+try {
+  await Deno.mkdir(STATIC_DIR, { recursive: true });
+} catch {
+  // Directory already exists
+}
 const STATIC_DIR_ABS = Deno.realPathSync(STATIC_DIR);
 
 // Content type mapping
@@ -150,10 +158,12 @@ async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
 
   // Serve static files
-  if (url.pathname.startsWith("/static/")) {
+  if (url.pathname.startsWith(STATIC_ROUTE_PREFIX)) {
     try {
       // Remove /static/ prefix and normalize the path
-      const requestedPath = url.pathname.substring(8); // Remove "/static/"
+      const requestedPath = url.pathname.substring(
+        STATIC_ROUTE_PREFIX.length,
+      );
       const normalizedPath = normalize(requestedPath);
 
       // Join with static directory and resolve to absolute path
