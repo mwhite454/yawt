@@ -6,6 +6,25 @@
 
 const port = 8000;
 
+// Content type mapping
+const CONTENT_TYPES: Record<string, string> = {
+  ".css": "text/css",
+  ".js": "text/javascript",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".html": "text/html",
+  ".txt": "text/plain",
+};
+
+function getContentType(filepath: string): string {
+  const ext = filepath.substring(filepath.lastIndexOf("."));
+  return CONTENT_TYPES[ext] || "application/octet-stream";
+}
+
 // Simple HTML template
 function renderHTML(): string {
   return `<!DOCTYPE html>
@@ -129,18 +148,17 @@ async function handler(req: Request): Promise<Response> {
   // Serve static files
   if (url.pathname.startsWith("/static/")) {
     try {
-      const filepath = `.${url.pathname}`;
-      const file = await Deno.readFile(filepath);
-      // Determine content type
-      let contentType = "application/octet-stream";
-      if (filepath.endsWith(".css")) contentType = "text/css";
-      if (filepath.endsWith(".js")) contentType = "text/javascript";
-      if (filepath.endsWith(".json")) contentType = "application/json";
-      if (filepath.endsWith(".png")) contentType = "image/png";
-      if (filepath.endsWith(".jpg") || filepath.endsWith(".jpeg")) {
-        contentType = "image/jpeg";
+      // Sanitize the pathname to prevent path traversal
+      const safePath = url.pathname.replace(/\.\./g, "").replace(/\/+/g, "/");
+
+      // Only allow files under ./static/
+      if (!safePath.startsWith("/static/")) {
+        return new Response("Forbidden", { status: 403 });
       }
-      if (filepath.endsWith(".svg")) contentType = "image/svg+xml";
+
+      const filepath = `.${safePath}`;
+      const file = await Deno.readFile(filepath);
+      const contentType = getContentType(filepath);
 
       return new Response(file, {
         headers: { "content-type": contentType },
