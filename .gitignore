@@ -137,3 +137,10 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Deno
+deno.lock
+_fresh/
+
+# Fresh build output
+_fresh/*
