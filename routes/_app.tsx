@@ -1,6 +1,5 @@
 interface PageProps {
   Component: () => unknown;
-  url: URL;
 }
 
 export default function App({ Component }: PageProps) {

@@ -33,7 +33,11 @@ const CONTENT_TYPES: Record<string, string> = {
 };
 
 function getContentType(filepath: string): string {
-  const ext = filepath.substring(filepath.lastIndexOf("."));
+  const dotIndex = filepath.lastIndexOf(".");
+  if (dotIndex === -1) {
+    return "application/octet-stream";
+  }
+  const ext = filepath.substring(dotIndex);
   return CONTENT_TYPES[ext] || "application/octet-stream";
 }
 
@@ -168,7 +172,15 @@ async function handler(req: Request): Promise<Response> {
 
       // Join with static directory and resolve to absolute path
       const filepath = join(STATIC_DIR, normalizedPath);
-      const absolutePath = Deno.realPathSync(filepath);
+
+      // Resolve to absolute path - will throw if file doesn't exist
+      let absolutePath: string;
+      try {
+        absolutePath = Deno.realPathSync(filepath);
+      } catch {
+        // File doesn't exist or can't be resolved
+        return new Response("Not Found", { status: 404 });
+      }
 
       // Security check: ensure the resolved path is within the static directory
       if (!absolutePath.startsWith(STATIC_DIR_ABS)) {
