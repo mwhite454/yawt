@@ -21,7 +21,8 @@ This guide walks you through setting up GitHub OAuth2 authentication for YAWT.
 5. Click "Register application"
 6. On the next page, you'll see your **Client ID**
 7. Click "Generate a new client secret" to get your **Client Secret**
-8. **Important**: Copy both the Client ID and Client Secret - you'll need them in the next step
+8. **Important**: Copy both the Client ID and Client Secret - you'll need them
+   in the next step
 
 ## Step 2: Configure Environment Variables
 
@@ -37,7 +38,8 @@ This guide walks you through setting up GitHub OAuth2 authentication for YAWT.
    OAUTH_REDIRECT_URI=http://localhost:8000/auth/callback
    ```
 
-3. **Security Note**: The `.env` file is already in `.gitignore` and will not be committed to version control.
+3. **Security Note**: The `.env` file is already in `.gitignore` and will not be
+   committed to version control.
 
 ## Step 3: Start the Server
 
@@ -63,6 +65,7 @@ Once authenticated, you can test the REST API endpoints:
 ### Using the Test Script
 
 Run the included test script:
+
 ```bash
 ./test-api.sh
 ```
@@ -96,6 +99,7 @@ curl -X DELETE http://localhost:8000/api/notes/NOTE_ID
 ### Using a REST Client
 
 You can also use tools like:
+
 - [Postman](https://www.postman.com/)
 - [Insomnia](https://insomnia.rest/)
 - [HTTPie](https://httpie.io/)
@@ -115,18 +119,23 @@ For production deployment:
 ## Troubleshooting
 
 ### "Unauthorized" errors
+
 - Make sure you're authenticated by visiting the homepage and signing in
 - Check that your session cookie is being sent with requests
 
 ### OAuth callback fails
-- Verify the callback URL in your GitHub OAuth App matches the one in your `.env` file
+
+- Verify the callback URL in your GitHub OAuth App matches the one in your
+  `.env` file
 - Check that the URL is exactly: `http://localhost:8000/auth/callback`
 
 ### "Invalid credentials" errors
+
 - Double-check your `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in `.env`
 - Make sure there are no extra spaces or quotes in the values
 
 ### Server won't start
+
 - Ensure Deno is installed: `deno --version`
 - Check for syntax errors: `deno task check`
 - Verify all dependencies can be downloaded
@@ -134,10 +143,12 @@ For production deployment:
 ## Security Best Practices
 
 1. **Never commit `.env` files** - They contain sensitive credentials
-2. **Use environment-specific OAuth Apps** - Separate apps for development, staging, and production
+2. **Use environment-specific OAuth Apps** - Separate apps for development,
+   staging, and production
 3. **Rotate secrets regularly** - GitHub allows you to regenerate client secrets
 4. **Use HTTPS in production** - OAuth requires secure connections in production
-5. **Limit OAuth scopes** - Only request the minimum permissions needed (currently just `user:email`)
+5. **Limit OAuth scopes** - Only request the minimum permissions needed
+   (currently just `user:email`)
 
 ## API Documentation
 
@@ -146,5 +157,7 @@ See [README.md](README.md) for complete API documentation and endpoint details.
 ## Need Help?
 
 - Check the [Fresh documentation](https://fresh.deno.dev/)
-- Review [Deno KV OAuth documentation](https://github.com/denoland/deno_kv_oauth)
-- Read [GitHub OAuth documentation](https://docs.github.com/en/developers/apps/building-oauth-apps)
+- Review
+  [Deno KV OAuth documentation](https://github.com/denoland/deno_kv_oauth)
+- Read
+  [GitHub OAuth documentation](https://docs.github.com/en/developers/apps/building-oauth-apps)

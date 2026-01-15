@@ -16,7 +16,7 @@ export const handler: Handlers = {
       });
 
       if (!userResponse.ok) {
-        console.error("Failed to fetch user info:", await userResponse.text());
+        console.error("Failed to fetch user info from GitHub API");
         return new Response("Failed to authenticate", { status: 500 });
       }
 

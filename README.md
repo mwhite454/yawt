@@ -21,7 +21,8 @@ curl -fsSL https://deno.land/install.sh | sh
 
 ### OAuth Configuration
 
-To use GitHub OAuth authentication, follow the detailed steps in [SETUP.md](SETUP.md).
+To use GitHub OAuth authentication, follow the detailed steps in
+[SETUP.md](SETUP.md).
 
 Quick setup:
 
