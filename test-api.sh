@@ -40,7 +40,8 @@ if command -v jq &> /dev/null; then
   NOTE_ID=$(echo "$NOTE_RESPONSE" | jq -r '.note.id // empty')
 else
   # Fallback: extract ID using grep - works for simple cases
-  NOTE_ID=$(echo "$NOTE_RESPONSE" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+  # If this fails, NOTE_ID will be empty and tests will be skipped
+  NOTE_ID=$(echo "$NOTE_RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
 fi
 
 echo "Created note with ID: ${NOTE_ID}"

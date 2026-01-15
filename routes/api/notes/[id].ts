@@ -82,7 +82,7 @@ export const handler: Handlers = {
     const { title, content } = body;
 
     // Validate that at least one field is provided for update
-    if (title === undefined && content === undefined) {
+    if (title == null && content == null) {
       return new Response(
         JSON.stringify({
           error: "At least one field (title or content) must be provided",

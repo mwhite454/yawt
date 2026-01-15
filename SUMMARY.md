@@ -1,16 +1,19 @@
 # OAuth2 GitHub Authentication Implementation Summary
 
-This document summarizes the OAuth2 GitHub authentication and REST API implementation for YAWT.
+This document summarizes the OAuth2 GitHub authentication and REST API
+implementation for YAWT.
 
 ## What Was Implemented
 
 ### 1. Fresh Framework Integration
+
 - Updated `deno.json` with Fresh framework and required dependencies
 - Configured `main.ts` to use Fresh server
 - Created `fresh.gen.ts` manifest for route discovery
 - Updated `dev.ts` for development mode with hot reload
 
 ### 2. OAuth2 Authentication
+
 - **Library**: `@deno/kv-oauth` v0.10.0 for GitHub OAuth integration
 - **Session Storage**: Deno KV (built-in key-value database)
 - **OAuth Flow**:
@@ -25,11 +28,14 @@ This document summarizes the OAuth2 GitHub authentication and REST API implement
 ### 3. Routes Created
 
 #### Authentication Routes
+
 - **`/auth/signin`** - Initiates GitHub OAuth flow
-- **`/auth/callback`** - Handles OAuth callback, fetches user info, creates session
+- **`/auth/callback`** - Handles OAuth callback, fetches user info, creates
+  session
 - **`/auth/signout`** - Destroys session and signs out user
 
 #### API Routes (Protected)
+
 - **`GET /api/me`** - Returns current authenticated user information
 - **`GET /api/notes`** - Lists all notes for authenticated user
 - **`POST /api/notes`** - Creates a new note
@@ -38,16 +44,20 @@ This document summarizes the OAuth2 GitHub authentication and REST API implement
 - **`DELETE /api/notes/[id]`** - Deletes specific note
 
 #### UI Routes
-- **`/`** (index) - Homepage with authentication status and sign-in/sign-out buttons
+
+- **`/`** (index) - Homepage with authentication status and sign-in/sign-out
+  buttons
 
 ### 4. Utility Modules
 
 #### `utils/oauth.ts`
+
 - Creates GitHub OAuth configuration
 - Exports OAuth helpers (signIn, signOut, handleCallback, getSessionId)
 - Validates OAuth credentials on startup
 
 #### `utils/session.ts`
+
 - Manages user sessions in Deno KV
 - Functions: `getUser`, `setUser`, `deleteUser`
 - User interface with GitHub profile data
@@ -55,25 +65,27 @@ This document summarizes the OAuth2 GitHub authentication and REST API implement
 ### 5. Data Model
 
 #### User
+
 ```typescript
 interface User {
-  login: string;        // GitHub username
-  id: number;          // GitHub user ID
-  avatar_url: string;  // Profile picture URL
-  name?: string;       // Full name (optional)
-  email?: string;      // Email address (optional)
+  login: string; // GitHub username
+  id: number; // GitHub user ID
+  avatar_url: string; // Profile picture URL
+  name?: string; // Full name (optional)
+  email?: string; // Email address (optional)
 }
 ```
 
 #### Note
+
 ```typescript
 interface Note {
-  id: string;          // UUID
-  userId: number;      // Owner's GitHub ID
-  title: string;       // Note title
-  content: string;     // Note content
-  createdAt: number;   // Timestamp
-  updatedAt: number;   // Timestamp
+  id: string; // UUID
+  userId: number; // Owner's GitHub ID
+  title: string; // Note title
+  content: string; // Note content
+  createdAt: number; // Timestamp
+  updatedAt: number; // Timestamp
 }
 ```
 
@@ -124,6 +136,7 @@ interface Note {
 ### Automated Testing
 
 Run code quality checks:
+
 ```bash
 deno task check  # Runs fmt, lint, and type checking
 ```
@@ -139,6 +152,7 @@ OAUTH_REDIRECT_URI=http://localhost:8000/auth/callback
 ## Files Changed/Created
 
 ### Modified
+
 - `deno.json` - Added dependencies
 - `dev.ts` - Updated for Fresh framework
 - `main.ts` - Updated for Fresh framework
@@ -148,6 +162,7 @@ OAUTH_REDIRECT_URI=http://localhost:8000/auth/callback
 - `README.md` - Added OAuth and API documentation
 
 ### Created
+
 - `fresh.gen.ts` - Fresh manifest
 - `.env.example` - Environment template
 - `utils/oauth.ts` - OAuth configuration
@@ -187,4 +202,7 @@ The following are potential enhancements but were not part of the requirements:
 
 ## Conclusion
 
-This implementation provides a fully functional OAuth2 authentication system with GitHub as the provider, integrated with a REST API for managing user notes. All code passes linting and formatting checks, includes comprehensive error handling, and is well-documented for future developers.
+This implementation provides a fully functional OAuth2 authentication system
+with GitHub as the provider, integrated with a REST API for managing user notes.
+All code passes linting and formatting checks, includes comprehensive error
+handling, and is well-documented for future developers.
