@@ -20,7 +20,21 @@ export const handler: Handlers = {
         return new Response("Failed to authenticate", { status: 500 });
       }
 
-      const githubUser = await userResponse.json();
+      let githubUser;
+      try {
+        githubUser = await userResponse.json();
+      } catch {
+        console.error("Failed to parse GitHub user response");
+        return new Response("Failed to authenticate", { status: 500 });
+      }
+
+      // Validate required user properties
+      if (
+        !githubUser.login || !githubUser.id || !githubUser.avatar_url
+      ) {
+        console.error("Invalid user data from GitHub");
+        return new Response("Failed to authenticate", { status: 500 });
+      }
 
       // Store user in session
       const user: User = {

@@ -81,6 +81,19 @@ export const handler: Handlers = {
 
     const { title, content } = body;
 
+    // Validate that at least one field is provided for update
+    if (title === undefined && content === undefined) {
+      return new Response(
+        JSON.stringify({
+          error: "At least one field (title or content) must be provided",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const updatedNote: Note = {
       ...entry.value,
       title: title ?? entry.value.title,

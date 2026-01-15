@@ -34,7 +34,15 @@ NOTE_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/notes" \
   -d '{"title": "Test Note", "content": "This is a test note created via API"}' \
   -b cookies.txt -c cookies.txt)
 echo "$NOTE_RESPONSE" | $JQ_CMD
-NOTE_ID=$(echo "$NOTE_RESPONSE" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+
+# Extract note ID
+if command -v jq &> /dev/null; then
+  NOTE_ID=$(echo "$NOTE_RESPONSE" | jq -r '.note.id // empty')
+else
+  # Fallback: extract ID using grep - works for simple cases
+  NOTE_ID=$(echo "$NOTE_RESPONSE" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+fi
+
 echo "Created note with ID: ${NOTE_ID}"
 echo -e "\n"
 
