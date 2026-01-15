@@ -1,5 +1,5 @@
 import { Handlers } from "$fresh/server.ts";
-import { signOut, getSessionId } from "../../utils/oauth.ts";
+import { getSessionId, signOut } from "../../utils/oauth.ts";
 import { deleteUser } from "../../utils/session.ts";
 
 export const handler: Handlers = {

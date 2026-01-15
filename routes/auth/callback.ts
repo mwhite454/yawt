@@ -1,5 +1,5 @@
 import { Handlers } from "$fresh/server.ts";
-import { handleCallback, getSessionId } from "../../utils/oauth.ts";
+import { handleCallback } from "../../utils/oauth.ts";
 import { setUser, type User } from "../../utils/session.ts";
 
 export const handler: Handlers = {

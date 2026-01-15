@@ -1,7 +1,4 @@
-import {
-  createGitHubOAuthConfig,
-  createHelpers,
-} from "@deno/kv-oauth";
+import { createGitHubOAuthConfig, createHelpers } from "@deno/kv-oauth";
 
 // Get environment variables
 const GITHUB_CLIENT_ID = Deno.env.get("GITHUB_CLIENT_ID") || "";

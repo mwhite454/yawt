@@ -23,7 +23,8 @@ curl -fsSL https://deno.land/install.sh | sh
 
 To use GitHub OAuth authentication:
 
-1. Create a GitHub OAuth App at [https://github.com/settings/developers](https://github.com/settings/developers)
+1. Create a GitHub OAuth App at
+   [https://github.com/settings/developers](https://github.com/settings/developers)
 2. For local development, configure:
    - **Application name**: YAWT (local)
    - **Homepage URL**: `http://localhost:8000`
@@ -100,12 +101,14 @@ deno task check
 - **V8 Engine**: 14.2.231.17-rusty
 - **Framework**: Fresh (file-based routing with Preact)
 - **UI Library**: Preact 10.24.3 (lightweight React alternative)
-- **Authentication**: GitHub OAuth2 via [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
+- **Authentication**: GitHub OAuth2 via
+  [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
 - **Storage**: Deno KV (built-in key-value database)
 
 ## Features
 
 ### Authentication
+
 - GitHub OAuth2 integration for user authentication
 - Session-based authentication using Deno KV
 - Secure sign-in/sign-out flows

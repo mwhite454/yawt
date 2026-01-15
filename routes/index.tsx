@@ -101,7 +101,14 @@ export default function Home({ data }: PageProps<Data>) {
                   >
                     <strong>Authenticated as:</strong> {user.name || user.login}
                   </p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginTop: "0.5rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "1rem",
+                      marginTop: "0.5rem",
+                    }}
+                  >
                     {user.avatar_url && (
                       <img
                         src={user.avatar_url}
