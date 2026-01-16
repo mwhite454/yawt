@@ -27,11 +27,13 @@ This guide walks you through setting up GitHub OAuth2 authentication for YAWT.
 ## Step 2: Configure Environment Variables
 
 1. In the project root, copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
 
 2. Edit `.env` and update with your GitHub OAuth credentials:
+
    ```env
    GITHUB_CLIENT_ID=your_actual_client_id_here
    GITHUB_CLIENT_SECRET=your_actual_client_secret_here
@@ -44,9 +46,13 @@ This guide walks you through setting up GitHub OAuth2 authentication for YAWT.
 ## Step 3: Start the Server
 
 1. Start the development server:
+
    ```bash
    deno task start
    ```
+
+   This also runs Tailwind+daisyUI in watch mode and generates
+   `static/styles.css`.
 
 2. Open your browser to [http://localhost:8000](http://localhost:8000)
 
@@ -115,6 +121,12 @@ For production deployment:
    - `GITHUB_CLIENT_ID`
    - `GITHUB_CLIENT_SECRET`
    - `OAUTH_REDIRECT_URI` (e.g., `https://yourdomain.com/auth/callback`)
+
+4. Ensure your deploy pipeline runs the CSS build step:
+
+   ```bash
+   deno task build
+   ```
 
 ## Troubleshooting
 

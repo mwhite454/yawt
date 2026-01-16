@@ -1,7 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { getUser } from "../../utils/session.ts";
-
-const kv = await Deno.openKv();
+import { kv } from "../../utils/kv.ts";
 
 export interface Note {
   id: string;
@@ -17,13 +16,10 @@ export const handler: Handlers = {
     const user = await getUser(req);
 
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // List all notes for the user
@@ -34,26 +30,20 @@ export const handler: Handlers = {
       notes.push(entry.value);
     }
 
-    return new Response(
-      JSON.stringify({ notes }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    return new Response(JSON.stringify({ notes }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   },
 
   async POST(req) {
     const user = await getUser(req);
 
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     let body;
@@ -94,12 +84,9 @@ export const handler: Handlers = {
 
     await kv.set(["notes", user.id, id], note);
 
-    return new Response(
-      JSON.stringify({ note }),
-      {
-        status: 201,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    return new Response(JSON.stringify({ note }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
   },
 };

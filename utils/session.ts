@@ -1,6 +1,5 @@
 import { getSessionId } from "./oauth.ts";
-
-const kv = await Deno.openKv();
+import { kv } from "./kv.ts";
 
 export interface User {
   login: string;

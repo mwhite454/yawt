@@ -1,5 +1,5 @@
-import { type Config } from "$fresh/server.ts";
+import type { FreshConfig } from "$fresh/server.ts";
 
 export default {
   plugins: [],
-} as Config;
+} as FreshConfig;

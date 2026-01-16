@@ -50,6 +50,9 @@ Start the development server:
 deno task start
 ```
 
+This runs Tailwind+daisyUI in watch mode and rebuilds `static/styles.css` on
+changes.
+
 This will start the server at `http://localhost:8000`. The server will
 automatically reload when you make changes to your code with the `--watch` flag.
 
@@ -59,6 +62,12 @@ To run the production server:
 
 ```bash
 deno task preview
+```
+
+To build the CSS once (useful for deploy pipelines):
+
+```bash
+deno task build
 ```
 
 ### Code Quality
@@ -104,6 +113,7 @@ deno task check
 - **V8 Engine**: 14.2.231.17-rusty
 - **Framework**: Fresh (file-based routing with Preact)
 - **UI Library**: Preact 10.24.3 (lightweight React alternative)
+- **Styling**: Tailwind CSS + daisyUI (built to `static/styles.css`)
 - **Authentication**: GitHub OAuth2 via
   [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
 - **Storage**: Deno KV (built-in key-value database)

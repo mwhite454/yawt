@@ -3,28 +3,94 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $_app from "./routes/_app.tsx";
-import * as $index from "./routes/index.tsx";
 import * as $api_me from "./routes/api/me.ts";
 import * as $api_notes from "./routes/api/notes.ts";
-import * as $api_notes_id from "./routes/api/notes/[id].ts";
+import * as $api_notes_id_ from "./routes/api/notes/[id].ts";
+import * as $api_series from "./routes/api/series.ts";
+import * as $api_series_id_ from "./routes/api/series/[id].ts";
+import * as $api_series_seriesId_books from "./routes/api/series/[seriesId]/books.ts";
+import * as $api_series_seriesId_books_bookId_ from "./routes/api/series/[seriesId]/books/[bookId].ts";
+import * as $api_series_seriesId_books_bookId_scenes from "./routes/api/series/[seriesId]/books/[bookId]/scenes.ts";
+import * as $api_series_seriesId_books_bookId_scenes_sceneId_ from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts";
+import * as $api_series_seriesId_books_bookId_scenes_sceneId_reorder from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts";
+import * as $api_series_seriesId_characters from "./routes/api/series/[seriesId]/characters.ts";
+import * as $api_series_seriesId_characters_characterId_ from "./routes/api/series/[seriesId]/characters/[characterId].ts";
+import * as $api_series_seriesId_characters_characterId_image_presign from "./routes/api/series/[seriesId]/characters/[characterId]/image/presign.ts";
+import * as $api_series_seriesId_locations from "./routes/api/series/[seriesId]/locations.ts";
+import * as $api_series_seriesId_locations_locationId_ from "./routes/api/series/[seriesId]/locations/[locationId].ts";
+import * as $api_series_seriesId_timelines from "./routes/api/series/[seriesId]/timelines.ts";
+import * as $api_series_seriesId_timelines_timelineId_ from "./routes/api/series/[seriesId]/timelines/[timelineId].ts";
+import * as $api_series_seriesId_timelines_timelineId_events from "./routes/api/series/[seriesId]/timelines/[timelineId]/events.ts";
+import * as $api_series_seriesId_timelines_timelineId_events_eventId_ from "./routes/api/series/[seriesId]/timelines/[timelineId]/events/[eventId].ts";
+import * as $api_series_seriesId_timelines_timelineId_events_eventId_reorder from "./routes/api/series/[seriesId]/timelines/[timelineId]/events/[eventId]/reorder.ts";
 import * as $auth_callback from "./routes/auth/callback.ts";
 import * as $auth_signin from "./routes/auth/signin.ts";
 import * as $auth_signout from "./routes/auth/signout.ts";
-
+import * as $index from "./routes/index.tsx";
+import * as $series_seriesId_books_bookId_ from "./routes/series/[seriesId]/books/[bookId].tsx";
+import * as $series_seriesId_characters from "./routes/series/[seriesId]/characters.tsx";
+import * as $series_seriesId_index from "./routes/series/[seriesId]/index.tsx";
+import * as $series_seriesId_locations from "./routes/series/[seriesId]/locations.tsx";
+import * as $series_seriesId_timelines from "./routes/series/[seriesId]/timelines.tsx";
+import * as $series_seriesId_timelines_timelineId_ from "./routes/series/[seriesId]/timelines/[timelineId].tsx";
+import * as $series_index from "./routes/series/index.tsx";
+import * as $CharacterImageUploader from "./islands/CharacterImageUploader.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
-    "./routes/index.tsx": $index,
     "./routes/api/me.ts": $api_me,
     "./routes/api/notes.ts": $api_notes,
-    "./routes/api/notes/[id].ts": $api_notes_id,
+    "./routes/api/notes/[id].ts": $api_notes_id_,
+    "./routes/api/series.ts": $api_series,
+    "./routes/api/series/[id].ts": $api_series_id_,
+    "./routes/api/series/[seriesId]/books.ts": $api_series_seriesId_books,
+    "./routes/api/series/[seriesId]/books/[bookId].ts":
+      $api_series_seriesId_books_bookId_,
+    "./routes/api/series/[seriesId]/books/[bookId]/scenes.ts":
+      $api_series_seriesId_books_bookId_scenes,
+    "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts":
+      $api_series_seriesId_books_bookId_scenes_sceneId_,
+    "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts":
+      $api_series_seriesId_books_bookId_scenes_sceneId_reorder,
+    "./routes/api/series/[seriesId]/characters.ts":
+      $api_series_seriesId_characters,
+    "./routes/api/series/[seriesId]/characters/[characterId].ts":
+      $api_series_seriesId_characters_characterId_,
+    "./routes/api/series/[seriesId]/characters/[characterId]/image/presign.ts":
+      $api_series_seriesId_characters_characterId_image_presign,
+    "./routes/api/series/[seriesId]/locations.ts":
+      $api_series_seriesId_locations,
+    "./routes/api/series/[seriesId]/locations/[locationId].ts":
+      $api_series_seriesId_locations_locationId_,
+    "./routes/api/series/[seriesId]/timelines.ts":
+      $api_series_seriesId_timelines,
+    "./routes/api/series/[seriesId]/timelines/[timelineId].ts":
+      $api_series_seriesId_timelines_timelineId_,
+    "./routes/api/series/[seriesId]/timelines/[timelineId]/events.ts":
+      $api_series_seriesId_timelines_timelineId_events,
+    "./routes/api/series/[seriesId]/timelines/[timelineId]/events/[eventId].ts":
+      $api_series_seriesId_timelines_timelineId_events_eventId_,
+    "./routes/api/series/[seriesId]/timelines/[timelineId]/events/[eventId]/reorder.ts":
+      $api_series_seriesId_timelines_timelineId_events_eventId_reorder,
     "./routes/auth/callback.ts": $auth_callback,
     "./routes/auth/signin.ts": $auth_signin,
     "./routes/auth/signout.ts": $auth_signout,
+    "./routes/index.tsx": $index,
+    "./routes/series/[seriesId]/books/[bookId].tsx":
+      $series_seriesId_books_bookId_,
+    "./routes/series/[seriesId]/characters.tsx": $series_seriesId_characters,
+    "./routes/series/[seriesId]/index.tsx": $series_seriesId_index,
+    "./routes/series/[seriesId]/locations.tsx": $series_seriesId_locations,
+    "./routes/series/[seriesId]/timelines.tsx": $series_seriesId_timelines,
+    "./routes/series/[seriesId]/timelines/[timelineId].tsx":
+      $series_seriesId_timelines_timelineId_,
+    "./routes/series/index.tsx": $series_index,
   },
-  islands: {},
+  islands: {
+    "./islands/CharacterImageUploader.tsx": $CharacterImageUploader,
+  },
   baseUrl: import.meta.url,
 } satisfies Manifest;
 
