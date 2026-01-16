@@ -36,6 +36,7 @@ import * as $series_seriesId_timelines from "./routes/series/[seriesId]/timeline
 import * as $series_seriesId_timelines_timelineId_ from "./routes/series/[seriesId]/timelines/[timelineId].tsx";
 import * as $series_index from "./routes/series/index.tsx";
 import * as $CharacterImageUploader from "./islands/CharacterImageUploader.tsx";
+import * as $KeyValueEditor from "./islands/KeyValueEditor.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -93,6 +94,7 @@ const manifest = {
   },
   islands: {
     "./islands/CharacterImageUploader.tsx": $CharacterImageUploader,
+    "./islands/KeyValueEditor.tsx": $KeyValueEditor,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
