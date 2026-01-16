@@ -130,7 +130,7 @@ deno task check
 - **V8 Engine**: 14.2.231.17-rusty
 - **Framework**: Fresh (file-based routing with Preact)
 - **UI Library**: Preact 10.24.3 (lightweight React alternative)
-- **Styling**: Tailwind CSS + daisyUI (Nord theme; built to `static/styles.css`)
+- **Styling**: Tailwind CSS + daisyUI (yawt theme; built to `static/styles.css`)
 - **Authentication**: GitHub OAuth2 via
   [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
 - **Storage**: Deno KV (built-in key-value database)

@@ -2,7 +2,7 @@ import type { PageProps } from "$fresh/server.ts";
 
 export default function App({ Component }: PageProps) {
   return (
-    <html data-theme="nord">
+    <html data-theme="yawt">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
