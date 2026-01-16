@@ -90,9 +90,26 @@ deno task check
 │   │   └── callback.ts # OAuth callback handler
 │   └── api/            # REST API routes
 │       ├── me.ts       # Get current user info
-│       ├── notes.ts    # List/create notes
-│       └── notes/
-│           └── [id].ts # Get/update/delete individual note
+│       ├── notes.ts    # (Legacy) List/create notes
+│       ├── notes/
+│       │   └── [id].ts # (Legacy) Get/update/delete individual note
+│       ├── series.ts   # List/create series
+│       ├── series/
+│       │   └── [id].ts # Get/update/delete a series
+│       └── series/[seriesId]/
+│           ├── books.ts
+│           ├── books/[bookId].ts
+│           ├── books/[bookId]/scenes.ts
+│           ├── books/[bookId]/scenes/[sceneId].ts
+│           ├── books/[bookId]/scenes/[sceneId]/reorder.ts
+│           ├── characters.ts
+│           ├── characters/[characterId].ts
+│           ├── characters/[characterId]/image/presign.ts
+│           ├── locations.ts
+│           ├── locations/[locationId].ts
+│           ├── timelines.ts
+│           ├── timelines/[timelineId].ts
+│           └── timelines/[timelineId]/events.ts
 ├── utils/              # Utility functions
 │   ├── oauth.ts        # OAuth configuration
 │   └── session.ts      # Session management
@@ -113,10 +130,11 @@ deno task check
 - **V8 Engine**: 14.2.231.17-rusty
 - **Framework**: Fresh (file-based routing with Preact)
 - **UI Library**: Preact 10.24.3 (lightweight React alternative)
-- **Styling**: Tailwind CSS + daisyUI (built to `static/styles.css`)
+- **Styling**: Tailwind CSS + daisyUI (Nord theme; built to `static/styles.css`)
 - **Authentication**: GitHub OAuth2 via
   [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
 - **Storage**: Deno KV (built-in key-value database)
+- **Images**: Optional Cloudflare R2 (direct browser upload via presigned PUT)
 
 ## Features
 
@@ -130,15 +148,101 @@ deno task check
 
 All API endpoints require authentication via GitHub OAuth.
 
-#### Endpoints:
+#### Endpoints
+
+**Auth**
 
 - **GET /api/me** - Get current authenticated user information
-- **GET /api/notes** - List all notes for the authenticated user
-- **POST /api/notes** - Create a new note
+
+**Series**
+
+- **GET /api/series** - List series
+- **POST /api/series** - Create series
+  - Body: `{ "title": "string", "description"?: "string" }`
+- **GET /api/series/[id]** - Get a series
+- **PUT /api/series/[id]** - Update a series
+  - Body: `{ "title"?: "string", "description"?: "string" }`
+- **DELETE /api/series/[id]** - Delete a series (409 if non-empty)
+
+**Books**
+
+- **GET /api/series/[seriesId]/books** - List books (rank-ordered)
+- **POST /api/series/[seriesId]/books** - Create book
+  - Body:
+    `{ "title": "string", "author"?: "string", "publishDate"?: "string", "isbn"?: "string" }`
+- **GET /api/series/[seriesId]/books/[bookId]** - Get a book
+- **PUT /api/series/[seriesId]/books/[bookId]** - Update a book
+  - Body:
+    `{ "title"?: "string", "author"?: "string", "publishDate"?: "string", "isbn"?: "string" }`
+- **DELETE /api/series/[seriesId]/books/[bookId]** - Delete a book (409 if
+  non-empty)
+
+**Scenes**
+
+- **GET /api/series/[seriesId]/books/[bookId]/scenes** - List scenes
+  (rank-ordered)
+- **POST /api/series/[seriesId]/books/[bookId]/scenes** - Create scene
+  - Body: `{ "text": "string" }`
+- **GET /api/series/[seriesId]/books/[bookId]/scenes/[sceneId]** - Get a scene
+- **PUT /api/series/[seriesId]/books/[bookId]/scenes/[sceneId]** - Update a
+  scene
+  - Body: `{ "text": "string" }`
+- **DELETE /api/series/[seriesId]/books/[bookId]/scenes/[sceneId]** - Delete a
+  scene
+- **POST /api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder** -
+  Reorder a scene
+  - Body: `{ "beforeSceneId"?: "string", "afterSceneId"?: "string" }` (provide
+    at least one)
+
+Scenes support YAML frontmatter embedded in `text` to derive metadata (e.g.
+title, dates, tags, etc.).
+
+**Characters**
+
+- **GET /api/series/[seriesId]/characters** - List characters
+- **POST /api/series/[seriesId]/characters** - Create character
+  - Body: `{ "name": "string", "description"?: "string", "extra"?: { ... } }`
+- **GET /api/series/[seriesId]/characters/[characterId]** - Get a character
+- **PUT /api/series/[seriesId]/characters/[characterId]** - Update a character
+  - Body:
+    `{ "name"?: "string", "description"?: "string", "image"?: { ... }, "extra"?: { ... } }`
+- **POST /api/series/[seriesId]/characters/[characterId]/image/presign** -
+  Presign a direct upload to R2
+  - Body:
+    `{ "contentType": "image/png" | "image/jpeg" | "image/webp" | "image/gif" }`
+  - Returns: `{ uploadUrl, objectKey, headers, expiresInSeconds }`
+
+**Locations**
+
+- **GET /api/series/[seriesId]/locations** - List locations
+- **POST /api/series/[seriesId]/locations** - Create location
+  - Body:
+    `{ "name": "string", "description"?: "string", "tags"?: string[] | string, "links"?: [...], "coords"?: { ... }, "extra"?: { ... } }`
+- **GET /api/series/[seriesId]/locations/[locationId]** - Get a location
+- **PUT /api/series/[seriesId]/locations/[locationId]** - Update a location
+- **DELETE /api/series/[seriesId]/locations/[locationId]** - Delete a location
+
+**Timelines**
+
+- **GET /api/series/[seriesId]/timelines** - List timelines
+- **POST /api/series/[seriesId]/timelines** - Create timeline
+  - Body: `{ "title": "string", "description"?: "string" }`
+- **GET /api/series/[seriesId]/timelines/[timelineId]** - Get a timeline
+- **PUT /api/series/[seriesId]/timelines/[timelineId]** - Update a timeline
+- **DELETE /api/series/[seriesId]/timelines/[timelineId]** - Delete a timeline
+- **GET /api/series/[seriesId]/timelines/[timelineId]/events** - List timeline
+  “events” derived from dated scenes
+  - Note: `POST` returns 400; add `startDate`/`endDate` (and optionally
+    `timelines: [<timelineId>]`) in scene frontmatter.
+
+**Legacy: Notes**
+
+- **GET /api/notes** - List notes
+- **POST /api/notes** - Create a note
   - Body: `{ "title": "string", "content": "string" }`
-- **GET /api/notes/[id]** - Get a specific note
+- **GET /api/notes/[id]** - Get a note
 - **PUT /api/notes/[id]** - Update a note
-  - Body: `{ "title": "string", "content": "string" }` (both optional)
+  - Body: `{ "title"?: "string", "content"?: "string" }`
 - **DELETE /api/notes/[id]** - Delete a note
 
 #### Example Usage:
@@ -147,21 +251,26 @@ All API endpoints require authentication via GitHub OAuth.
 # Get current user (requires active session)
 curl http://localhost:8000/api/me
 
-# Create a note
-curl -X POST http://localhost:8000/api/notes \
+# Create a series
+curl -X POST http://localhost:8000/api/series \
   -H "Content-Type: application/json" \
-  -d '{"title": "My Note", "content": "Hello World"}'
+  -d '{"title": "My Series"}'
 
-# List all notes
-curl http://localhost:8000/api/notes
+# List series
+curl http://localhost:8000/api/series
 
-# Update a note
-curl -X PUT http://localhost:8000/api/notes/[note-id] \
+# Create a book
+curl -X POST http://localhost:8000/api/series/[series-id]/books \
   -H "Content-Type: application/json" \
-  -d '{"title": "Updated Title"}'
+  -d '{"title": "Book 1"}'
 
-# Delete a note
-curl -X DELETE http://localhost:8000/api/notes/[note-id]
+# Create a scene
+curl -X POST http://localhost:8000/api/series/[series-id]/books/[book-id]/scenes \
+  -H "Content-Type: application/json" \
+  -d '{"text": "---\ntitle: Arrival\nstartDate: 2026-01-01\n---\n\nScene text..."}'
+
+# Timeline view (derived from dated scenes)
+curl http://localhost:8000/api/series/[series-id]/timelines/[timeline-id]/events
 ```
 
 ## About Fresh Framework
