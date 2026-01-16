@@ -8,12 +8,12 @@ type Props = {
 
 export default function KeyValueEditor(props: Props) {
   const [extra, setExtra] = useState<Record<string, unknown>>(
-    props.initialExtra ?? {}
+    props.initialExtra ?? {},
   );
   const [newKey, setNewKey] = useState("");
   const [newValue, setNewValue] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(
-    "idle"
+    "idle",
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +47,7 @@ export default function KeyValueEditor(props: Props) {
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
           body: JSON.stringify({ extra }),
-        }
+        },
       );
 
       if (!res.ok) {
@@ -93,7 +93,8 @@ export default function KeyValueEditor(props: Props) {
               <button
                 class="btn btn-sm btn-ghost btn-circle"
                 type="button"
-                onClick={() => handleRemove(key)}
+                onClick={() =>
+                  handleRemove(key)}
                 title="Remove attribute"
               >
                 ✕
