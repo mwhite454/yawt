@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 type Props = {
   seriesId: string;
@@ -16,6 +16,13 @@ export default function KeyValueEditor(props: Props) {
     "idle",
   );
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === "saved") {
+      const timer = setTimeout(() => setStatus("idle"), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
 
   const handleAdd = () => {
     const key = newKey.trim();
@@ -61,7 +68,6 @@ export default function KeyValueEditor(props: Props) {
       }
 
       setStatus("saved");
-      setTimeout(() => setStatus("idle"), 2000);
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : String(err));
@@ -89,6 +95,7 @@ export default function KeyValueEditor(props: Props) {
                   class="input input-bordered input-sm"
                   type="text"
                   value={String(value ?? "")}
+                  aria-label={`Value for ${key}`}
                   onChange={(e) => {
                     const target = e.currentTarget as HTMLInputElement;
                     const newExtra = { ...extra };
@@ -122,6 +129,7 @@ export default function KeyValueEditor(props: Props) {
             class="input input-bordered input-sm"
             type="text"
             placeholder="Key"
+            aria-label="New attribute key"
             value={newKey}
             onInput={(e) => {
               const target = e.currentTarget as HTMLInputElement;
@@ -132,6 +140,7 @@ export default function KeyValueEditor(props: Props) {
             class="input input-bordered input-sm"
             type="text"
             placeholder="Value"
+            aria-label="New attribute value"
             value={newValue}
             onInput={(e) => {
               const target = e.currentTarget as HTMLInputElement;
