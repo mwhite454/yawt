@@ -23,7 +23,12 @@ export default function KeyValueEditor(props: Props) {
 
     if (!key) return;
 
-    const updatedExtra = { ...extra, [key]: value || undefined };
+    const updatedExtra = { ...extra };
+    if (value.length > 0) {
+      updatedExtra[key] = value;
+    } else {
+      delete updatedExtra[key];
+    }
     setExtra(updatedExtra);
     setNewKey("");
     setNewValue("");
@@ -86,7 +91,13 @@ export default function KeyValueEditor(props: Props) {
                   value={String(value ?? "")}
                   onChange={(e) => {
                     const target = e.currentTarget as HTMLInputElement;
-                    setExtra({ ...extra, [key]: target.value || undefined });
+                    const newExtra = { ...extra };
+                    if (target.value.length > 0) {
+                      newExtra[key] = target.value;
+                    } else {
+                      delete newExtra[key];
+                    }
+                    setExtra(newExtra);
                   }}
                 />
               </div>
