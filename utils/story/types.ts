@@ -62,11 +62,7 @@ export interface Character {
   seriesId: string;
   name: string;
   description?: string;
-  image?: {
-    objectKey: string;
-    url?: string;
-    contentType?: string;
-  };
+  image?: AssetImage;
   extra?: Record<string, unknown>;
   createdAt: number;
   updatedAt: number;
