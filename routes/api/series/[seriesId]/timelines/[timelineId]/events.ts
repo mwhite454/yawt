@@ -1,14 +1,8 @@
 import { Handlers } from "$fresh/server.ts";
-import { kv } from "../../../../../../utils/kv.ts";
-import {
-  badRequest,
-  json,
-  notFound,
-  requireUser,
-} from "../../../../../../utils/http.ts";
-import type { Book, Scene } from "../../../../../../utils/story/types.ts";
-import { timelineKey } from "../../../../../../utils/story/keys.ts";
-import { bookKey, sceneKey } from "../../../../../../utils/story/keys.ts";
+import { kv } from "@utils/kv.ts";
+import { badRequest, json, notFound, requireUser } from "@utils/http.ts";
+import type { Book, Scene } from "@utils/story/types.ts";
+import { bookKey, sceneKey, timelineKey } from "@utils/story/keys.ts";
 
 type SceneEvent = {
   sceneId: string;

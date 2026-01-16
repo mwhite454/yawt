@@ -1,13 +1,8 @@
 import { Handlers } from "$fresh/server.ts";
-import { kv } from "../../../../utils/kv.ts";
-import {
-  badRequest,
-  json,
-  readJson,
-  requireUser,
-} from "../../../../utils/http.ts";
-import type { Location } from "../../../../utils/story/types.ts";
-import { locationKey, seriesKey } from "../../../../utils/story/keys.ts";
+import { kv } from "@utils/kv.ts";
+import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
+import type { Location } from "@utils/story/types.ts";
+import { locationKey, seriesKey } from "@utils/story/keys.ts";
 
 function toStringArray(value: unknown): string[] | undefined {
   if (value == null) return undefined;
@@ -80,11 +75,13 @@ export const handler: Handlers = {
       links: Array.isArray(body.links)
         ? (body.links as Location["links"])
         : undefined,
-      coords: body.coords && typeof body.coords === "object" &&
+      coords: body.coords &&
+          typeof body.coords === "object" &&
           !Array.isArray(body.coords)
         ? (body.coords as Location["coords"])
         : undefined,
-      extra: body.extra && typeof body.extra === "object" &&
+      extra: body.extra &&
+          typeof body.extra === "object" &&
           !Array.isArray(body.extra)
         ? (body.extra as Record<string, unknown>)
         : undefined,

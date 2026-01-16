@@ -1,14 +1,14 @@
 import { Handlers } from "$fresh/server.ts";
-import { kv } from "../../../../../utils/kv.ts";
+import { kv } from "@utils/kv.ts";
 import {
   badRequest,
   json,
   notFound,
   readJson,
   requireUser,
-} from "../../../../../utils/http.ts";
-import type { Book } from "../../../../../utils/story/types.ts";
-import { bookKey, bookOrderKey } from "../../../../../utils/story/keys.ts";
+} from "@utils/http.ts";
+import type { Book } from "@utils/story/types.ts";
+import { bookKey, bookOrderKey } from "@utils/story/keys.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {

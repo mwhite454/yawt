@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
-import { getUser } from "../../utils/session.ts";
-import { kv } from "../../utils/kv.ts";
+import { getUser } from "@utils/session.ts";
+import { kv } from "@utils/kv.ts";
 
 export interface Note {
   id: string;

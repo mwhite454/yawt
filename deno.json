@@ -17,6 +17,9 @@
   "exclude": ["**/_fresh/*"],
   "imports": {
     "$fresh/": "https://deno.land/x/fresh@1.6.1/",
+    "@components/": "./components/",
+    "@islands/": "./islands/",
+    "@utils/": "./utils/",
     "autoprefixer": "npm:autoprefixer@10.4.19",
     "concurrently": "npm:concurrently@9.1.2",
     "daisyui": "npm:daisyui@4.12.24",

@@ -1,5 +1,5 @@
 import { type ComponentChildren } from "preact";
-import type { User } from "../utils/session.ts";
+import type { User } from "@utils/session.ts";
 
 export function Layout(props: {
   user: User | null;

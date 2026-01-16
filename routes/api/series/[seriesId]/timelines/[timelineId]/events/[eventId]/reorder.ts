@@ -1,5 +1,5 @@
 import { Handlers } from "$fresh/server.ts";
-import { badRequest, requireUser } from "../../../../../../../../utils/http.ts";
+import { badRequest, requireUser } from "@utils/http.ts";
 
 export const handler: Handlers = {
   async POST(req, ctx) {

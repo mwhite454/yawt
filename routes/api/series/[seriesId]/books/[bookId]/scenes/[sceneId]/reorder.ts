@@ -1,18 +1,15 @@
 import { Handlers } from "$fresh/server.ts";
-import { kv } from "../../../../../../../../utils/kv.ts";
+import { kv } from "@utils/kv.ts";
 import {
   badRequest,
   json,
   notFound,
   readJson,
   requireUser,
-} from "../../../../../../../../utils/http.ts";
-import type { Scene } from "../../../../../../../../utils/story/types.ts";
-import {
-  sceneKey,
-  sceneOrderKey,
-} from "../../../../../../../../utils/story/keys.ts";
-import { rankBetween } from "../../../../../../../../utils/story/rank.ts";
+} from "@utils/http.ts";
+import type { Scene } from "@utils/story/types.ts";
+import { sceneKey, sceneOrderKey } from "@utils/story/keys.ts";
+import { rankBetween } from "@utils/story/rank.ts";
 
 export const handler: Handlers = {
   async POST(req, ctx) {

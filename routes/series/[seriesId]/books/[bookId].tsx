@@ -1,18 +1,18 @@
 /// <reference lib="deno.unstable" />
 
 import { Handlers, PageProps } from "$fresh/server.ts";
-import { Layout } from "../../../../components/Layout.tsx";
-import { kv } from "../../../../utils/kv.ts";
-import { getUser, type User } from "../../../../utils/session.ts";
-import type { Book, Scene, Series } from "../../../../utils/story/types.ts";
+import { Layout } from "@components/Layout.tsx";
+import { kv } from "@utils/kv.ts";
+import { getUser, type User } from "@utils/session.ts";
+import type { Book, Scene, Series } from "@utils/story/types.ts";
 import {
   bookKey,
   sceneKey,
   sceneOrderKey,
   seriesKey,
-} from "../../../../utils/story/keys.ts";
-import { rankAfter, rankInitial } from "../../../../utils/story/rank.ts";
-import { deriveSceneFields } from "../../../../utils/story/frontmatter.ts";
+} from "@utils/story/keys.ts";
+import { rankAfter, rankInitial } from "@utils/story/rank.ts";
+import { deriveSceneFields } from "@utils/story/frontmatter.ts";
 
 interface Data {
   user: User;
@@ -45,11 +45,9 @@ export const handler: Handlers<Data> = {
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
     const sceneIds: string[] = [];
-    for await (
-      const entry of kv.list({
-        prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
-      })
-    ) {
+    for await (const entry of kv.list({
+      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
+    })) {
       const key = entry.key as unknown[];
       const sceneId = key[key.length - 1];
       if (typeof sceneId === "string") sceneIds.push(sceneId);
@@ -65,8 +63,8 @@ export const handler: Handlers<Data> = {
     }
 
     const url = new URL(req.url);
-    const selectedSceneId = url.searchParams.get("scene") ?? scenes[0]?.id ??
-      null;
+    const selectedSceneId =
+      url.searchParams.get("scene") ?? scenes[0]?.id ?? null;
     const selectedScene = selectedSceneId
       ? scenes.find((s) => s.id === selectedSceneId) ?? null
       : null;
@@ -97,12 +95,10 @@ export const handler: Handlers<Data> = {
       const title = String(form.get("title") ?? "").trim() || "Untitled scene";
 
       let lastRank: string | undefined;
-      for await (
-        const entry of kv.list(
-          { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
-          { reverse: true, limit: 1 },
-        )
-      ) {
+      for await (const entry of kv.list(
+        { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
+        { reverse: true, limit: 1 }
+      )) {
         const key = entry.key as unknown[];
         const maybeRank = key[key.length - 2];
         if (typeof maybeRank === "string") lastRank = maybeRank;
@@ -138,7 +134,7 @@ export const handler: Handlers<Data> = {
 
       return Response.redirect(
         new URL(`/series/${seriesId}/books/${bookId}?scene=${id}`, req.url),
-        303,
+        303
       );
     }
 
@@ -149,12 +145,12 @@ export const handler: Handlers<Data> = {
       if (!sceneId) {
         return Response.redirect(
           new URL(`/series/${seriesId}/books/${bookId}`, req.url),
-          303,
+          303
         );
       }
 
       const sceneRes = await kv.get<Scene>(
-        sceneKey(user.id, seriesId, bookId, sceneId),
+        sceneKey(user.id, seriesId, bookId, sceneId)
       );
       if (!sceneRes.value) {
         return new Response("Scene not found", { status: 404 });
@@ -173,15 +169,15 @@ export const handler: Handlers<Data> = {
       return Response.redirect(
         new URL(
           `/series/${seriesId}/books/${bookId}?scene=${sceneId}`,
-          req.url,
+          req.url
         ),
-        303,
+        303
       );
     }
 
     return Response.redirect(
       new URL(`/series/${seriesId}/books/${bookId}`, req.url),
-      303,
+      303
     );
   },
 };
@@ -236,31 +232,29 @@ export default function BookDetail({ data }: PageProps<Data>) {
 
               <div class="divider my-2" />
 
-              {scenes.length === 0
-                ? (
-                  <div class="alert">
-                    <span>No scenes yet. Create one.</span>
-                  </div>
-                )
-                : (
-                  <ul class="menu bg-base-200 rounded-box">
-                    {scenes.map((s) => {
-                      const active = selectedScene?.id === s.id;
-                      const title = s.derived?.title ||
-                        `Scene ${s.id.slice(0, 6)}`;
-                      return (
-                        <li key={s.id}>
-                          <a
-                            class={active ? "active" : ""}
-                            href={`/series/${series.id}/books/${book.id}?scene=${s.id}`}
-                          >
-                            {title}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
+              {scenes.length === 0 ? (
+                <div class="alert">
+                  <span>No scenes yet. Create one.</span>
+                </div>
+              ) : (
+                <ul class="menu bg-base-200 rounded-box">
+                  {scenes.map((s) => {
+                    const active = selectedScene?.id === s.id;
+                    const title =
+                      s.derived?.title || `Scene ${s.id.slice(0, 6)}`;
+                    return (
+                      <li key={s.id}>
+                        <a
+                          class={active ? "active" : ""}
+                          href={`/series/${series.id}/books/${book.id}?scene=${s.id}`}
+                        >
+                          {title}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           </div>
         </div>
@@ -278,38 +272,36 @@ export default function BookDetail({ data }: PageProps<Data>) {
                 )}
               </div>
 
-              {!selectedScene
-                ? (
-                  <div class="alert">
-                    <span>Select or create a scene to edit.</span>
-                  </div>
-                )
-                : (
-                  <form method="POST" class="grid gap-3">
-                    <input type="hidden" name="action" value="saveScene" />
-                    <input
-                      type="hidden"
-                      name="sceneId"
-                      value={selectedScene.id}
-                    />
+              {!selectedScene ? (
+                <div class="alert">
+                  <span>Select or create a scene to edit.</span>
+                </div>
+              ) : (
+                <form method="POST" class="grid gap-3">
+                  <input type="hidden" name="action" value="saveScene" />
+                  <input
+                    type="hidden"
+                    name="sceneId"
+                    value={selectedScene.id}
+                  />
 
-                    <textarea
-                      class="textarea textarea-bordered font-mono"
-                      name="text"
-                      rows={22}
-                      value={selectedScene.text}
-                    />
+                  <textarea
+                    class="textarea textarea-bordered font-mono"
+                    name="text"
+                    rows={22}
+                    value={selectedScene.text}
+                  />
 
-                    <div class="card-actions justify-between">
-                      <div class="text-sm opacity-70">
-                        YAML frontmatter supported at top of text.
-                      </div>
-                      <button class="btn btn-primary" type="submit">
-                        Save
-                      </button>
+                  <div class="card-actions justify-between">
+                    <div class="text-sm opacity-70">
+                      YAML frontmatter supported at top of text.
                     </div>
-                  </form>
-                )}
+                    <button class="btn btn-primary" type="submit">
+                      Save
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>

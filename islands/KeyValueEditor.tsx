@@ -111,7 +111,8 @@ export default function KeyValueEditor(props: Props) {
               <button
                 class="btn btn-sm btn-ghost btn-circle"
                 type="button"
-                onClick={() => handleRemove(key)}
+                onClick={() =>
+                  handleRemove(key)}
                 title="Remove attribute"
               >
                 ✕

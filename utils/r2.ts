@@ -14,8 +14,8 @@ let client: S3Client | null = null;
 export function getR2Bucket(): string | undefined {
   return (
     env("CLOUDFLARE_R2_BUCKET") ??
-    env("CLOUDFLARE_S3_BUCKET") ??
-    env("R2_BUCKET")
+      env("CLOUDFLARE_S3_BUCKET") ??
+      env("R2_BUCKET")
   );
 }
 
@@ -23,10 +23,9 @@ function getClient(): S3Client {
   if (client) return client;
 
   const endpoint = env("CLOUDFLARE_S3_ENDPOINT") ?? env("R2_ENDPOINT");
-  const accessKeyId =
-    env("CLOUDFLARE_S3_ACCESS_KEY_ID") ?? env("R2_ACCESS_KEY_ID");
-  const secretAccessKey =
-    env("CLOUDFLARE_S3_SECRET") ??
+  const accessKeyId = env("CLOUDFLARE_S3_ACCESS_KEY_ID") ??
+    env("R2_ACCESS_KEY_ID");
+  const secretAccessKey = env("CLOUDFLARE_S3_SECRET") ??
     env("CLOUDFLARE_S3_SECRET_ACCESS_KEY") ??
     env("R2_SECRET_ACCESS_KEY");
 
@@ -60,7 +59,7 @@ export async function putObject(args: {
       Key: key,
       ContentType: contentType,
       Body: body as unknown,
-    })
+    }),
   );
 }
 
@@ -74,6 +73,6 @@ export async function deleteObject(args: {
     new DeleteObjectCommand({
       Bucket: bucket,
       Key: key,
-    })
+    }),
   );
 }

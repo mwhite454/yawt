@@ -1,17 +1,9 @@
 import { Handlers } from "$fresh/server.ts";
-import {
-  badRequest,
-  json,
-  notFound,
-  requireUser,
-} from "../../../../../../../utils/http.ts";
-import { kv } from "../../../../../../../utils/kv.ts";
-import {
-  characterKey,
-  seriesKey,
-} from "../../../../../../../utils/story/keys.ts";
-import type { Character } from "../../../../../../../utils/story/types.ts";
-import { getR2Bucket, putObject } from "../../../../../../../utils/r2.ts";
+import { badRequest, json, notFound, requireUser } from "@utils/http.ts";
+import { kv } from "@utils/kv.ts";
+import { characterKey, seriesKey } from "@utils/story/keys.ts";
+import type { Character } from "@utils/story/types.ts";
+import { getR2Bucket, putObject } from "@utils/r2.ts";
 
 const ALLOWED_CONTENT_TYPES = new Set([
   "image/jpeg",
@@ -34,7 +26,7 @@ export const handler: Handlers = {
     if (!series.value) return notFound("Series not found");
 
     const character = await kv.get<Character>(
-      characterKey(user.id, seriesId, characterId)
+      characterKey(user.id, seriesId, characterId),
     );
     if (!character.value) return notFound("Character not found");
 
@@ -68,9 +60,8 @@ export const handler: Handlers = {
       return json({ error: "Missing R2 bucket env var" }, { status: 500 });
     }
 
-    const objectKey = `yawt/user/${
-      user.id
-    }/series/${seriesId}/characters/${characterId}/${crypto.randomUUID()}`;
+    const objectKey =
+      `yawt/user/${user.id}/series/${seriesId}/characters/${characterId}/${crypto.randomUUID()}`;
 
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
@@ -83,7 +74,7 @@ export const handler: Handlers = {
     } catch (err) {
       return json(
         { error: "Failed to upload", detail: String(err) },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -93,7 +84,7 @@ export const handler: Handlers = {
         contentType,
         bytes: file.size,
       },
-      { status: 200 }
+      { status: 200 },
     );
   },
 };

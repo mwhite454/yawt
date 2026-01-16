@@ -1,11 +1,11 @@
 /// <reference lib="deno.unstable" />
 
 import { Handlers, PageProps } from "$fresh/server.ts";
-import { Layout } from "../../../components/Layout.tsx";
-import { kv } from "../../../utils/kv.ts";
-import { getUser, type User } from "../../../utils/session.ts";
-import type { Location, Series } from "../../../utils/story/types.ts";
-import { locationKey, seriesKey } from "../../../utils/story/keys.ts";
+import { Layout } from "@components/Layout.tsx";
+import { kv } from "@utils/kv.ts";
+import { getUser, type User } from "@utils/session.ts";
+import type { Location, Series } from "@utils/story/types.ts";
+import { locationKey, seriesKey } from "@utils/story/keys.ts";
 
 interface Data {
   user: User;
@@ -25,11 +25,9 @@ export const handler: Handlers<Data> = {
     }
 
     const locations: Location[] = [];
-    for await (
-      const entry of kv.list<Location>({
-        prefix: ["yawt", "location", user.id, seriesId],
-      })
-    ) {
+    for await (const entry of kv.list<Location>({
+      prefix: ["yawt", "location", user.id, seriesId],
+    })) {
       if (entry.value) locations.push(entry.value);
     }
 
@@ -56,7 +54,7 @@ export const handler: Handlers<Data> = {
     if (!name) {
       return Response.redirect(
         new URL(`/series/${seriesId}/locations`, req.url),
-        303,
+        303
       );
     }
 
@@ -84,7 +82,7 @@ export const handler: Handlers<Data> = {
 
     return Response.redirect(
       new URL(`/series/${seriesId}/locations`, req.url),
-      303,
+      303
     );
   },
 };

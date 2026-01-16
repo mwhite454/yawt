@@ -1,13 +1,13 @@
 /// <reference lib="deno.unstable" />
 
 import { Handlers, PageProps } from "$fresh/server.ts";
-import { Layout } from "../../../components/Layout.tsx";
-import { kv } from "../../../utils/kv.ts";
-import { getUser, type User } from "../../../utils/session.ts";
-import type { Character, Series } from "../../../utils/story/types.ts";
-import { characterKey, seriesKey } from "../../../utils/story/keys.ts";
-import CharacterImageUploader from "../../../islands/CharacterImageUploader.tsx";
-import KeyValueEditor from "../../../islands/KeyValueEditor.tsx";
+import { Layout } from "@components/Layout.tsx";
+import { kv } from "@utils/kv.ts";
+import { getUser, type User } from "@utils/session.ts";
+import type { Character, Series } from "@utils/story/types.ts";
+import { characterKey, seriesKey } from "@utils/story/keys.ts";
+import CharacterImageUploader from "@islands/CharacterImageUploader.tsx";
+import KeyValueEditor from "@islands/KeyValueEditor.tsx";
 
 interface Data {
   user: User;
@@ -27,11 +27,9 @@ export const handler: Handlers<Data> = {
     }
 
     const characters: Character[] = [];
-    for await (
-      const entry of kv.list<Character>({
-        prefix: ["yawt", "character", user.id, seriesId],
-      })
-    ) {
+    for await (const entry of kv.list<Character>({
+      prefix: ["yawt", "character", user.id, seriesId],
+    })) {
       if (entry.value) characters.push(entry.value);
     }
 
@@ -58,7 +56,7 @@ export const handler: Handlers<Data> = {
     if (!name) {
       return Response.redirect(
         new URL(`/series/${seriesId}/characters`, req.url),
-        303,
+        303
       );
     }
 
@@ -86,7 +84,7 @@ export const handler: Handlers<Data> = {
 
     return Response.redirect(
       new URL(`/series/${seriesId}/characters`, req.url),
-      303,
+      303
     );
   },
 };

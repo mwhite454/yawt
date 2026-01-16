@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
-import { handleCallback } from "../../utils/oauth.ts";
-import { setUser, type User } from "../../utils/session.ts";
+import { handleCallback } from "@utils/oauth.ts";
+import { setUser, type User } from "@utils/session.ts";
 
 export const handler: Handlers = {
   async GET(req) {
@@ -29,9 +29,7 @@ export const handler: Handlers = {
       }
 
       // Validate required user properties
-      if (
-        !githubUser.login || !githubUser.id || !githubUser.avatar_url
-      ) {
+      if (!githubUser.login || !githubUser.id || !githubUser.avatar_url) {
         console.error("Invalid user data from GitHub");
         return new Response("Failed to authenticate", { status: 500 });
       }

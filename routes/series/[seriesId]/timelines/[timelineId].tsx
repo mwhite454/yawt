@@ -1,21 +1,16 @@
 /// <reference lib="deno.unstable" />
 
 import { Handlers, PageProps } from "$fresh/server.ts";
-import { Layout } from "../../../../components/Layout.tsx";
-import { kv } from "../../../../utils/kv.ts";
-import { getUser, type User } from "../../../../utils/session.ts";
-import type {
-  Book,
-  Scene,
-  Series,
-  Timeline,
-} from "../../../../utils/story/types.ts";
+import { Layout } from "@components/Layout.tsx";
+import { kv } from "@utils/kv.ts";
+import { getUser, type User } from "@utils/session.ts";
+import type { Book, Scene, Series, Timeline } from "@utils/story/types.ts";
 import {
   bookKey,
+  sceneKey,
   seriesKey,
   timelineKey,
-} from "../../../../utils/story/keys.ts";
-import { sceneKey } from "../../../../utils/story/keys.ts";
+} from "@utils/story/keys.ts";
 
 type SceneEvent = {
   sceneId: string;
@@ -37,7 +32,7 @@ function dateSortKey(value: string | undefined): number {
 async function listTimelineSceneEvents(
   userId: number,
   seriesId: string,
-  timelineId: string,
+  timelineId: string
 ): Promise<SceneEvent[]> {
   const bookOrderEntries = kv.list({
     prefix: ["yawt", "bookOrder", userId, seriesId],
@@ -190,9 +185,8 @@ export default function TimelineDetail({ data }: PageProps<Data>) {
               <span>
                 Events come from Scenes. Add{" "}
                 <span class="font-mono">startDate</span>/{" "}
-                <span class="font-mono">endDate</span>{" "}
-                in scene YAML frontmatter. To scope a scene to this timeline,
-                include{" "}
+                <span class="font-mono">endDate</span> in scene YAML
+                frontmatter. To scope a scene to this timeline, include{" "}
                 <span class="font-mono">timelines: ["{data.timeline.id}"]</span>
                 .
               </span>
@@ -200,43 +194,41 @@ export default function TimelineDetail({ data }: PageProps<Data>) {
 
             <div class="divider" />
 
-            {data.events.length === 0
-              ? (
-                <div class="alert">
-                  <span>No events yet.</span>
-                </div>
-              )
-              : (
-                <div class="overflow-x-auto">
-                  <table class="table table-zebra">
-                    <thead>
-                      <tr>
-                        <th>Title</th>
-                        <th>Book</th>
-                        <th>Start</th>
-                        <th>End</th>
+            {data.events.length === 0 ? (
+              <div class="alert">
+                <span>No events yet.</span>
+              </div>
+            ) : (
+              <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Book</th>
+                      <th>Start</th>
+                      <th>End</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.events.map((e) => (
+                      <tr key={e.sceneId}>
+                        <td>
+                          <a
+                            class="link link-hover"
+                            href={`/series/${data.series.id}/books/${e.bookId}?scene=${e.sceneId}`}
+                          >
+                            {e.title}
+                          </a>
+                        </td>
+                        <td>{e.bookTitle ?? ""}</td>
+                        <td>{e.startDate ?? ""}</td>
+                        <td>{e.endDate ?? ""}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {data.events.map((e) => (
-                        <tr key={e.sceneId}>
-                          <td>
-                            <a
-                              class="link link-hover"
-                              href={`/series/${data.series.id}/books/${e.bookId}?scene=${e.sceneId}`}
-                            >
-                              {e.title}
-                            </a>
-                          </td>
-                          <td>{e.bookTitle ?? ""}</td>
-                          <td>{e.startDate ?? ""}</td>
-                          <td>{e.endDate ?? ""}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>

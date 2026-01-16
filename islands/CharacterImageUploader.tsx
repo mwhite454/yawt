@@ -43,7 +43,7 @@ export default function CharacterImageUploader(props: Props) {
           method: "POST",
           credentials: "same-origin",
           body: form,
-        }
+        },
       );
 
       const uploadJson = (await uploadRes.json()) as
@@ -51,12 +51,11 @@ export default function CharacterImageUploader(props: Props) {
         | { error?: string; detail?: string };
 
       if (!uploadRes.ok) {
-        const msg =
-          ("error" in uploadJson && uploadJson.error) || uploadRes.statusText;
-        const detail =
-          "detail" in uploadJson && uploadJson.detail
-            ? `: ${uploadJson.detail}`
-            : "";
+        const msg = ("error" in uploadJson && uploadJson.error) ||
+          uploadRes.statusText;
+        const detail = "detail" in uploadJson && uploadJson.detail
+          ? `: ${uploadJson.detail}`
+          : "";
         throw new Error(`${msg}${detail}`);
       }
 
@@ -76,7 +75,7 @@ export default function CharacterImageUploader(props: Props) {
               contentType: uploaded.contentType,
             },
           }),
-        }
+        },
       );
 
       if (!saveRes.ok) {

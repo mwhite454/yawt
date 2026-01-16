@@ -1,11 +1,11 @@
 /// <reference lib="deno.unstable" />
 
 import { Handlers, PageProps } from "$fresh/server.ts";
-import { Layout } from "../../components/Layout.tsx";
-import { kv } from "../../utils/kv.ts";
-import { getUser, type User } from "../../utils/session.ts";
-import type { Series } from "../../utils/story/types.ts";
-import { seriesKey } from "../../utils/story/keys.ts";
+import { Layout } from "@components/Layout.tsx";
+import { kv } from "@utils/kv.ts";
+import { getUser, type User } from "@utils/session.ts";
+import type { Series } from "@utils/story/types.ts";
+import { seriesKey } from "@utils/story/keys.ts";
 
 interface Data {
   user: User;
@@ -18,11 +18,9 @@ export const handler: Handlers<Data> = {
     if (!user) return Response.redirect(new URL("/auth/signin", req.url), 303);
 
     const series: Series[] = [];
-    for await (
-      const entry of kv.list<Series>({
-        prefix: ["yawt", "series", user.id],
-      })
-    ) {
+    for await (const entry of kv.list<Series>({
+      prefix: ["yawt", "series", user.id],
+    })) {
       if (entry.value) series.push(entry.value);
     }
 
@@ -97,31 +95,29 @@ export default function SeriesIndex({ data }: PageProps<Data>) {
         </div>
 
         <div class="grid md:grid-cols-2 gap-4">
-          {data.series.length === 0
-            ? (
-              <div class="alert">
-                <span>No series yet. Create one above.</span>
-              </div>
-            )
-            : (
-              data.series.map((s) => (
-                <a
-                  key={s.id}
-                  class="card bg-base-100 shadow-sm hover:shadow transition"
-                  href={`/series/${s.id}`}
-                >
-                  <div class="card-body">
-                    <h2 class="card-title">{s.title}</h2>
-                    {s.description && (
-                      <p class="opacity-80">{s.description.slice(0, 180)}</p>
-                    )}
-                    <div class="card-actions justify-end">
-                      <span class="btn btn-sm btn-ghost">Open</span>
-                    </div>
+          {data.series.length === 0 ? (
+            <div class="alert">
+              <span>No series yet. Create one above.</span>
+            </div>
+          ) : (
+            data.series.map((s) => (
+              <a
+                key={s.id}
+                class="card bg-base-100 shadow-sm hover:shadow transition"
+                href={`/series/${s.id}`}
+              >
+                <div class="card-body">
+                  <h2 class="card-title">{s.title}</h2>
+                  {s.description && (
+                    <p class="opacity-80">{s.description.slice(0, 180)}</p>
+                  )}
+                  <div class="card-actions justify-end">
+                    <span class="btn btn-sm btn-ghost">Open</span>
                   </div>
-                </a>
-              ))
-            )}
+                </div>
+              </a>
+            ))
+          )}
         </div>
       </div>
     </Layout>

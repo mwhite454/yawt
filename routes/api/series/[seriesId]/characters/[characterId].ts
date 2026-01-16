@@ -1,15 +1,15 @@
 import { Handlers } from "$fresh/server.ts";
-import { kv } from "../../../../../utils/kv.ts";
+import { kv } from "@utils/kv.ts";
 import {
   badRequest,
   json,
   notFound,
   readJson,
   requireUser,
-} from "../../../../../utils/http.ts";
-import type { Character } from "../../../../../utils/story/types.ts";
-import { characterKey } from "../../../../../utils/story/keys.ts";
-import { deleteObject, getR2Bucket } from "../../../../../utils/r2.ts";
+} from "@utils/http.ts";
+import type { Character } from "@utils/story/types.ts";
+import { characterKey } from "@utils/story/keys.ts";
+import { deleteObject, getR2Bucket } from "@utils/r2.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {

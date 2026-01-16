@@ -1,7 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
-import { getUser } from "../../../utils/session.ts";
+import { getUser } from "@utils/session.ts";
 import type { Note } from "../notes.ts";
-import { kv } from "../../../utils/kv.ts";
+import { kv } from "@utils/kv.ts";
 
 export const handler: Handlers = {
   async GET(_req, ctx) {

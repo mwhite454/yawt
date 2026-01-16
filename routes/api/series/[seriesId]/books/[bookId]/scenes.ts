@@ -1,20 +1,16 @@
 import { Handlers } from "$fresh/server.ts";
-import { kv } from "../../../../../../utils/kv.ts";
+import { kv } from "@utils/kv.ts";
 import {
   badRequest,
   json,
   notFound,
   readJson,
   requireUser,
-} from "../../../../../../utils/http.ts";
-import type { Scene } from "../../../../../../utils/story/types.ts";
-import {
-  bookKey,
-  sceneKey,
-  sceneOrderKey,
-} from "../../../../../../utils/story/keys.ts";
-import { rankAfter, rankInitial } from "../../../../../../utils/story/rank.ts";
-import { deriveSceneFields } from "../../../../../../utils/story/frontmatter.ts";
+} from "@utils/http.ts";
+import type { Scene } from "@utils/story/types.ts";
+import { bookKey, sceneKey, sceneOrderKey } from "@utils/story/keys.ts";
+import { rankAfter, rankInitial } from "@utils/story/rank.ts";
+import { deriveSceneFields } from "@utils/story/frontmatter.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {

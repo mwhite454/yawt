@@ -1,13 +1,8 @@
 import { Handlers } from "$fresh/server.ts";
-import { kv } from "../../../../utils/kv.ts";
-import {
-  badRequest,
-  json,
-  readJson,
-  requireUser,
-} from "../../../../utils/http.ts";
-import type { Character } from "../../../../utils/story/types.ts";
-import { characterKey, seriesKey } from "../../../../utils/story/keys.ts";
+import { kv } from "@utils/kv.ts";
+import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
+import type { Character } from "@utils/story/types.ts";
+import { characterKey, seriesKey } from "@utils/story/keys.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {

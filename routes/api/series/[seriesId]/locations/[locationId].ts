@@ -1,14 +1,14 @@
 import { Handlers } from "$fresh/server.ts";
-import { kv } from "../../../../../utils/kv.ts";
+import { kv } from "@utils/kv.ts";
 import {
   badRequest,
   json,
   notFound,
   readJson,
   requireUser,
-} from "../../../../../utils/http.ts";
-import type { Location } from "../../../../../utils/story/types.ts";
-import { locationKey } from "../../../../../utils/story/keys.ts";
+} from "@utils/http.ts";
+import type { Location } from "@utils/story/types.ts";
+import { locationKey } from "@utils/story/keys.ts";
 
 function toStringArray(value: unknown): string[] | undefined {
   if (value == null) return undefined;
@@ -67,21 +67,23 @@ export const handler: Handlers = {
         ? toStringArray(body.tags)
         : entry.value.tags,
       links: body.links !== undefined
-        ? (Array.isArray(body.links)
+        ? Array.isArray(body.links)
           ? (body.links as Location["links"])
-          : undefined)
+          : undefined
         : entry.value.links,
       coords: body.coords !== undefined
-        ? (body.coords && typeof body.coords === "object" &&
+        ? body.coords &&
+            typeof body.coords === "object" &&
             !Array.isArray(body.coords)
           ? (body.coords as Location["coords"])
-          : undefined)
+          : undefined
         : entry.value.coords,
       extra: body.extra !== undefined
-        ? (body.extra && typeof body.extra === "object" &&
+        ? body.extra &&
+            typeof body.extra === "object" &&
             !Array.isArray(body.extra)
           ? (body.extra as Record<string, unknown>)
-          : undefined)
+          : undefined
         : entry.value.extra,
       updatedAt: Date.now(),
     };
