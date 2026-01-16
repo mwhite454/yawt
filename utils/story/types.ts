@@ -1,10 +1,17 @@
 export type UserId = number;
 
+export interface AssetImage {
+  objectKey: string;
+  url?: string;
+  contentType?: string;
+}
+
 export interface Series {
   id: string;
   userId: UserId;
   title: string;
   description?: string;
+  assets?: AssetImage[];
   createdAt: number;
   updatedAt: number;
 }
@@ -18,6 +25,7 @@ export interface Book {
   author?: string;
   publishDate?: string;
   isbn?: string;
+  coverImage?: AssetImage;
   createdAt: number;
   updatedAt: number;
 }
