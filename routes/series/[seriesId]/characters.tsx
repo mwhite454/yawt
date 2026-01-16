@@ -7,6 +7,7 @@ import { getUser, type User } from "../../../utils/session.ts";
 import type { Character, Series } from "../../../utils/story/types.ts";
 import { characterKey, seriesKey } from "../../../utils/story/keys.ts";
 import CharacterImageUploader from "../../../islands/CharacterImageUploader.tsx";
+import KeyValueEditor from "../../../islands/KeyValueEditor.tsx";
 
 interface Data {
   user: User;
@@ -157,6 +158,14 @@ export default function CharactersPage({ data }: PageProps<Data>) {
                   characterId={c.id}
                   existingObjectKey={c.image?.objectKey}
                   existingContentType={c.image?.contentType}
+                />
+
+                <div class="divider my-2" />
+
+                <KeyValueEditor
+                  seriesId={data.series.id}
+                  characterId={c.id}
+                  initialExtra={c.extra}
                 />
               </div>
             </div>
