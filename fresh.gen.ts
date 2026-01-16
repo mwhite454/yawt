@@ -15,7 +15,8 @@ import * as $api_series_seriesId_books_bookId_scenes_sceneId_ from "./routes/api
 import * as $api_series_seriesId_books_bookId_scenes_sceneId_reorder from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts";
 import * as $api_series_seriesId_characters from "./routes/api/series/[seriesId]/characters.ts";
 import * as $api_series_seriesId_characters_characterId_ from "./routes/api/series/[seriesId]/characters/[characterId].ts";
-import * as $api_series_seriesId_characters_characterId_image_presign from "./routes/api/series/[seriesId]/characters/[characterId]/image/presign.ts";
+import * as $api_series_seriesId_characters_characterId_image_presign_2 from "./routes/api/series/[seriesId]/characters/[characterId]/image/presign 2.ts";
+import * as $api_series_seriesId_characters_characterId_image_upload from "./routes/api/series/[seriesId]/characters/[characterId]/image/upload.ts";
 import * as $api_series_seriesId_locations from "./routes/api/series/[seriesId]/locations.ts";
 import * as $api_series_seriesId_locations_locationId_ from "./routes/api/series/[seriesId]/locations/[locationId].ts";
 import * as $api_series_seriesId_timelines from "./routes/api/series/[seriesId]/timelines.ts";
@@ -58,8 +59,10 @@ const manifest = {
       $api_series_seriesId_characters,
     "./routes/api/series/[seriesId]/characters/[characterId].ts":
       $api_series_seriesId_characters_characterId_,
-    "./routes/api/series/[seriesId]/characters/[characterId]/image/presign.ts":
-      $api_series_seriesId_characters_characterId_image_presign,
+    "./routes/api/series/[seriesId]/characters/[characterId]/image/presign 2.ts":
+      $api_series_seriesId_characters_characterId_image_presign_2,
+    "./routes/api/series/[seriesId]/characters/[characterId]/image/upload.ts":
+      $api_series_seriesId_characters_characterId_image_upload,
     "./routes/api/series/[seriesId]/locations.ts":
       $api_series_seriesId_locations,
     "./routes/api/series/[seriesId]/locations/[locationId].ts":

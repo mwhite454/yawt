@@ -1,10 +1,9 @@
 import { useMemo, useState } from "preact/hooks";
 
-type PresignResponse = {
-  uploadUrl: string;
+type UploadResponse = {
   objectKey: string;
-  headers: Record<string, string>;
-  expiresInSeconds: number;
+  contentType: string;
+  bytes: number;
 };
 
 type Props = {
@@ -35,40 +34,33 @@ export default function CharacterImageUploader(props: Props) {
     try {
       setStatus("uploading");
 
-      const presignRes = await fetch(
-        `/api/series/${props.seriesId}/characters/${props.characterId}/image/presign`,
+      const form = new FormData();
+      form.set("file", file);
+
+      const uploadRes = await fetch(
+        `/api/series/${props.seriesId}/characters/${props.characterId}/image/upload`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
-          body: JSON.stringify({ contentType: file.type }),
-        },
+          body: form,
+        }
       );
 
-      const presignJson = (await presignRes.json()) as
-        | PresignResponse
+      const uploadJson = (await uploadRes.json()) as
+        | UploadResponse
         | { error?: string; detail?: string };
 
-      if (!presignRes.ok) {
-        throw new Error(
-          ("error" in presignJson && presignJson.error) ||
-            presignRes.statusText,
-        );
-      }
-
-      const presign = presignJson as PresignResponse;
-
-      const uploadRes = await fetch(presign.uploadUrl, {
-        method: "PUT",
-        headers: presign.headers,
-        body: file,
-      });
-
       if (!uploadRes.ok) {
-        throw new Error(
-          `Upload failed: ${uploadRes.status} ${uploadRes.statusText}`,
-        );
+        const msg =
+          ("error" in uploadJson && uploadJson.error) || uploadRes.statusText;
+        const detail =
+          "detail" in uploadJson && uploadJson.detail
+            ? `: ${uploadJson.detail}`
+            : "";
+        throw new Error(`${msg}${detail}`);
       }
+
+      const uploaded = uploadJson as UploadResponse;
 
       setStatus("saving");
 
@@ -80,16 +72,20 @@ export default function CharacterImageUploader(props: Props) {
           credentials: "same-origin",
           body: JSON.stringify({
             image: {
-              objectKey: presign.objectKey,
-              contentType: file.type,
+              objectKey: uploaded.objectKey,
+              contentType: uploaded.contentType,
             },
           }),
-        },
+        }
       );
 
       if (!saveRes.ok) {
-        const body = (await saveRes.json()) as { error?: string };
-        throw new Error(body.error || saveRes.statusText);
+        const body = (await saveRes.json()) as {
+          error?: string;
+          detail?: string;
+        };
+        const msg = body.error || saveRes.statusText;
+        throw new Error(body.detail ? `${msg}: ${body.detail}` : msg);
       }
 
       setStatus("done");
@@ -154,7 +150,7 @@ export default function CharacterImageUploader(props: Props) {
       )}
 
       <div class="text-xs opacity-60">
-        Uses the presigned PUT endpoint (R2).
+        Uploads via same-origin API (no direct browser-to-R2 upload).
       </div>
     </div>
   );

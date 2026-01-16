@@ -104,7 +104,7 @@ deno task check
 │           ├── books/[bookId]/scenes/[sceneId]/reorder.ts
 │           ├── characters.ts
 │           ├── characters/[characterId].ts
-│           ├── characters/[characterId]/image/presign.ts
+│           ├── characters/[characterId]/image/upload.ts
 │           ├── locations.ts
 │           ├── locations/[locationId].ts
 │           ├── timelines.ts
@@ -134,7 +134,7 @@ deno task check
 - **Authentication**: GitHub OAuth2 via
   [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
 - **Storage**: Deno KV (built-in key-value database)
-- **Images**: Optional Cloudflare R2 (direct browser upload via presigned PUT)
+- **Images**: Optional Cloudflare R2 (uploads via same-origin API route)
 
 ## Features
 
@@ -206,11 +206,11 @@ title, dates, tags, etc.).
 - **PUT /api/series/[seriesId]/characters/[characterId]** - Update a character
   - Body:
     `{ "name"?: "string", "description"?: "string", "image"?: { ... }, "extra"?: { ... } }`
-- **POST /api/series/[seriesId]/characters/[characterId]/image/presign** -
-  Presign a direct upload to R2
-  - Body:
-    `{ "contentType": "image/png" | "image/jpeg" | "image/webp" | "image/gif" }`
-  - Returns: `{ uploadUrl, objectKey, headers, expiresInSeconds }`
+- **POST /api/series/[seriesId]/characters/[characterId]/image/upload** - Upload
+  a character image to R2 (server-side)
+  - Content-Type: `multipart/form-data`
+  - Form field: `file` (image/png|jpeg|webp|gif)
+  - Returns: `{ objectKey, contentType, bytes }`
 
 **Locations**
 
