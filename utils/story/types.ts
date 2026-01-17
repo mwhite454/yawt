@@ -92,6 +92,22 @@ export interface Timeline {
   updatedAt: number;
 }
 
+export interface Event {
+  id: string;
+  userId: UserId;
+  seriesId: string;
+  title: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  locationId?: string;
+  characterIds?: string[];
+  sceneIds?: string[];
+  tags?: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface TimelineEvent {
   id: string;
   userId: UserId;
@@ -103,7 +119,7 @@ export interface TimelineEvent {
   endDate?: string;
   locationId?: string;
   characterIds?: string[];
-  sceneId?: string;
+  sceneIds?: string[];
   tags?: string[];
   createdAt: number;
   updatedAt: number;
