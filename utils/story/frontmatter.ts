@@ -1,42 +1,12 @@
 import { parse } from "$std/yaml/mod.ts";
 import type { SceneDerived } from "./types.ts";
+import { toStringArray, toStringValue } from "./convert.ts";
 
 const MAX_FRONTMATTER_BYTES = 64 * 1024;
 
 export interface FrontmatterResult {
   attributes: Record<string, unknown>;
   body: string;
-}
-
-function toStringArray(value: unknown): string[] | undefined {
-  if (value == null) return undefined;
-  if (Array.isArray(value)) {
-    const result = value
-      .filter((v) => typeof v === "string")
-      .map((v) => v.trim())
-      .filter(Boolean);
-    return result.length ? result : undefined;
-  }
-  if (typeof value === "string") {
-    const single = value.trim();
-    return single ? [single] : undefined;
-  }
-  return undefined;
-}
-
-function toStringValue(value: unknown): string | undefined {
-  if (value == null) return undefined;
-  if (typeof value === "string") {
-    const v = value.trim();
-    return v ? v : undefined;
-  }
-  if (typeof value === "number" || typeof value === "boolean") {
-    return String(value);
-  }
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-  return undefined;
 }
 
 function asPlainObject(value: unknown): Record<string, unknown> {

@@ -3,22 +3,7 @@ import { kv } from "@utils/kv.ts";
 import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
 import type { Event } from "@utils/story/types.ts";
 import { eventKey, seriesKey } from "@utils/story/keys.ts";
-
-function toStringArray(value: unknown): string[] | undefined {
-  if (value == null) return undefined;
-  if (Array.isArray(value)) {
-    const result = value
-      .filter((v) => typeof v === "string")
-      .map((v) => v.trim())
-      .filter(Boolean);
-    return result.length ? result : undefined;
-  }
-  if (typeof value === "string") {
-    const single = value.trim();
-    return single ? [single] : undefined;
-  }
-  return undefined;
-}
+import { toStringArray } from "@utils/story/convert.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
