@@ -103,6 +103,6 @@ export const handler: Handlers = {
     if (!entry.value) return notFound("Event not found");
 
     await kv.delete(key);
-    return json({ success: true }, { status: 200 });
+    return json({ message: "Event deleted" }, { status: 200 });
   },
 };
