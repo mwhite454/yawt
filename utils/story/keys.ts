@@ -84,3 +84,11 @@ export function timelineOrderKey(
 ): Deno.KvKey {
   return ["yawt", "timelineOrder", userId, seriesId, timelineId, rank, eventId];
 }
+
+export function eventKey(
+  userId: UserId,
+  seriesId: string,
+  eventId: string,
+): Deno.KvKey {
+  return ["yawt", "event", userId, seriesId, eventId];
+}

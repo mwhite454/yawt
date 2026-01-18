@@ -107,6 +107,8 @@ deno task check
 │           ├── characters/[characterId]/image/upload.ts
 │           ├── locations.ts
 │           ├── locations/[locationId].ts
+│           ├── events.ts
+│           ├── events/[eventId].ts
 │           ├── timelines.ts
 │           ├── timelines/[timelineId].ts
 │           └── timelines/[timelineId]/events.ts
@@ -222,6 +224,17 @@ title, dates, tags, etc.).
 - **PUT /api/series/[seriesId]/locations/[locationId]** - Update a location
 - **DELETE /api/series/[seriesId]/locations/[locationId]** - Delete a location
 
+**Events**
+
+- **GET /api/series/[seriesId]/events** - List events
+- **POST /api/series/[seriesId]/events** - Create event
+  - Body:
+    `{ "title": "string", "description"?: "string", "startDate"?: "string", "endDate"?: "string", "locationId"?: "string", "characterIds"?: string[], "sceneIds"?: string[], "tags"?: string[] }`
+- **GET /api/series/[seriesId]/events/[eventId]** - Get an event
+- **PUT /api/series/[seriesId]/events/[eventId]** - Update an event
+  - Body: Same as POST (all fields optional)
+- **DELETE /api/series/[seriesId]/events/[eventId]** - Delete an event
+
 **Timelines**
 
 - **GET /api/series/[seriesId]/timelines** - List timelines
@@ -268,6 +281,14 @@ curl -X POST http://localhost:8000/api/series/[series-id]/books \
 curl -X POST http://localhost:8000/api/series/[series-id]/books/[book-id]/scenes \
   -H "Content-Type: application/json" \
   -d '{"text": "---\ntitle: Arrival\nstartDate: 2026-01-01\n---\n\nScene text..."}'
+
+# Create an event
+curl -X POST http://localhost:8000/api/series/[series-id]/events \
+  -H "Content-Type: application/json" \
+  -d '{"title": "The Great Battle", "startDate": "2026-03-15", "endDate": "2026-03-16", "sceneIds": ["scene-id-1", "scene-id-2"], "characterIds": ["char-id-1"], "locationId": "loc-id-1", "tags": ["war", "climax"]}'
+
+# List events
+curl http://localhost:8000/api/series/[series-id]/events
 
 # Timeline view (derived from dated scenes)
 curl http://localhost:8000/api/series/[series-id]/timelines/[timeline-id]/events
