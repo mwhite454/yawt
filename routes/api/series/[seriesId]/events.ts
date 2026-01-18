@@ -3,7 +3,7 @@ import { kv } from "@utils/kv.ts";
 import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
 import type { Event } from "@utils/story/types.ts";
 import { eventKey, seriesKey } from "@utils/story/keys.ts";
-import { toStringArray } from "@utils/story/convert.ts";
+import { toStringArray, toStringValue } from "@utils/story/convert.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -52,18 +52,10 @@ export const handler: Handlers = {
       userId: user.id,
       seriesId,
       title,
-      description: typeof body.description === "string"
-        ? body.description.trim()
-        : undefined,
-      startDate: typeof body.startDate === "string"
-        ? body.startDate.trim()
-        : undefined,
-      endDate: typeof body.endDate === "string"
-        ? body.endDate.trim()
-        : undefined,
-      locationId: typeof body.locationId === "string"
-        ? body.locationId.trim()
-        : undefined,
+      description: toStringValue(body.description),
+      startDate: toStringValue(body.startDate),
+      endDate: toStringValue(body.endDate),
+      locationId: toStringValue(body.locationId),
       characterIds: toStringArray(body.characterIds),
       sceneIds: toStringArray(body.sceneIds),
       tags: toStringArray(body.tags),
