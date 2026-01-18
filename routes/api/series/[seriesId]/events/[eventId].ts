@@ -44,21 +44,38 @@ export const handler: Handlers = {
       return badRequest("title cannot be empty");
     }
 
+    // Normalize optional string fields: treat empty strings as undefined
+    let description = entry.value.description;
+    if (typeof body.description === "string") {
+      const trimmed = body.description.trim();
+      description = trimmed === "" ? undefined : trimmed;
+    }
+
+    let startDate = entry.value.startDate;
+    if (typeof body.startDate === "string") {
+      const trimmed = body.startDate.trim();
+      startDate = trimmed === "" ? undefined : trimmed;
+    }
+
+    let endDate = entry.value.endDate;
+    if (typeof body.endDate === "string") {
+      const trimmed = body.endDate.trim();
+      endDate = trimmed === "" ? undefined : trimmed;
+    }
+
+    let locationId = entry.value.locationId;
+    if (typeof body.locationId === "string") {
+      const trimmed = body.locationId.trim();
+      locationId = trimmed === "" ? undefined : trimmed;
+    }
+
     const updated: Event = {
       ...entry.value,
       title: title ?? entry.value.title,
-      description: typeof body.description === "string"
-        ? body.description.trim()
-        : entry.value.description,
-      startDate: typeof body.startDate === "string"
-        ? body.startDate.trim()
-        : entry.value.startDate,
-      endDate: typeof body.endDate === "string"
-        ? body.endDate.trim()
-        : entry.value.endDate,
-      locationId: typeof body.locationId === "string"
-        ? body.locationId.trim()
-        : entry.value.locationId,
+      description,
+      startDate,
+      endDate,
+      locationId,
       characterIds: body.characterIds !== undefined
         ? toStringArray(body.characterIds)
         : entry.value.characterIds,
