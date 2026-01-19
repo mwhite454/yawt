@@ -207,7 +207,16 @@ export const handler: Handlers<Data> = {
       .commit();
 
     if (!ok.ok) {
-      return new Response("Failed to create event", { status: 500 });
+      console.error("Failed to create event in KV", {
+        userId: user.id,
+        seriesId,
+        eventId: id,
+        kvResult: ok,
+      });
+      return new Response(
+        "Failed to create event. Please try again later.",
+        { status: 500 },
+      );
     }
 
     return Response.redirect(
