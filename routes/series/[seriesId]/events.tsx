@@ -17,6 +17,7 @@ import {
   sceneKey,
   seriesKey,
 } from "@utils/story/keys.ts";
+import EventForm from "@islands/EventForm.tsx";
 
 interface Data {
   user: User;
@@ -168,11 +169,11 @@ export const handler: Handlers<Data> = {
       typeof v === "string" && v.trim()
     ) as string[];
 
-    // Handle tags - parse comma-separated string
-    const tagsRaw = String(form.get("tags") ?? "").trim();
-    const tags = tagsRaw
-      ? tagsRaw.split(",").map((t) => t.trim()).filter((t) => t)
-      : undefined;
+    // Handle tags - can be from island (array) or from plain form (comma-separated)
+    const tagsFromForm = form.getAll("tags").filter((v) =>
+      typeof v === "string" && v.trim()
+    ) as string[];
+    const tags = tagsFromForm.length > 0 ? tagsFromForm : undefined;
 
     if (!title) {
       return Response.redirect(
@@ -236,128 +237,12 @@ export default function EventsPage({ data }: PageProps<Data>) {
           <div class="card-body">
             <h1 class="card-title">Events</h1>
 
-            <form method="POST" class="grid gap-3">
-              <input
-                class="input input-bordered"
-                name="title"
-                placeholder="Event title"
-                required
-              />
-              <textarea
-                class="textarea textarea-bordered"
-                name="description"
-                placeholder="Description (optional)"
-                rows={3}
-              />
-              
-              <div class="grid md:grid-cols-2 gap-3">
-                <div>
-                  <label class="label">
-                    <span class="label-text">Start Date</span>
-                  </label>
-                  <input
-                    type="text"
-                    class="input input-bordered w-full"
-                    name="startDate"
-                    placeholder="YYYY-MM-DD or any date format"
-                  />
-                </div>
-                <div>
-                  <label class="label">
-                    <span class="label-text">End Date</span>
-                  </label>
-                  <input
-                    type="text"
-                    class="input input-bordered w-full"
-                    name="endDate"
-                    placeholder="YYYY-MM-DD or any date format"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label class="label">
-                  <span class="label-text">Location</span>
-                </label>
-                <select class="select select-bordered w-full" name="locationId">
-                  <option value="">None</option>
-                  {data.locations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label class="label">
-                  <span class="label-text">Characters</span>
-                </label>
-                <select
-                  class="select select-bordered w-full"
-                  name="characterIds"
-                  multiple
-                  size={Math.min(5, Math.max(3, data.characters.length))}
-                >
-                  {data.characters.map((char) => (
-                    <option key={char.id} value={char.id}>
-                      {char.name}
-                    </option>
-                  ))}
-                </select>
-                <label class="label">
-                  <span class="label-text-alt">
-                    Hold Ctrl/Cmd to select multiple
-                  </span>
-                </label>
-              </div>
-
-              <div>
-                <label class="label">
-                  <span class="label-text">Scenes</span>
-                </label>
-                <select
-                  class="select select-bordered w-full"
-                  name="sceneIds"
-                  multiple
-                  size={Math.min(5, Math.max(3, data.scenes.length))}
-                >
-                  {data.scenes.map((scene) => (
-                    <option key={scene.id} value={scene.id}>
-                      {scene.derived?.title || `Scene ${scene.id.slice(0, 6)}`}
-                      {scene.bookTitle && ` (${scene.bookTitle})`}
-                    </option>
-                  ))}
-                </select>
-                <label class="label">
-                  <span class="label-text-alt">
-                    Hold Ctrl/Cmd to select multiple
-                  </span>
-                </label>
-              </div>
-
-              <div>
-                <label class="label">
-                  <span class="label-text">Plotlines / Tags</span>
-                </label>
-                <input
-                  class="input input-bordered w-full"
-                  name="tags"
-                  placeholder="Comma-separated tags (e.g., romance, battle, mystery)"
-                />
-                <label class="label">
-                  <span class="label-text-alt">
-                    Separate multiple tags with commas
-                  </span>
-                </label>
-              </div>
-
-              <div class="card-actions justify-end">
-                <button class="btn btn-primary" type="submit">
-                  Create Event
-                </button>
-              </div>
-            </form>
+            <EventForm
+              seriesId={data.series.id}
+              characters={data.characters}
+              locations={data.locations}
+              scenes={data.scenes}
+            />
           </div>
         </div>
 
