@@ -283,9 +283,13 @@ export default function EventsPage({ data }: PageProps<Data>) {
                     <div class="flex flex-wrap gap-1 mt-1">
                       {event.characterIds.map((charId) => {
                         const char = data.characters.find((c) => c.id === charId);
+                        if (!char) {
+                          // Orphaned character reference; skip rendering this ID
+                          return null;
+                        }
                         return (
                           <span key={charId} class="badge badge-primary badge-sm">
-                            {char?.name || charId.slice(0, 6)}
+                            {char.name}
                           </span>
                         );
                       })}
