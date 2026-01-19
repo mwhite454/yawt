@@ -48,7 +48,7 @@ export default function EventForm(
     tags.value = tags.value.filter((t) => t !== tag);
   };
 
-  const handleKeyPress = (e: KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
       addTag();
@@ -205,7 +205,7 @@ export default function EventForm(
             placeholder="Add a tag..."
             value={tagInput.value}
             onInput={(e) => (tagInput.value = e.currentTarget.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
           />
           <button
             type="button"
