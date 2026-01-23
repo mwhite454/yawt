@@ -73,24 +73,24 @@ export default function EventForm(
       <div class="grid md:grid-cols-2 gap-3">
         <div>
           <label class="label">
-            <span class="label-text">Start Date</span>
+            <span class="label-text">Start Date (free-form text)</span>
           </label>
           <input
             type="text"
             class="input input-bordered w-full"
             name="startDate"
-            placeholder="YYYY-MM-DD or any date format"
+            placeholder='e.g. 2024-01-31 or "early spring 2025"'
           />
         </div>
         <div>
           <label class="label">
-            <span class="label-text">End Date</span>
+            <span class="label-text">End Date (free-form text)</span>
           </label>
           <input
             type="text"
             class="input input-bordered w-full"
             name="endDate"
-            placeholder="YYYY-MM-DD or any date format"
+            placeholder='e.g. 2024-02-15 or "after the battle"'
           />
         </div>
       </div>
