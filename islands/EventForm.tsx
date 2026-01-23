@@ -224,6 +224,7 @@ export default function EventForm(
                   type="button"
                   class="btn btn-ghost btn-xs btn-circle"
                   onClick={() => removeTag(tag)}
+                  aria-label={`Remove tag ${tag}`}
                 >
                   ✕
                 </button>
