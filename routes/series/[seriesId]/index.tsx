@@ -139,6 +139,12 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
                 >
                   Timelines
                 </a>
+                <a
+                  class="btn btn-sm join-item"
+                  href={`/series/${series.id}/events`}
+                >
+                  Events
+                </a>
               </div>
             </div>
           </div>
