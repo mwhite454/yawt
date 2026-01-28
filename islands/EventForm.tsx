@@ -50,8 +50,13 @@ export default function EventForm(
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
-      e.preventDefault();
-      addTag();
+      const trimmedValue = tagInput.value.trim();
+      if (trimmedValue) {
+        // Prevent form submission only if we're actually adding a tag
+        e.preventDefault();
+        addTag();
+      }
+      // If empty, allow default behavior (form submission)
     }
   };
 

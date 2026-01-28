@@ -17,6 +17,7 @@ import {
   sceneKey,
   seriesKey,
 } from "@utils/story/keys.ts";
+import { toStringArray } from "@utils/story/convert.ts";
 import EventForm from "@islands/EventForm.tsx";
 
 interface Data {
@@ -160,20 +161,13 @@ export const handler: Handlers<Data> = {
     const locationId = locationIdRaw ? locationIdRaw : undefined;
 
     // Handle multi-select for characters
-    const characterIds = form.getAll("characterIds").filter((v) =>
-      typeof v === "string" && v.trim()
-    ) as string[];
+    const characterIds = toStringArray(form.getAll("characterIds"));
 
     // Handle multi-select for scenes
-    const sceneIds = form.getAll("sceneIds").filter((v) =>
-      typeof v === "string" && v.trim()
-    ) as string[];
+    const sceneIds = toStringArray(form.getAll("sceneIds"));
 
     // Handle tags - can be from island (array) or from plain form (comma-separated)
-    const tagsFromForm = form.getAll("tags").filter((v) =>
-      typeof v === "string" && v.trim()
-    ) as string[];
-    const tags = tagsFromForm.length > 0 ? tagsFromForm : undefined;
+    const tags = toStringArray(form.getAll("tags"));
 
     if (!title) {
       return Response.redirect(
@@ -312,7 +306,11 @@ export default function EventsPage({ data }: PageProps<Data>) {
                     <div class="flex flex-wrap gap-1 mt-1">
                       {event.sceneIds.map((sceneId) => {
                         const scene = data.scenes.find((s) => s.id === sceneId);
-                        const sceneLabel = scene?.derived?.title ||
+                        if (!scene) {
+                          // Orphaned scene reference; skip rendering this ID
+                          return null;
+                        }
+                        const sceneLabel = scene.derived?.title ||
                           `Scene ${sceneId.slice(0, 6)}`;
                         return (
                           <span key={sceneId} class="badge badge-secondary badge-sm">
