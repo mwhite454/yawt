@@ -150,5 +150,7 @@ _fresh/
 
 # Fresh build output
 _fresh/*
+
+# npm packages (only used for local Tailwind builds, not part of Deno project)
 package.json
 package-lock.json
