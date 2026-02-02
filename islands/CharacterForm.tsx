@@ -40,8 +40,14 @@ export default function CharacterForm(props: Props) {
   }, [status]);
 
   const handleTypeChange = (newTypeId: string) => {
-    if (characterTypeId && newTypeId !== characterTypeId && Object.keys(typeData).length > 0) {
-      if (!confirm("Changing the character type will clear all type-specific data. Continue?")) {
+    if (characterTypeId && newTypeId !== characterTypeId) {
+      // Check if there's any meaningful data in typeData
+      const hasData = Object.values(typeData).some(value => {
+        if (Array.isArray(value)) return value.length > 0 && value.some(v => v);
+        return value !== null && value !== undefined && value !== '';
+      });
+      
+      if (hasData && !confirm("Changing the character type will clear all type-specific data. Continue?")) {
         return;
       }
     }

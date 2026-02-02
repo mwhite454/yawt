@@ -89,10 +89,7 @@ export const handler: Handlers = {
         ? body.description.trim()
         : entry.value.description,
       image: nextImage,
-      characterTypeId: Object.prototype.hasOwnProperty.call(
-        body,
-        "characterTypeId",
-      )
+      characterTypeId: Object.hasOwn(body, "characterTypeId")
         ? (typeof body.characterTypeId === "string"
           ? body.characterTypeId.trim()
           : undefined)

@@ -3,6 +3,7 @@ import { kv } from "@utils/kv.ts";
 import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
 import type { CharacterType } from "@utils/story/types.ts";
 import { characterTypeKey, seriesKey } from "@utils/story/keys.ts";
+import { validateFieldDefinitions } from "@utils/story/validation.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -44,9 +45,10 @@ export const handler: Handlers = {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name) return badRequest("name is required");
 
-    const fields = Array.isArray(body.fields)
-      ? (body.fields as CharacterType["fields"])
-      : [];
+    const fieldsValidation = validateFieldDefinitions(body.fields);
+    if (typeof fieldsValidation === "string") {
+      return badRequest(fieldsValidation);
+    }
 
     const now = Date.now();
     const id = crypto.randomUUID();
@@ -58,7 +60,7 @@ export const handler: Handlers = {
       description: typeof body.description === "string"
         ? body.description.trim()
         : undefined,
-      fields,
+      fields: fieldsValidation,
       createdAt: now,
       updatedAt: now,
     };

@@ -9,6 +9,7 @@ import {
 } from "@utils/http.ts";
 import type { Character, CharacterType } from "@utils/story/types.ts";
 import { characterTypeKey } from "@utils/story/keys.ts";
+import { validateFieldDefinitions } from "@utils/story/validation.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -43,15 +44,22 @@ export const handler: Handlers = {
       return badRequest("name cannot be empty");
     }
 
+    let fields = entry.value.fields;
+    if (body.fields !== undefined) {
+      const fieldsValidation = validateFieldDefinitions(body.fields);
+      if (typeof fieldsValidation === "string") {
+        return badRequest(fieldsValidation);
+      }
+      fields = fieldsValidation;
+    }
+
     const updated: CharacterType = {
       ...entry.value,
       name: name ?? entry.value.name,
       description: typeof body.description === "string"
         ? body.description.trim()
         : entry.value.description,
-      fields: Array.isArray(body.fields)
-        ? (body.fields as CharacterType["fields"])
-        : entry.value.fields,
+      fields,
       updatedAt: Date.now(),
     };
 
