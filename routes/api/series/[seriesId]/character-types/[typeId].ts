@@ -7,7 +7,7 @@ import {
   readJson,
   requireUser,
 } from "@utils/http.ts";
-import type { CharacterType } from "@utils/story/types.ts";
+import type { Character, CharacterType } from "@utils/story/types.ts";
 import { characterTypeKey } from "@utils/story/keys.ts";
 
 export const handler: Handlers = {
@@ -68,6 +68,27 @@ export const handler: Handlers = {
     const key = characterTypeKey(user.id, seriesId, typeId);
     const entry = await kv.get<CharacterType>(key);
     if (!entry.value) return notFound("Character type not found");
+
+    // Check if any characters are using this type
+    const charactersUsingType: string[] = [];
+    const entries = kv.list<Character>({
+      prefix: ["yawt", "character", user.id, seriesId],
+    });
+    for await (const charEntry of entries) {
+      if (charEntry.value?.characterTypeId === typeId) {
+        charactersUsingType.push(charEntry.value.name);
+      }
+    }
+
+    if (charactersUsingType.length > 0) {
+      return badRequest(
+        `Cannot delete character type: ${
+          charactersUsingType.length
+        } character(s) are using it (${charactersUsingType.slice(0, 3).join(", ")}${
+          charactersUsingType.length > 3 ? ", ..." : ""
+        })`,
+      );
+    }
 
     await kv.delete(key);
     return json({ success: true }, { status: 200 });

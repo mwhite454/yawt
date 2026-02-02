@@ -40,6 +40,11 @@ export default function CharacterForm(props: Props) {
   }, [status]);
 
   const handleTypeChange = (newTypeId: string) => {
+    if (characterTypeId && newTypeId !== characterTypeId && Object.keys(typeData).length > 0) {
+      if (!confirm("Changing the character type will clear all type-specific data. Continue?")) {
+        return;
+      }
+    }
     setCharacterTypeId(newTypeId);
     // Reset type data when changing character type
     setTypeData({});
