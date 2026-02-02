@@ -1,7 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { handleCallback } from "@utils/oauth.ts";
 import { setUser, type User } from "@utils/session.ts";
-import { DAISYUI_THEMES, type DaisyUITheme } from "@utils/themes.ts";
+import { isValidTheme } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
 
 export const handler: Handlers = {
@@ -45,11 +45,9 @@ export const handler: Handlers = {
 
       // Validate theme from storage before using it
       const storedTheme = existingUserPrefs.value?.defaultTheme;
-      const validatedTheme =
-        storedTheme && typeof storedTheme === "string" &&
-          (DAISYUI_THEMES as readonly string[]).includes(storedTheme)
-          ? (storedTheme as DaisyUITheme)
-          : undefined;
+      const validatedTheme = isValidTheme(storedTheme)
+        ? storedTheme
+        : undefined;
 
       // Store user in session
       const user: User = {
