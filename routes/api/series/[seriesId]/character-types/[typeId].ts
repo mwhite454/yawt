@@ -49,7 +49,9 @@ export const handler: Handlers = {
       description: typeof body.description === "string"
         ? body.description.trim()
         : entry.value.description,
-      fields: Array.isArray(body.fields) ? body.fields : entry.value.fields,
+      fields: Array.isArray(body.fields)
+        ? (body.fields as CharacterType["fields"])
+        : entry.value.fields,
       updatedAt: Date.now(),
     };
 

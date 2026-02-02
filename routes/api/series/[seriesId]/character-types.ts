@@ -44,7 +44,9 @@ export const handler: Handlers = {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name) return badRequest("name is required");
 
-    const fields = Array.isArray(body.fields) ? body.fields : [];
+    const fields = Array.isArray(body.fields)
+      ? (body.fields as CharacterType["fields"])
+      : [];
 
     const now = Date.now();
     const id = crypto.randomUUID();
