@@ -89,6 +89,19 @@ export const handler: Handlers = {
         ? body.description.trim()
         : entry.value.description,
       image: nextImage,
+      characterTypeId: Object.prototype.hasOwnProperty.call(
+        body,
+        "characterTypeId",
+      )
+        ? (typeof body.characterTypeId === "string"
+          ? body.characterTypeId.trim()
+          : undefined)
+        : entry.value.characterTypeId,
+      typeData: body.typeData &&
+          typeof body.typeData === "object" &&
+          !Array.isArray(body.typeData)
+        ? (body.typeData as Record<string, unknown>)
+        : entry.value.typeData,
       extra: body.extra &&
           typeof body.extra === "object" &&
           !Array.isArray(body.extra)

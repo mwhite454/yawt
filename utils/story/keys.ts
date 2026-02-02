@@ -42,6 +42,14 @@ export function sceneOrderKey(
   return ["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId];
 }
 
+export function characterTypeKey(
+  userId: UserId,
+  seriesId: string,
+  typeId: string,
+): Deno.KvKey {
+  return ["yawt", "characterType", userId, seriesId, typeId];
+}
+
 export function characterKey(
   userId: UserId,
   seriesId: string,
