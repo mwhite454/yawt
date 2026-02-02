@@ -10,6 +10,7 @@ module.exports = {
   },
   plugins: [require("daisyui")],
   daisyui: {
+    defaultTheme: "yawt-dark",
     themes: [
       {
         yawt: {
@@ -80,6 +81,56 @@ module.exports = {
           "--rounded-btn": "1rem",
           "--rounded-badge": "1rem",
           "--border-btn": "1.5px",
+          "--tab-radius": "1rem",
+        },
+      },
+      {
+        "yawt-dark": {
+          "color-scheme": "dark",
+
+          "base-100": "oklch(15% 0.09 281.288)",
+          "base-200": "oklch(20% 0.09 281.288)",
+          "base-300": "oklch(25% 0.09 281.288)",
+          "base-content": "oklch(78% 0.115 274.713)",
+
+          primary: "oklch(71% 0.202 349.761)",
+          "primary-content": "oklch(28% 0.109 3.907)",
+
+          secondary: "oklch(82% 0.111 230.318)",
+          "secondary-content": "oklch(29% 0.066 243.157)",
+
+          accent: "oklch(75% 0.183 55.934)",
+          "accent-content": "oklch(26% 0.079 36.259)",
+
+          neutral: "oklch(45% 0.24 277.023)",
+          "neutral-content": "oklch(93% 0.034 272.788)",
+
+          info: "oklch(74% 0.16 232.661)",
+          "info-content": "oklch(29% 0.066 243.157)",
+
+          success: "oklch(84% 0.238 128.85)",
+          "success-content": "oklch(27% 0.046 192.524)",
+
+          warning: "oklch(90% 0.182 98.111)",
+          "warning-content": "oklch(28% 0.066 53.813)",
+
+          error: "oklch(73.7% 0.121 32.639)",
+          "error-content": "oklch(23.501% 0.096 290.329)",
+
+          "--radius-selector": "1rem",
+          "--radius-field": "0.5rem",
+          "--radius-box": "1rem",
+          "--size-selector": "0.1875rem",
+          "--size-field": "0.1875rem",
+          "--border": "1px",
+          "--depth": "0",
+          "--noise": "0",
+
+          // Closest daisyUI v4 equivalents for radius/border.
+          "--rounded-box": "1rem",
+          "--rounded-btn": "0.5rem",
+          "--rounded-badge": "1rem",
+          "--border-btn": "1px",
           "--tab-radius": "1rem",
         },
       },

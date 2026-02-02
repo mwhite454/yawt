@@ -1,5 +1,6 @@
 import { type ComponentChildren } from "preact";
 import type { User } from "@utils/session.ts";
+import { UserMenu } from "@components/UserMenu.tsx";
 
 export function Layout(props: {
   user: User | null;
@@ -25,35 +26,8 @@ export function Layout(props: {
             </ul>
           )}
         </div>
-        <div class="navbar-end gap-2">
-          {props.user
-            ? (
-              <>
-                <div class="hidden sm:flex items-center gap-2">
-                  {props.user.avatar_url && (
-                    <div class="avatar">
-                      <div class="w-8 rounded-full">
-                        <img
-                          src={props.user.avatar_url}
-                          alt={props.user.login}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  <span class="text-sm opacity-80">
-                    {props.user.name || props.user.login}
-                  </span>
-                </div>
-                <a class="btn btn-sm" href="/auth/signout">
-                  Sign out
-                </a>
-              </>
-            )
-            : (
-              <a class="btn btn-primary btn-sm" href="/auth/signin">
-                Sign in
-              </a>
-            )}
+        <div class="navbar-end">
+          <UserMenu user={props.user} />
         </div>
       </div>
 
