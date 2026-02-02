@@ -15,9 +15,7 @@ export async function getAllSeriesForUser(userId: number): Promise<Series[]> {
   }
 
   series.sort(
-    (a, b) =>
-      (b.updatedAt ?? Number.MIN_SAFE_INTEGER) -
-      (a.updatedAt ?? Number.MIN_SAFE_INTEGER),
+    (a, b) => b.updatedAt - a.updatedAt,
   );
   return series;
 }
