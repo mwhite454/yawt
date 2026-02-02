@@ -1,5 +1,11 @@
-// All available DaisyUI themes - shared between server and client
-export const DAISYUI_THEMES = [
+// Import shared constants from JavaScript file (for tailwind.config.cjs compatibility)
+import {
+  DAISYUI_THEMES as THEMES_ARRAY,
+  DEFAULT_THEME as DEFAULT,
+} from "./themes-constants.js";
+
+// Re-export with proper TypeScript typing
+export const DAISYUI_THEMES = THEMES_ARRAY as readonly [
   "light",
   "dark",
   "cupcake",
@@ -34,6 +40,9 @@ export const DAISYUI_THEMES = [
   "sunset",
   "yawt",
   "yawt-dark",
-] as const;
+];
 
 export type DaisyUITheme = (typeof DAISYUI_THEMES)[number];
+
+// Default theme used across the application
+export const DEFAULT_THEME: DaisyUITheme = DEFAULT as DaisyUITheme;

@@ -6,6 +6,7 @@ import {
   DAISYUI_THEMES,
   type DaisyUITheme,
 } from "@utils/session.ts";
+import { DEFAULT_THEME } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
 
 export const handler: Handlers = {
@@ -27,7 +28,7 @@ export const handler: Handlers = {
           name: user.name,
           email: user.email,
           avatar_url: user.avatar_url,
-          defaultTheme: user.defaultTheme || "yawt-dark",
+          defaultTheme: user.defaultTheme || DEFAULT_THEME,
         },
       }),
       {
@@ -95,7 +96,7 @@ export const handler: Handlers = {
           name: user.name,
           email: user.email,
           avatar_url: user.avatar_url,
-          defaultTheme: user.defaultTheme || "yawt-dark",
+          defaultTheme: user.defaultTheme || DEFAULT_THEME,
         },
       }),
       {
