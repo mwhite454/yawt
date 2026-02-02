@@ -14,6 +14,10 @@ export async function getAllSeriesForUser(userId: number): Promise<Series[]> {
     if (entry.value) series.push(entry.value);
   }
 
-  series.sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
+  series.sort(
+    (a, b) =>
+      (b.updatedAt ?? Number.MIN_SAFE_INTEGER) -
+      (a.updatedAt ?? Number.MIN_SAFE_INTEGER),
+  );
   return series;
 }
