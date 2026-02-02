@@ -1,11 +1,15 @@
 import type { User } from "@utils/session.ts";
+import ThemeController from "@islands/ThemeController.tsx";
 
 export function UserMenu(props: { user: User | null }) {
   if (!props.user) {
     return (
-      <a class="btn btn-primary btn-sm" href="/auth/signin">
-        Sign in
-      </a>
+      <div class="flex items-center gap-2">
+        <ThemeController currentTheme="yawt-dark" isLoggedIn={false} />
+        <a class="btn btn-primary btn-sm" href="/auth/signin">
+          Sign in
+        </a>
+      </div>
     );
   }
 
@@ -24,11 +28,20 @@ export function UserMenu(props: { user: User | null }) {
       </div>
       <ul
         tabIndex={0}
-        class="dropdown-content menu bg-base-100 rounded-box z-10 w-52 p-2 shadow mt-2"
+        class="dropdown-content menu bg-base-100 rounded-box z-10 w-72 p-2 shadow mt-2"
       >
         <li class="menu-title">
           <span>{props.user.name || props.user.login}</span>
         </li>
+        <li>
+          <div class="flex items-center justify-between px-0">
+            <ThemeController
+              currentTheme={props.user.defaultTheme || "yawt-dark"}
+              isLoggedIn={true}
+            />
+          </div>
+        </li>
+        <div class="divider my-1"></div>
         <li>
           <a href="/auth/signout">Sign out</a>
         </li>

@@ -62,7 +62,7 @@ export const handler: Handlers<Data> = {
 
 export default function SeriesIndex({ data }: PageProps<Data>) {
   return (
-    <Layout user={data.user} title="YAWT">
+    <Layout user={data.user} title="YAWT" series={data.series}>
       <div class="grid gap-4">
         <div class="card bg-base-100 shadow-sm">
           <div class="card-body">

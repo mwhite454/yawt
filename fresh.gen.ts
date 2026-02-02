@@ -41,6 +41,7 @@ import * as $series_index from "./routes/series/index.tsx";
 import * as $CharacterImageUploader from "./islands/CharacterImageUploader.tsx";
 import * as $EventForm from "./islands/EventForm.tsx";
 import * as $KeyValueEditor from "./islands/KeyValueEditor.tsx";
+import * as $ThemeController from "./islands/ThemeController.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -104,6 +105,7 @@ const manifest = {
     "./islands/CharacterImageUploader.tsx": $CharacterImageUploader,
     "./islands/EventForm.tsx": $EventForm,
     "./islands/KeyValueEditor.tsx": $KeyValueEditor,
+    "./islands/ThemeController.tsx": $ThemeController,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

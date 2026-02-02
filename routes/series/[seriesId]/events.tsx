@@ -11,18 +11,15 @@ import type {
   Scene,
   Series,
 } from "@utils/story/types.ts";
-import {
-  bookKey,
-  eventKey,
-  sceneKey,
-  seriesKey,
-} from "@utils/story/keys.ts";
+import { bookKey, eventKey, sceneKey, seriesKey } from "@utils/story/keys.ts";
 import { toStringArray } from "@utils/story/convert.ts";
+import { getAllSeriesForUser } from "@utils/story/series.ts";
 import EventForm from "@islands/EventForm.tsx";
 
 interface Data {
   user: User;
   series: Series;
+  allSeries: Series[];
   events: Event[];
   characters: Character[];
   locations: Location[];
@@ -35,40 +32,37 @@ export const handler: Handlers<Data> = {
     if (!user) return Response.redirect(new URL("/auth/signin", req.url), 303);
 
     const seriesId = ctx.params.seriesId;
-    const seriesRes = await kv.get<Series>(seriesKey(user.id, seriesId));
+    const [seriesRes, allSeries] = await Promise.all([
+      kv.get<Series>(seriesKey(user.id, seriesId)),
+      getAllSeriesForUser(user.id),
+    ]);
     if (!seriesRes.value) {
       return new Response("Series not found", { status: 404 });
     }
 
     // Fetch events
     const events: Event[] = [];
-    for await (
-      const entry of kv.list<Event>({
-        prefix: ["yawt", "event", user.id, seriesId],
-      })
-    ) {
+    for await (const entry of kv.list<Event>({
+      prefix: ["yawt", "event", user.id, seriesId],
+    })) {
       if (entry.value) events.push(entry.value);
     }
     events.sort((a, b) => b.updatedAt - a.updatedAt);
 
     // Fetch characters for dropdown
     const characters: Character[] = [];
-    for await (
-      const entry of kv.list<Character>({
-        prefix: ["yawt", "character", user.id, seriesId],
-      })
-    ) {
+    for await (const entry of kv.list<Character>({
+      prefix: ["yawt", "character", user.id, seriesId],
+    })) {
       if (entry.value) characters.push(entry.value);
     }
     characters.sort((a, b) => a.name.localeCompare(b.name));
 
     // Fetch locations for dropdown
     const locations: Location[] = [];
-    for await (
-      const entry of kv.list<Location>({
-        prefix: ["yawt", "location", user.id, seriesId],
-      })
-    ) {
+    for await (const entry of kv.list<Location>({
+      prefix: ["yawt", "location", user.id, seriesId],
+    })) {
       if (entry.value) locations.push(entry.value);
     }
     locations.sort((a, b) => a.name.localeCompare(b.name));
@@ -115,7 +109,7 @@ export const handler: Handlers<Data> = {
       if (!sceneIds.length) continue;
 
       const sceneKeys = sceneIds.map((id) =>
-        sceneKey(user.id, seriesId, bookId, id)
+        sceneKey(user.id, seriesId, bookId, id),
       );
       const sceneResults = await kv.getMany(sceneKeys);
       for (const res of sceneResults) {
@@ -132,6 +126,7 @@ export const handler: Handlers<Data> = {
     return ctx.render({
       user,
       series: seriesRes.value,
+      allSeries,
       events,
       characters,
       locations,
@@ -207,10 +202,9 @@ export const handler: Handlers<Data> = {
         eventId: id,
         kvResult: ok,
       });
-      return new Response(
-        "Failed to create event. Please try again later.",
-        { status: 500 },
-      );
+      return new Response("Failed to create event. Please try again later.", {
+        status: 500,
+      });
     }
 
     return Response.redirect(
@@ -222,7 +216,13 @@ export const handler: Handlers<Data> = {
 
 export default function EventsPage({ data }: PageProps<Data>) {
   return (
-    <Layout user={data.user} title={data.series.title}>
+    <Layout
+      user={data.user}
+      title={data.series.title}
+      series={data.allSeries}
+      currentSeriesId={data.series.id}
+      currentPage="events"
+    >
       <div class="breadcrumbs text-sm">
         <ul>
           <li>
@@ -263,7 +263,8 @@ export default function EventsPage({ data }: PageProps<Data>) {
                 <div class="grid md:grid-cols-2 gap-2 text-sm mt-2">
                   {event.startDate && (
                     <div>
-                      <span class="font-semibold">Start:</span> {event.startDate}
+                      <span class="font-semibold">Start:</span>{" "}
+                      {event.startDate}
                     </div>
                   )}
                   {event.endDate && (
@@ -285,13 +286,18 @@ export default function EventsPage({ data }: PageProps<Data>) {
                     <span class="font-semibold text-sm">Characters:</span>
                     <div class="flex flex-wrap gap-1 mt-1">
                       {event.characterIds.map((charId) => {
-                        const char = data.characters.find((c) => c.id === charId);
+                        const char = data.characters.find(
+                          (c) => c.id === charId,
+                        );
                         if (!char) {
                           // Orphaned character reference; skip rendering this ID
                           return null;
                         }
                         return (
-                          <span key={charId} class="badge badge-primary badge-sm">
+                          <span
+                            key={charId}
+                            class="badge badge-primary badge-sm"
+                          >
                             {char.name}
                           </span>
                         );
@@ -310,10 +316,14 @@ export default function EventsPage({ data }: PageProps<Data>) {
                           // Orphaned scene reference; skip rendering this ID
                           return null;
                         }
-                        const sceneLabel = scene.derived?.title ||
+                        const sceneLabel =
+                          scene.derived?.title ||
                           `Scene ${sceneId.slice(0, 6)}`;
                         return (
-                          <span key={sceneId} class="badge badge-secondary badge-sm">
+                          <span
+                            key={sceneId}
+                            class="badge badge-secondary badge-sm"
+                          >
                             {sceneLabel}
                           </span>
                         );

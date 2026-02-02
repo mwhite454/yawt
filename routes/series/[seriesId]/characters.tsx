@@ -6,12 +6,14 @@ import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
 import type { Character, Series } from "@utils/story/types.ts";
 import { characterKey, seriesKey } from "@utils/story/keys.ts";
+import { getAllSeriesForUser } from "@utils/story/series.ts";
 import CharacterImageUploader from "@islands/CharacterImageUploader.tsx";
 import KeyValueEditor from "@islands/KeyValueEditor.tsx";
 
 interface Data {
   user: User;
   series: Series;
+  allSeries: Series[];
   characters: Character[];
 }
 
@@ -21,7 +23,10 @@ export const handler: Handlers<Data> = {
     if (!user) return Response.redirect(new URL("/auth/signin", req.url), 303);
 
     const seriesId = ctx.params.seriesId;
-    const seriesRes = await kv.get<Series>(seriesKey(user.id, seriesId));
+    const [seriesRes, allSeries] = await Promise.all([
+      kv.get<Series>(seriesKey(user.id, seriesId)),
+      getAllSeriesForUser(user.id),
+    ]);
     if (!seriesRes.value) {
       return new Response("Series not found", { status: 404 });
     }
@@ -35,7 +40,7 @@ export const handler: Handlers<Data> = {
 
     characters.sort((a, b) => a.name.localeCompare(b.name));
 
-    return ctx.render({ user, series: seriesRes.value, characters });
+    return ctx.render({ user, series: seriesRes.value, allSeries, characters });
   },
 
   async POST(req, ctx) {
@@ -56,7 +61,7 @@ export const handler: Handlers<Data> = {
     if (!name) {
       return Response.redirect(
         new URL(`/series/${seriesId}/characters`, req.url),
-        303
+        303,
       );
     }
 
@@ -84,14 +89,20 @@ export const handler: Handlers<Data> = {
 
     return Response.redirect(
       new URL(`/series/${seriesId}/characters`, req.url),
-      303
+      303,
     );
   },
 };
 
 export default function CharactersPage({ data }: PageProps<Data>) {
   return (
-    <Layout user={data.user} title={data.series.title}>
+    <Layout
+      user={data.user}
+      title={data.series.title}
+      series={data.allSeries}
+      currentSeriesId={data.series.id}
+      currentPage="characters"
+    >
       <div class="breadcrumbs text-sm">
         <ul>
           <li>

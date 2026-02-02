@@ -1,12 +1,16 @@
 import { getSessionId } from "./oauth.ts";
 import { kv } from "./kv.ts";
 
+// Re-export themes from separate file (safe for client-side use)
+export { DAISYUI_THEMES, type DaisyUITheme } from "./themes.ts";
+
 export interface User {
   login: string;
   id: number;
   avatar_url: string;
   name?: string;
   email?: string;
+  defaultTheme?: DaisyUITheme;
 }
 
 export async function getUser(request: Request): Promise<User | null> {

@@ -1,6 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { handleCallback } from "@utils/oauth.ts";
 import { setUser, type User } from "@utils/session.ts";
+import { kv } from "@utils/kv.ts";
 
 export const handler: Handlers = {
   async GET(req) {
@@ -34,6 +35,13 @@ export const handler: Handlers = {
         return new Response("Failed to authenticate", { status: 500 });
       }
 
+      // Check if user has existing preferences stored by their GitHub ID
+      const existingUserPrefs = await kv.get<{ defaultTheme?: string }>([
+        "yawt",
+        "userPrefs",
+        githubUser.id,
+      ]);
+
       // Store user in session
       const user: User = {
         login: githubUser.login,
@@ -41,9 +49,19 @@ export const handler: Handlers = {
         avatar_url: githubUser.avatar_url,
         name: githubUser.name,
         email: githubUser.email,
+        // Preserve existing theme preference if available
+        defaultTheme: existingUserPrefs.value
+          ?.defaultTheme as User["defaultTheme"],
       };
 
       await setUser(sessionId, user);
+
+      // Also store user preferences by GitHub ID for persistence across sessions
+      if (user.defaultTheme) {
+        await kv.set(["yawt", "userPrefs", githubUser.id], {
+          defaultTheme: user.defaultTheme,
+        });
+      }
 
       return response;
     } catch (error) {
