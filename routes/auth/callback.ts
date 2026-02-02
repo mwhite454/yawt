@@ -1,6 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { handleCallback } from "@utils/oauth.ts";
 import { setUser, type User } from "@utils/session.ts";
+import { isValidTheme } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
 
 export const handler: Handlers = {
@@ -42,6 +43,12 @@ export const handler: Handlers = {
         githubUser.id,
       ]);
 
+      // Validate theme from storage before using it
+      const storedTheme = existingUserPrefs.value?.defaultTheme;
+      const validatedTheme = isValidTheme(storedTheme)
+        ? storedTheme
+        : undefined;
+
       // Store user in session
       const user: User = {
         login: githubUser.login,
@@ -49,9 +56,8 @@ export const handler: Handlers = {
         avatar_url: githubUser.avatar_url,
         name: githubUser.name,
         email: githubUser.email,
-        // Preserve existing theme preference if available
-        defaultTheme: existingUserPrefs.value
-          ?.defaultTheme as User["defaultTheme"],
+        // Use validated theme preference if available
+        defaultTheme: validatedTheme,
       };
 
       await setUser(sessionId, user);

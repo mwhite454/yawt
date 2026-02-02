@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const { DEFAULT_THEME } = require("./utils/themes-constants.js");
+
 module.exports = {
   content: [
     "./routes/**/*.{ts,tsx}",
@@ -10,7 +12,7 @@ module.exports = {
   },
   plugins: [require("daisyui")],
   daisyui: {
-    defaultTheme: "yawt-dark",
+    defaultTheme: DEFAULT_THEME,
     themes: [
       "light",
       "dark",

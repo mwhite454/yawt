@@ -1,8 +1,9 @@
 import type { PageProps } from "$fresh/server.ts";
+import { DEFAULT_THEME } from "@utils/themes.ts";
 
 export default function App({ Component }: PageProps) {
   return (
-    <html data-theme="yawt-dark">
+    <html data-theme={DEFAULT_THEME}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

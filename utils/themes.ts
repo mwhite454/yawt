@@ -1,39 +1,21 @@
-// All available DaisyUI themes - shared between server and client
-export const DAISYUI_THEMES = [
-  "light",
-  "dark",
-  "cupcake",
-  "bumblebee",
-  "emerald",
-  "corporate",
-  "synthwave",
-  "retro",
-  "cyberpunk",
-  "valentine",
-  "halloween",
-  "garden",
-  "forest",
-  "aqua",
-  "lofi",
-  "pastel",
-  "fantasy",
-  "wireframe",
-  "black",
-  "luxury",
-  "dracula",
-  "cmyk",
-  "autumn",
-  "business",
-  "acid",
-  "lemonade",
-  "night",
-  "coffee",
-  "winter",
-  "dim",
-  "nord",
-  "sunset",
-  "yawt",
-  "yawt-dark",
-] as const;
+// Import shared constants from JavaScript file (for tailwind.config.cjs compatibility)
+import {
+  DAISYUI_THEMES as THEMES_ARRAY,
+  DEFAULT_THEME as DEFAULT,
+} from "./themes-constants.js";
 
-export type DaisyUITheme = (typeof DAISYUI_THEMES)[number];
+// Re-export with proper TypeScript typing
+export const DAISYUI_THEMES = THEMES_ARRAY;
+
+export type DaisyUITheme = (typeof THEMES_ARRAY)[number];
+
+// Type guard to validate theme values
+export function isValidTheme(theme: unknown): theme is DaisyUITheme {
+  return (
+    typeof theme === "string" &&
+    (DAISYUI_THEMES as readonly string[]).includes(theme)
+  );
+}
+
+// Default theme used across the application
+export const DEFAULT_THEME: DaisyUITheme = DEFAULT;

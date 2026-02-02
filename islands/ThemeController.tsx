@@ -1,5 +1,9 @@
 import { useEffect, useState } from "preact/hooks";
-import { DAISYUI_THEMES, type DaisyUITheme } from "@utils/themes.ts";
+import {
+  DAISYUI_THEMES,
+  DEFAULT_THEME,
+  type DaisyUITheme,
+} from "@utils/themes.ts";
 
 interface ThemeControllerProps {
   currentTheme?: DaisyUITheme;
@@ -7,7 +11,7 @@ interface ThemeControllerProps {
 }
 
 export default function ThemeController({
-  currentTheme = "yawt-dark",
+  currentTheme = DEFAULT_THEME,
   isLoggedIn = false,
 }: ThemeControllerProps) {
   const [theme, setTheme] = useState<DaisyUITheme>(currentTheme);
@@ -24,7 +28,7 @@ export default function ThemeController({
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as DaisyUITheme | null;
 
-    if (isLoggedIn && currentTheme && currentTheme !== "yawt-dark") {
+    if (isLoggedIn && currentTheme && currentTheme !== DEFAULT_THEME) {
       // If logged in and server provided a non-default theme, use it
       // and sync to localStorage
       if (currentTheme !== savedTheme) {

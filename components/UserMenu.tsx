@@ -1,11 +1,12 @@
 import type { User } from "@utils/session.ts";
+import { DEFAULT_THEME } from "@utils/themes.ts";
 import ThemeController from "@islands/ThemeController.tsx";
 
 export function UserMenu(props: { user: User | null }) {
   if (!props.user) {
     return (
       <div class="flex items-center gap-2">
-        <ThemeController currentTheme="yawt-dark" isLoggedIn={false} />
+        <ThemeController currentTheme={DEFAULT_THEME} isLoggedIn={false} />
         <a class="btn btn-primary btn-sm" href="/auth/signin">
           Sign in
         </a>
@@ -36,7 +37,7 @@ export function UserMenu(props: { user: User | null }) {
         <li>
           <div class="flex items-center justify-between px-0">
             <ThemeController
-              currentTheme={props.user.defaultTheme || "yawt-dark"}
+              currentTheme={props.user.defaultTheme || DEFAULT_THEME}
               isLoggedIn={true}
             />
           </div>
