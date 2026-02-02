@@ -4,45 +4,10 @@ import {
   DEFAULT_THEME as DEFAULT,
 } from "./themes-constants.js";
 
-// Re-export with proper TypeScript typing
-export const DAISYUI_THEMES = THEMES_ARRAY as readonly [
-  "light",
-  "dark",
-  "cupcake",
-  "bumblebee",
-  "emerald",
-  "corporate",
-  "synthwave",
-  "retro",
-  "cyberpunk",
-  "valentine",
-  "halloween",
-  "garden",
-  "forest",
-  "aqua",
-  "lofi",
-  "pastel",
-  "fantasy",
-  "wireframe",
-  "black",
-  "luxury",
-  "dracula",
-  "cmyk",
-  "autumn",
-  "business",
-  "acid",
-  "lemonade",
-  "night",
-  "coffee",
-  "winter",
-  "dim",
-  "nord",
-  "sunset",
-  "yawt",
-  "yawt-dark",
-];
+// Re-export with proper TypeScript typing using 'as const'
+export const DAISYUI_THEMES = THEMES_ARRAY as typeof THEMES_ARRAY;
 
-export type DaisyUITheme = (typeof DAISYUI_THEMES)[number];
+export type DaisyUITheme = (typeof THEMES_ARRAY)[number];
 
 // Default theme used across the application
-export const DEFAULT_THEME: DaisyUITheme = DEFAULT as DaisyUITheme;
+export const DEFAULT_THEME: DaisyUITheme = DEFAULT;

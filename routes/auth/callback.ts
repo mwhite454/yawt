@@ -45,10 +45,11 @@ export const handler: Handlers = {
 
       // Validate theme from storage before using it
       const storedTheme = existingUserPrefs.value?.defaultTheme;
-      const validatedTheme = storedTheme &&
-          DAISYUI_THEMES.includes(storedTheme as DaisyUITheme)
-        ? (storedTheme as DaisyUITheme)
-        : undefined;
+      const validatedTheme =
+        storedTheme && typeof storedTheme === "string" &&
+          (DAISYUI_THEMES as readonly string[]).includes(storedTheme)
+          ? (storedTheme as DaisyUITheme)
+          : undefined;
 
       // Store user in session
       const user: User = {
