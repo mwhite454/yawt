@@ -30,7 +30,7 @@ export default function SidebarDrawer(
       </div>
       <div class="drawer-side z-50">
         <label
-          for="sidebar-drawer"
+          htmlFor="sidebar-drawer"
           aria-label="close sidebar"
           class="drawer-overlay"
         >

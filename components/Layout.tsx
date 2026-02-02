@@ -31,7 +31,7 @@ export function Layout(props: {
           <div class="navbar-end gap-2">
             {props.user && props.sidebarContent && (
               <label
-                for="sidebar-drawer"
+                htmlFor="sidebar-drawer"
                 class="btn btn-sm btn-ghost drawer-button"
                 aria-label="Open sidebar"
               >
