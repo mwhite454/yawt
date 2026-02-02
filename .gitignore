@@ -150,3 +150,5 @@ _fresh/
 
 # Fresh build output
 _fresh/*
+package.json
+package-lock.json
