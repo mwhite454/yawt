@@ -52,8 +52,10 @@ const mockScenes: Array<Scene & { bookTitle?: string }> = [
     seriesId: "series-1",
     bookId: "book-1",
     rank: "1.0",
-    title: "A Long-Expected Party",
     text: "When Mr. Bilbo Baggins...",
+    derived: {
+      title: "A Long-Expected Party",
+    },
     createdAt: Date.now(),
     updatedAt: Date.now(),
     bookTitle: "The Fellowship of the Ring",
@@ -64,8 +66,10 @@ const mockScenes: Array<Scene & { bookTitle?: string }> = [
     seriesId: "series-1",
     bookId: "book-1",
     rank: "2.0",
-    title: "The Shadow of the Past",
     text: "The talk did not die down...",
+    derived: {
+      title: "The Shadow of the Past",
+    },
     createdAt: Date.now(),
     updatedAt: Date.now(),
     bookTitle: "The Fellowship of the Ring",
