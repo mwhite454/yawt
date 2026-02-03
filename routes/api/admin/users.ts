@@ -6,7 +6,6 @@ import {
   userProfileKey,
   auditLogKey,
 } from "@utils/auth/keys.ts";
-import type { User } from "@utils/session.ts";
 import type { UserRole } from "@utils/auth/types.ts";
 
 interface UserProfile {
