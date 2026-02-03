@@ -39,23 +39,24 @@ export const handler: Handlers<Data> = {
 
     // Check free tier series limit
     if (!hasPermission(user, "create:unlimited_series")) {
-      const existingSeries: Series[] = [];
+      let seriesCount = 0;
       for await (
         const entry of kv.list<Series>({
           prefix: ["yawt", "series", user.id],
         })
       ) {
-        if (entry.value) existingSeries.push(entry.value);
-      }
-
-      if (existingSeries.length >= FREE_TIER_LIMITS.maxSeries) {
-        return new Response(
-          "Series limit reached. Upgrade to create more series.",
-          {
-            status: 403,
-            headers: { "Content-Type": "text/plain" },
-          },
-        );
+        if (entry.value) {
+          seriesCount++;
+          if (seriesCount >= FREE_TIER_LIMITS.maxSeries) {
+            return new Response(
+              "Series limit reached. Upgrade to create more series.",
+              {
+                status: 403,
+                headers: { "Content-Type": "text/plain" },
+              },
+            );
+          }
+        }
       }
     }
 
