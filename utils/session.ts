@@ -4,6 +4,9 @@ import { kv } from "./kv.ts";
 // Re-export themes from separate file (safe for client-side use)
 export { DAISYUI_THEMES, type DaisyUITheme } from "./themes.ts";
 
+// Import RBAC types
+import type { UserRole, SubscriptionTier } from "@utils/auth/types.ts";
+
 export interface User {
   login: string;
   id: number;
@@ -11,6 +14,12 @@ export interface User {
   name?: string;
   email?: string;
   defaultTheme?: DaisyUITheme;
+  // RBAC fields
+  role?: UserRole; // User's role (defaults to "free" if undefined)
+  subscriptionTier?: SubscriptionTier; // For billing integration
+  subscriptionExpiresAt?: number; // Unix timestamp when subscription expires
+  createdAt?: number; // When user first signed up
+  updatedAt?: number; // Last profile update
 }
 
 export async function getUser(request: Request): Promise<User | null> {

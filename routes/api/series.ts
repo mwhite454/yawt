@@ -1,8 +1,10 @@
 import { Handlers } from "$fresh/server.ts";
 import { kv } from "@utils/kv.ts";
-import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
+import { badRequest, json, readJson, requireUser, forbidden } from "@utils/http.ts";
 import type { Series } from "@utils/story/types.ts";
 import { seriesKey } from "@utils/story/keys.ts";
+import { hasPermission } from "@utils/auth/permissions.ts";
+import { FREE_TIER_LIMITS } from "@utils/auth/types.ts";
 
 export const handler: Handlers = {
   async GET(req) {
@@ -23,6 +25,21 @@ export const handler: Handlers = {
     const userOrRes = await requireUser(req);
     if (userOrRes instanceof Response) return userOrRes;
     const user = userOrRes;
+
+    // Check free tier series limit
+    if (!hasPermission(user, "create:unlimited_series")) {
+      let seriesCount = 0;
+      for await (
+        const _entry of kv.list<Series>({
+          prefix: ["yawt", "series", user.id],
+        })
+      ) {
+        seriesCount++;
+        if (seriesCount >= FREE_TIER_LIMITS.maxSeries) {
+          return forbidden("Series limit reached. Upgrade to create more series.");
+        }
+      }
+    }
 
     const bodyOrRes = await readJson(req);
     if (bodyOrRes instanceof Response) return bodyOrRes;

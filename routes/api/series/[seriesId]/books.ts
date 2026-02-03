@@ -1,9 +1,11 @@
 import { Handlers } from "$fresh/server.ts";
 import { kv } from "@utils/kv.ts";
-import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
+import { badRequest, json, readJson, requireUser, forbidden } from "@utils/http.ts";
 import type { Book } from "@utils/story/types.ts";
 import { bookKey, bookOrderKey, seriesKey } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
+import { hasPermission } from "@utils/auth/permissions.ts";
+import { FREE_TIER_LIMITS } from "@utils/auth/types.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -49,6 +51,31 @@ export const handler: Handlers = {
     const series = await kv.get(seriesKey(user.id, seriesId));
     if (!series.value) {
       return json({ error: "Series not found" }, { status: 404 });
+    }
+
+    // Check free tier book limit
+    if (!hasPermission(user, "create:unlimited_books")) {
+      let bookCount = 0;
+      for await (
+        const _ of kv.list(
+          {
+            prefix: ["yawt", "book", user.id, seriesId],
+          },
+          {
+            // Bound the number of items we scan to the free-tier maximum.
+            limit: FREE_TIER_LIMITS.maxBooksPerSeries,
+          },
+        )
+      ) {
+        bookCount++;
+        if (bookCount >= FREE_TIER_LIMITS.maxBooksPerSeries) {
+          break;
+        }
+      }
+
+      if (bookCount >= FREE_TIER_LIMITS.maxBooksPerSeries) {
+        return forbidden("Book limit reached. Upgrade to create more books.");
+      }
     }
 
     const bodyOrRes = await readJson(req);
