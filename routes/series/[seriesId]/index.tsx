@@ -7,10 +7,12 @@ import { getUser, type User } from "@utils/session.ts";
 import type { Book, Series } from "@utils/story/types.ts";
 import { bookKey, bookOrderKey, seriesKey } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
+import { getAllSeriesForUser } from "@utils/story/series.ts";
 
 interface Data {
   user: User;
   series: Series;
+  allSeries: Series[];
   books: Book[];
 }
 
@@ -20,8 +22,12 @@ export const handler: Handlers<Data> = {
     if (!user) return Response.redirect(new URL("/auth/signin", req.url), 303);
 
     const seriesId = ctx.params.seriesId;
-    const series = await kv.get<Series>(seriesKey(user.id, seriesId));
-    if (!series.value) return new Response("Series not found", { status: 404 });
+    const [seriesRes, allSeries] = await Promise.all([
+      kv.get<Series>(seriesKey(user.id, seriesId)),
+      getAllSeriesForUser(user.id),
+    ]);
+    if (!seriesRes.value)
+      return new Response("Series not found", { status: 404 });
 
     const bookIds: string[] = [];
     for await (const entry of kv.list({
@@ -39,7 +45,7 @@ export const handler: Handlers<Data> = {
       for (const res of results) if (res.value) books.push(res.value);
     }
 
-    return ctx.render({ user, series: series.value, books });
+    return ctx.render({ user, series: seriesRes.value, allSeries, books });
   },
 
   async POST(req, ctx) {
@@ -59,7 +65,7 @@ export const handler: Handlers<Data> = {
     let lastRank: string | undefined;
     for await (const entry of kv.list(
       { prefix: ["yawt", "bookOrder", user.id, seriesId] },
-      { reverse: true, limit: 1 }
+      { reverse: true, limit: 1 },
     )) {
       const key = entry.key as unknown[];
       const maybeRank = key[key.length - 2];
@@ -89,16 +95,22 @@ export const handler: Handlers<Data> = {
 
     return Response.redirect(
       new URL(`/series/${seriesId}/books/${id}`, req.url),
-      303
+      303,
     );
   },
 };
 
 export default function SeriesDetail({ data }: PageProps<Data>) {
-  const { series } = data;
+  const { series, allSeries } = data;
 
   return (
-    <Layout user={data.user} title={series.title}>
+    <Layout
+      user={data.user}
+      title={series.title}
+      series={allSeries}
+      currentSeriesId={series.id}
+      currentPage="books"
+    >
       <div class="breadcrumbs text-sm">
         <ul>
           <li>
