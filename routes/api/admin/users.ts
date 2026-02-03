@@ -59,14 +59,14 @@ export const handler: Handlers = {
     if (adminOrRes instanceof Response) return adminOrRes;
     const admin = adminOrRes;
 
-    let body: { userId?: number; role?: UserRole };
+    let requestBody: { userId?: number; role?: UserRole };
     try {
-      body = await req.json();
+      requestBody = await req.json();
     } catch {
       return badRequest("Invalid JSON body");
     }
 
-    const { userId, role } = body;
+    const { userId, role } = requestBody;
 
     if (!userId || typeof userId !== "number") {
       return badRequest("userId is required and must be a number");
