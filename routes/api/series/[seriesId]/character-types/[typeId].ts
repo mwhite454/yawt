@@ -101,11 +101,10 @@ export const handler: Handlers = {
     if (charactersUsingType.length > 0) {
       return json(
         {
-          error: `Cannot delete character type: ${
-            charactersUsingType.length
-          } character(s) are using it (${charactersUsingType.slice(0, 3).join(", ")}${
-            charactersUsingType.length > 3 ? ", ..." : ""
-          })`,
+          error:
+            `Cannot delete character type: ${charactersUsingType.length} character(s) are using it (${
+              charactersUsingType.slice(0, 3).join(", ")
+            }${charactersUsingType.length > 3 ? ", ..." : ""})`,
         },
         { status: 409 },
       );

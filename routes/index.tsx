@@ -24,20 +24,22 @@ export default function Home({ data }: PageProps<Data>) {
             <div class="max-w-md">
               <h1 class="text-4xl font-bold">YAWT</h1>
               <p class="py-4 opacity-80">Yet Another Writing Tool</p>
-              {user ? (
-                <div class="flex flex-col gap-2 items-center">
-                  <a class="btn btn-primary" href="/series">
-                    Open your series
-                  </a>
-                  <div class="text-sm opacity-70">
-                    Signed in as {user.name || user.login}
+              {user
+                ? (
+                  <div class="flex flex-col gap-2 items-center">
+                    <a class="btn btn-primary" href="/series">
+                      Open your series
+                    </a>
+                    <div class="text-sm opacity-70">
+                      Signed in as {user.name || user.login}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <a class="btn btn-primary" href="/auth/signin">
-                  Sign in with GitHub
-                </a>
-              )}
+                )
+                : (
+                  <a class="btn btn-primary" href="/auth/signin">
+                    Sign in with GitHub
+                  </a>
+                )}
             </div>
           </div>
         </div>

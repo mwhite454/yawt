@@ -19,10 +19,10 @@ export function UserMenu(props: { user: User | null }) {
       <div tabIndex={0} role="button" class="btn btn-ghost btn-circle avatar">
         <div class="w-10 rounded-full">
           <img
-            src={
-              props.user.avatar_url ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(props.user.name || props.user.login)}&background=random`
-            }
+            src={props.user.avatar_url ||
+              `https://ui-avatars.com/api/?name=${
+                encodeURIComponent(props.user.name || props.user.login)
+              }&background=random`}
             alt={props.user.login}
           />
         </div>

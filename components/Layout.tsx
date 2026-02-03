@@ -18,28 +18,28 @@ export function Layout(props: {
   // Navigation items for series-level pages
   const seriesNavItems = seriesId
     ? [
-        { href: `/series/${seriesId}`, label: "Books", page: "books" as const },
-        {
-          href: `/series/${seriesId}/characters`,
-          label: "Characters",
-          page: "characters" as const,
-        },
-        {
-          href: `/series/${seriesId}/locations`,
-          label: "Locations",
-          page: "locations" as const,
-        },
-        {
-          href: `/series/${seriesId}/timelines`,
-          label: "Timelines",
-          page: "timelines" as const,
-        },
-        {
-          href: `/series/${seriesId}/events`,
-          label: "Events",
-          page: "events" as const,
-        },
-      ]
+      { href: `/series/${seriesId}`, label: "Books", page: "books" as const },
+      {
+        href: `/series/${seriesId}/characters`,
+        label: "Characters",
+        page: "characters" as const,
+      },
+      {
+        href: `/series/${seriesId}/locations`,
+        label: "Locations",
+        page: "locations" as const,
+      },
+      {
+        href: `/series/${seriesId}/timelines`,
+        label: "Timelines",
+        page: "timelines" as const,
+      },
+      {
+        href: `/series/${seriesId}/events`,
+        label: "Events",
+        page: "events" as const,
+      },
+    ]
     : [];
 
   return (
@@ -87,7 +87,9 @@ export function Layout(props: {
               <li key={item.href}>
                 <a
                   href={item.href}
-                  class={`whitespace-nowrap ${props.currentPage === item.page ? "active" : ""}`}
+                  class={`whitespace-nowrap ${
+                    props.currentPage === item.page ? "active" : ""
+                  }`}
                 >
                   {item.label}
                 </a>

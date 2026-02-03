@@ -1,8 +1,8 @@
 import { useEffect, useState } from "preact/hooks";
 import {
   DAISYUI_THEMES,
-  DEFAULT_THEME,
   type DaisyUITheme,
+  DEFAULT_THEME,
 } from "@utils/themes.ts";
 
 interface ThemeControllerProps {
@@ -107,7 +107,9 @@ export default function ThemeController({
             <li key={themeName} class="w-full">
               <button
                 type="button"
-                class={`flex items-center gap-2 text-xs py-1.5 px-2 rounded w-full hover:bg-base-300 ${theme === themeName ? "bg-primary text-primary-content" : ""}`}
+                class={`flex items-center gap-2 text-xs py-1.5 px-2 rounded w-full hover:bg-base-300 ${
+                  theme === themeName ? "bg-primary text-primary-content" : ""
+                }`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleThemeChange(themeName);

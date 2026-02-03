@@ -68,9 +68,11 @@ export default function CharacterTypeEditor(props: Props) {
     value: string,
   ) => {
     const updated = [...fields];
-    const field = updated[fieldIdx];
+    const field = { ...updated[fieldIdx] };
     if (field.options) {
+      field.options = [...field.options];
       field.options[optionIdx] = value;
+      updated[fieldIdx] = field;
       setFields(updated);
     }
   };
@@ -325,7 +327,8 @@ export default function CharacterTypeEditor(props: Props) {
                         <button
                           class="btn btn-sm btn-ghost btn-circle"
                           type="button"
-                          onClick={() => handleRemoveOption(idx, optIdx)}
+                          onClick={() =>
+                            handleRemoveOption(idx, optIdx)}
                           title="Remove option"
                         >
                           ✕

@@ -8,7 +8,7 @@ export function validateFieldDefinitions(
   if (fields === undefined) {
     return "fields is required";
   }
-  
+
   if (!Array.isArray(fields)) {
     return "fields must be an array";
   }
@@ -31,7 +31,7 @@ export function validateFieldDefinitions(
     }
 
     const trimmedName = f.name.trim();
-    
+
     // Check for duplicate field names
     if (fieldNames.has(trimmedName)) {
       return `Duplicate field name '${trimmedName}' at index ${i}`;

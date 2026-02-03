@@ -2,7 +2,10 @@
 
 ## Project Overview
 
-YAWT (Yet Another Writing Tool) is a modern writing tool designed for authors to manage series, books, scenes, characters, locations, and timelines. It's built with Deno and the Fresh web framework, providing a server-side rendered web application with an island architecture for interactive components.
+YAWT (Yet Another Writing Tool) is a modern writing tool designed for authors to
+manage series, books, scenes, characters, locations, and timelines. It's built
+with Deno and the Fresh web framework, providing a server-side rendered web
+application with an island architecture for interactive components.
 
 ## Technology Stack
 
@@ -36,7 +39,8 @@ YAWT (Yet Another Writing Tool) is a modern writing tool designed for authors to
 ### Testing
 
 - There are currently no automated tests in this repository
-- Manual testing is done by running the development server and using the API endpoints
+- Manual testing is done by running the development server and using the API
+  endpoints
 
 ## Code Style and Conventions
 
@@ -77,15 +81,16 @@ YAWT (Yet Another Writing Tool) is a modern writing tool designed for authors to
 - Use `readJson()` to safely parse request bodies
 
 Example pattern:
+
 ```typescript
 export const handler: Handlers = {
   async GET(req) {
     const userOrRes = await requireUser(req);
     if (userOrRes instanceof Response) return userOrRes;
     const user = userOrRes;
-    
+
     // ... handler logic
-    
+
     return json({ data }, { status: 200 });
   },
 };
@@ -141,7 +146,8 @@ export const handler: Handlers = {
 
 ### Fresh Framework
 
-- Fresh uses an island architecture: most components render on the server, only "islands" are interactive
+- Fresh uses an island architecture: most components render on the server, only
+  "islands" are interactive
 - Routes are defined by file structure in the `routes/` directory
 - Islands must be in the `islands/` directory and are automatically hydrated
 - No build step required during development
@@ -174,8 +180,10 @@ User
 
 - `GITHUB_CLIENT_ID`: Required for OAuth
 - `GITHUB_CLIENT_SECRET`: Required for OAuth
-- `OAUTH_REDIRECT_URI`: OAuth callback URL (default: `http://localhost:8000/auth/callback`)
-- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`: Optional, for R2 image uploads
+- `OAUTH_REDIRECT_URI`: OAuth callback URL (default:
+  `http://localhost:8000/auth/callback`)
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`:
+  Optional, for R2 image uploads
 - `R2_PUBLIC_URL`: Optional, base URL for serving R2 images
 
 ### Deno-Specific Features

@@ -1,10 +1,12 @@
 # Events UI Mockup Description
 
-This document describes the visual layout and appearance of the Events interface.
+This document describes the visual layout and appearance of the Events
+interface.
 
 ## Page Layout
 
 ### Breadcrumb Navigation
+
 ```
 Series > [Series Name] > Events
 ```
@@ -12,11 +14,13 @@ Series > [Series Name] > Events
 ### Main Content Area
 
 #### 1. Event Creation Card
+
 A white card with shadow containing:
 
 **Header:** "Events" (large, bold)
 
 **Form Fields:**
+
 1. **Title Input**
    - Single-line text input
    - Placeholder: "Event title"
@@ -83,6 +87,7 @@ A white card with shadow containing:
 Below the creation form, existing events are displayed as cards:
 
 **Event Card Example:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │ The Great Battle                             │
@@ -104,6 +109,7 @@ Below the creation form, existing events are displayed as cards:
 ```
 
 Each event card includes:
+
 - **Title** (bold, larger text)
 - **Description** (if provided, lighter text, preserves line breaks)
 - **Dates & Location** (2-column grid on medium+ screens)
@@ -117,8 +123,8 @@ Each event card includes:
 - **Plotline Badges** (accent color)
   - Shows tags as small badges
 
-**Empty State:**
-If no events exist:
+**Empty State:** If no events exist:
+
 ```
 ┌─────────────────────────────────┐
 │ ℹ No events yet. Create one     │
@@ -127,6 +133,7 @@ If no events exist:
 ```
 
 ## Color Scheme (daisyUI)
+
 - Cards: white background with light shadow
 - Primary buttons/badges: theme primary color
 - Secondary badges: theme secondary color
@@ -135,11 +142,13 @@ If no events exist:
 - Hover states: base-200 background
 
 ## Responsive Behavior
+
 - **Mobile**: Single column layout, fields stack vertically
 - **Tablet+**: Date fields display in 2 columns, event metadata in 2 columns
 - **Desktop**: Same as tablet with more comfortable spacing
 
 ## Interactive Elements
+
 - ✅ Checkboxes toggle on/off when clicked
 - ✅ Character/Scene lists highlight on hover
 - ✅ Tag input accepts Enter key to add tag
@@ -148,8 +157,11 @@ If no events exist:
 - ✅ Scroll bars appear when character/scene lists exceed max height
 
 ## Navigation
+
 The series page navigation includes a new "Events" button:
+
 ```
 [Characters] [Locations] [Timelines] [Events]
 ```
+
 All buttons use the same styling (small buttons in a joined group).

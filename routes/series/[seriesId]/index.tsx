@@ -26,13 +26,16 @@ export const handler: Handlers<Data> = {
       kv.get<Series>(seriesKey(user.id, seriesId)),
       getAllSeriesForUser(user.id),
     ]);
-    if (!seriesRes.value)
+    if (!seriesRes.value) {
       return new Response("Series not found", { status: 404 });
+    }
 
     const bookIds: string[] = [];
-    for await (const entry of kv.list({
-      prefix: ["yawt", "bookOrder", user.id, seriesId],
-    })) {
+    for await (
+      const entry of kv.list({
+        prefix: ["yawt", "bookOrder", user.id, seriesId],
+      })
+    ) {
       const key = entry.key as unknown[];
       const bookId = key[key.length - 1];
       if (typeof bookId === "string") bookIds.push(bookId);
@@ -63,10 +66,12 @@ export const handler: Handlers<Data> = {
     }
 
     let lastRank: string | undefined;
-    for await (const entry of kv.list(
-      { prefix: ["yawt", "bookOrder", user.id, seriesId] },
-      { reverse: true, limit: 1 },
-    )) {
+    for await (
+      const entry of kv.list(
+        { prefix: ["yawt", "bookOrder", user.id, seriesId] },
+        { reverse: true, limit: 1 },
+      )
+    ) {
       const key = entry.key as unknown[];
       const maybeRank = key[key.length - 2];
       if (typeof maybeRank === "string") lastRank = maybeRank;
@@ -180,26 +185,28 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
 
             <div class="divider" />
 
-            {data.books.length === 0 ? (
-              <div class="alert">
-                <span>No books yet. Add one above.</span>
-              </div>
-            ) : (
-              <div class="grid md:grid-cols-2 gap-3">
-                {data.books.map((b) => (
-                  <a
-                    key={b.id}
-                    class="card bg-base-200 hover:shadow transition"
-                    href={`/series/${series.id}/books/${b.id}`}
-                  >
-                    <div class="card-body p-4">
-                      <div class="font-semibold">{b.title}</div>
-                      <div class="text-sm opacity-70">Open scenes</div>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            )}
+            {data.books.length === 0
+              ? (
+                <div class="alert">
+                  <span>No books yet. Add one above.</span>
+                </div>
+              )
+              : (
+                <div class="grid md:grid-cols-2 gap-3">
+                  {data.books.map((b) => (
+                    <a
+                      key={b.id}
+                      class="card bg-base-200 hover:shadow transition"
+                      href={`/series/${series.id}/books/${b.id}`}
+                    >
+                      <div class="card-body p-4">
+                        <div class="font-semibold">{b.title}</div>
+                        <div class="text-sm opacity-70">Open scenes</div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
           </div>
         </div>
       </div>

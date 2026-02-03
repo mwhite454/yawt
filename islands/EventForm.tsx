@@ -119,26 +119,26 @@ export default function EventForm(
           <span class="label-text">Characters</span>
         </label>
         <div class="border border-base-300 rounded-lg p-3 max-h-48 overflow-y-auto">
-          {characters.length === 0 ? (
-            <p class="text-sm opacity-60">No characters available</p>
-          ) : (
-            <div class="grid gap-2">
-              {characters.map((char) => (
-                <label
-                  key={char.id}
-                  class="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-2 rounded"
-                >
-                  <input
-                    type="checkbox"
-                    class="checkbox checkbox-sm"
-                    checked={selectedCharacters.value.includes(char.id)}
-                    onChange={() => toggleCharacter(char.id)}
-                  />
-                  <span class="flex-1">{char.name}</span>
-                </label>
-              ))}
-            </div>
-          )}
+          {characters.length === 0
+            ? <p class="text-sm opacity-60">No characters available</p>
+            : (
+              <div class="grid gap-2">
+                {characters.map((char) => (
+                  <label
+                    key={char.id}
+                    class="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-2 rounded"
+                  >
+                    <input
+                      type="checkbox"
+                      class="checkbox checkbox-sm"
+                      checked={selectedCharacters.value.includes(char.id)}
+                      onChange={() => toggleCharacter(char.id)}
+                    />
+                    <span class="flex-1">{char.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
         </div>
         {/* Hidden inputs to submit selected characters */}
         {selectedCharacters.value.map((charId) => (
@@ -156,37 +156,37 @@ export default function EventForm(
           <span class="label-text">Scenes</span>
         </label>
         <div class="border border-base-300 rounded-lg p-3 max-h-48 overflow-y-auto">
-          {scenes.length === 0 ? (
-            <p class="text-sm opacity-60">No scenes available</p>
-          ) : (
-            <div class="grid gap-2">
-              {scenes.map((scene) => {
-                const sceneLabel = scene.derived?.title ||
-                  `Scene ${scene.id.slice(0, 6)}`;
-                return (
-                  <label
-                    key={scene.id}
-                    class="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-2 rounded"
-                  >
-                    <input
-                      type="checkbox"
-                      class="checkbox checkbox-sm"
-                      checked={selectedScenes.value.includes(scene.id)}
-                      onChange={() => toggleScene(scene.id)}
-                    />
-                    <span class="flex-1">
-                      {sceneLabel}
-                      {scene.bookTitle && (
-                        <span class="text-sm opacity-60 ml-1">
-                          ({scene.bookTitle})
-                        </span>
-                      )}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          )}
+          {scenes.length === 0
+            ? <p class="text-sm opacity-60">No scenes available</p>
+            : (
+              <div class="grid gap-2">
+                {scenes.map((scene) => {
+                  const sceneLabel = scene.derived?.title ||
+                    `Scene ${scene.id.slice(0, 6)}`;
+                  return (
+                    <label
+                      key={scene.id}
+                      class="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-2 rounded"
+                    >
+                      <input
+                        type="checkbox"
+                        class="checkbox checkbox-sm"
+                        checked={selectedScenes.value.includes(scene.id)}
+                        onChange={() => toggleScene(scene.id)}
+                      />
+                      <span class="flex-1">
+                        {sceneLabel}
+                        {scene.bookTitle && (
+                          <span class="text-sm opacity-60 ml-1">
+                            ({scene.bookTitle})
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
         </div>
         {/* Hidden inputs to submit selected scenes */}
         {selectedScenes.value.map((sceneId) => (
@@ -228,7 +228,8 @@ export default function EventForm(
                 <button
                   type="button"
                   class="btn btn-ghost btn-xs btn-circle"
-                  onClick={() => removeTag(tag)}
+                  onClick={() =>
+                    removeTag(tag)}
                   aria-label={`Remove tag ${tag}`}
                 >
                   ✕

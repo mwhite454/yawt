@@ -6,7 +6,11 @@ import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
 
 import type { Character, CharacterType, Series } from "@utils/story/types.ts";
-import { characterKey, characterTypeKey, seriesKey } from "@utils/story/keys.ts";
+import {
+  characterKey,
+  characterTypeKey,
+  seriesKey,
+} from "@utils/story/keys.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import CharacterImageUploader from "@islands/CharacterImageUploader.tsx";
 import KeyValueEditor from "@islands/KeyValueEditor.tsx";
@@ -35,23 +39,33 @@ export const handler: Handlers<Data> = {
     }
 
     const characters: Character[] = [];
-    for await (const entry of kv.list<Character>({
-      prefix: ["yawt", "character", user.id, seriesId],
-    })) {
+    for await (
+      const entry of kv.list<Character>({
+        prefix: ["yawt", "character", user.id, seriesId],
+      })
+    ) {
       if (entry.value) characters.push(entry.value);
     }
 
     const characterTypes: CharacterType[] = [];
-    for await (const entry of kv.list<CharacterType>({
-      prefix: ["yawt", "characterType", user.id, seriesId],
-    })) {
+    for await (
+      const entry of kv.list<CharacterType>({
+        prefix: ["yawt", "characterType", user.id, seriesId],
+      })
+    ) {
       if (entry.value) characterTypes.push(entry.value);
     }
 
     characters.sort((a, b) => a.name.localeCompare(b.name));
     characterTypes.sort((a, b) => a.name.localeCompare(b.name));
 
-    return ctx.render({ user, series: seriesRes.value, allSeries, characters, characterTypes });
+    return ctx.render({
+      user,
+      series: seriesRes.value,
+      allSeries,
+      characters,
+      characterTypes,
+    });
   },
 
   async POST(req, ctx) {
@@ -184,8 +198,10 @@ export default function CharactersPage({ data }: PageProps<Data>) {
                         </div>
                         {charType.fields.map((field) => {
                           const value = c.typeData?.[field.name];
-                          if (value === undefined || value === null ||
-                            value === "") {
+                          if (
+                            value === undefined || value === null ||
+                            value === ""
+                          ) {
                             return null;
                           }
                           return (
