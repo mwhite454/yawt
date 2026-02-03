@@ -16,7 +16,7 @@ export function allUserProfilesPrefix(): Deno.KvKey {
  * Key for admin audit log entries
  */
 export function auditLogKey(timestamp: number, action: string): Deno.KvKey {
-  return ["yawt", "audit_log", timestamp, action];
+  return ["yawt", "audit_log", timestamp, action, crypto.randomUUID()];
 }
 
 /**
