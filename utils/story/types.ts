@@ -56,6 +56,27 @@ export interface Scene {
   updatedAt: number;
 }
 
+export type FieldType = "text" | "select" | "list";
+
+export interface FieldDefinition {
+  name: string;
+  label: string;
+  type: FieldType;
+  options?: string[]; // For select type
+  required?: boolean;
+}
+
+export interface CharacterType {
+  id: string;
+  userId: UserId;
+  seriesId: string;
+  name: string;
+  description?: string;
+  fields: FieldDefinition[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface Character {
   id: string;
   userId: UserId;
@@ -63,6 +84,8 @@ export interface Character {
   name: string;
   description?: string;
   image?: AssetImage;
+  characterTypeId?: string;
+  typeData?: Record<string, unknown>;
   extra?: Record<string, unknown>;
   createdAt: number;
   updatedAt: number;

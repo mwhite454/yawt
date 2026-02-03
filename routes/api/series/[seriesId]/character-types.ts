@@ -1,8 +1,9 @@
 import { Handlers } from "$fresh/server.ts";
 import { kv } from "@utils/kv.ts";
 import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
-import type { Character, CharacterType } from "@utils/story/types.ts";
-import { characterKey, characterTypeKey, seriesKey } from "@utils/story/keys.ts";
+import type { CharacterType } from "@utils/story/types.ts";
+import { characterTypeKey, seriesKey } from "@utils/story/keys.ts";
+import { validateFieldDefinitions } from "@utils/story/validation.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -16,14 +17,14 @@ export const handler: Handlers = {
       return json({ error: "Series not found" }, { status: 404 });
     }
 
-    const characters: Character[] = [];
-    const entries = kv.list<Character>({
-      prefix: ["yawt", "character", user.id, seriesId],
+    const characterTypes: CharacterType[] = [];
+    const entries = kv.list<CharacterType>({
+      prefix: ["yawt", "characterType", user.id, seriesId],
     });
     for await (const entry of entries) {
-      characters.push(entry.value);
+      characterTypes.push(entry.value);
     }
-    return json({ characters }, { status: 200 });
+    return json({ characterTypes }, { status: 200 });
   },
 
   async POST(req, ctx) {
@@ -44,25 +45,14 @@ export const handler: Handlers = {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name) return badRequest("name is required");
 
-    // Validate characterTypeId if provided
-    const characterTypeId = typeof body.characterTypeId === "string"
-      ? body.characterTypeId.trim()
-      : undefined;
-
-    if (characterTypeId) {
-      const typeEntry = await kv.get<CharacterType>(
-        characterTypeKey(user.id, seriesId, characterTypeId),
-      );
-      if (!typeEntry.value) {
-        return badRequest(
-          `Character type with id '${characterTypeId}' does not exist`,
-        );
-      }
+    const fieldsValidation = validateFieldDefinitions(body.fields);
+    if (typeof fieldsValidation === "string") {
+      return badRequest(fieldsValidation);
     }
 
     const now = Date.now();
     const id = crypto.randomUUID();
-    const character: Character = {
+    const characterType: CharacterType = {
       id,
       userId: user.id,
       seriesId,
@@ -70,22 +60,12 @@ export const handler: Handlers = {
       description: typeof body.description === "string"
         ? body.description.trim()
         : undefined,
-      characterTypeId,
-      typeData: body.typeData &&
-          typeof body.typeData === "object" &&
-          !Array.isArray(body.typeData)
-        ? (body.typeData as Record<string, unknown>)
-        : undefined,
-      extra: body.extra &&
-          typeof body.extra === "object" &&
-          !Array.isArray(body.extra)
-        ? (body.extra as Record<string, unknown>)
-        : undefined,
+      fields: fieldsValidation,
       createdAt: now,
       updatedAt: now,
     };
 
-    await kv.set(characterKey(user.id, seriesId, id), character);
-    return json({ character }, { status: 201 });
+    await kv.set(characterTypeKey(user.id, seriesId, id), characterType);
+    return json({ characterType }, { status: 201 });
   },
 };
