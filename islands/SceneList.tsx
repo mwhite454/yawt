@@ -23,13 +23,21 @@ export default function SceneList({
   const scenes = initialScenes;
 
   const handleReorder = async (reorderedScenes: SceneListItem[]) => {
-    // Find which scene moved and where
-    const originalIndex = scenes.findIndex((s, i) =>
-      s.id !== reorderedScenes[i]?.id
-    );
-    if (originalIndex === -1) return;
+    // Find which scene actually moved by comparing positions
+    let movedScene: SceneListItem | undefined;
+    let originalIndex = -1;
 
-    const movedScene = scenes[originalIndex];
+    for (let i = 0; i < scenes.length; i++) {
+      const newIndex = reorderedScenes.findIndex((s) => s.id === scenes[i].id);
+      if (newIndex !== i) {
+        movedScene = scenes[i];
+        originalIndex = i;
+        break;
+      }
+    }
+
+    if (!movedScene || originalIndex === -1) return;
+
     const newIndex = reorderedScenes.findIndex((s) => s.id === movedScene.id);
 
     // Determine before/after scene for the API

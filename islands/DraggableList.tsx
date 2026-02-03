@@ -54,6 +54,9 @@ export default function DraggableList<T extends DraggableItem>({
   const touchStartY = useRef<number>(0);
   const listRef = useRef<HTMLUListElement>(null);
 
+  // Use ref to prevent race conditions during rapid reordering
+  const isSavingRef = useRef(false);
+
   // Live region for screen reader announcements
   const [announcement, setAnnouncement] = useState("");
 
@@ -78,9 +81,10 @@ export default function DraggableList<T extends DraggableItem>({
   // Execute reorder with await
   const executeReorder = useCallback(
     async (fromIndex: number, toIndex: number) => {
-      if (fromIndex === toIndex || disabled || isSaving) return;
+      if (fromIndex === toIndex || disabled || isSavingRef.current) return;
 
       const newItems = reorderItems(fromIndex, toIndex);
+      isSavingRef.current = true;
       setIsSaving(true);
 
       try {
@@ -90,6 +94,7 @@ export default function DraggableList<T extends DraggableItem>({
         const error = err instanceof Error ? err : new Error(String(err));
         onError?.(error);
       } finally {
+        isSavingRef.current = false;
         setIsSaving(false);
         setDraggedIndex(null);
         setHoverIndex(null);
@@ -97,7 +102,7 @@ export default function DraggableList<T extends DraggableItem>({
         setTouchDragIndex(null);
       }
     },
-    [items, disabled, isSaving, reorderItems, onChange, onError, announce],
+    [items, disabled, reorderItems, onChange, onError, announce],
   );
 
   // ─────────────────────────────────────────────────────────────────────────────
