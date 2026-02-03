@@ -57,11 +57,20 @@ export const handler: Handlers = {
     if (!hasPermission(user, "create:unlimited_books")) {
       let bookCount = 0;
       for await (
-        const _ of kv.list({
-          prefix: ["yawt", "book", user.id, seriesId],
-        })
+        const _ of kv.list(
+          {
+            prefix: ["yawt", "book", user.id, seriesId],
+          },
+          {
+            // Bound the number of items we scan to the free-tier maximum.
+            limit: FREE_TIER_LIMITS.maxBooksPerSeries,
+          },
+        )
       ) {
         bookCount++;
+        if (bookCount >= FREE_TIER_LIMITS.maxBooksPerSeries) {
+          break;
+        }
       }
 
       if (bookCount >= FREE_TIER_LIMITS.maxBooksPerSeries) {
