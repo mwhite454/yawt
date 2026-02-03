@@ -7,8 +7,8 @@ import {
   readJson,
   requireUser,
 } from "@utils/http.ts";
-import type { Character } from "@utils/story/types.ts";
-import { characterKey } from "@utils/story/keys.ts";
+import type { Character, CharacterType } from "@utils/story/types.ts";
+import { characterKey, characterTypeKey } from "@utils/story/keys.ts";
 import { deleteObject, getR2Bucket } from "@utils/r2.ts";
 
 export const handler: Handlers = {
@@ -41,6 +41,27 @@ export const handler: Handlers = {
 
     const name = typeof body.name === "string" ? body.name.trim() : undefined;
     if (name !== undefined && !name) return badRequest("name cannot be empty");
+
+    // Validate characterTypeId if being updated
+    let characterTypeId = entry.value.characterTypeId;
+    if (Object.hasOwn(body, "characterTypeId")) {
+      if (typeof body.characterTypeId === "string") {
+        const typeIdTrimmed = body.characterTypeId.trim();
+        if (typeIdTrimmed) {
+          const typeEntry = await kv.get<CharacterType>(
+            characterTypeKey(user.id, seriesId, typeIdTrimmed),
+          );
+          if (!typeEntry.value) {
+            return badRequest(
+              `Character type with id '${typeIdTrimmed}' does not exist`,
+            );
+          }
+        }
+        characterTypeId = typeIdTrimmed || undefined;
+      } else {
+        characterTypeId = undefined;
+      }
+    }
 
     const expectedImagePrefix =
       `yawt/user/${user.id}/series/${seriesId}/characters/${characterId}/`;
@@ -89,11 +110,7 @@ export const handler: Handlers = {
         ? body.description.trim()
         : entry.value.description,
       image: nextImage,
-      characterTypeId: Object.hasOwn(body, "characterTypeId")
-        ? (typeof body.characterTypeId === "string"
-          ? body.characterTypeId.trim()
-          : undefined)
-        : entry.value.characterTypeId,
+      characterTypeId,
       typeData: body.typeData &&
           typeof body.typeData === "object" &&
           !Array.isArray(body.typeData)

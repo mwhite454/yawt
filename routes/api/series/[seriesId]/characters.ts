@@ -1,8 +1,8 @@
 import { Handlers } from "$fresh/server.ts";
 import { kv } from "@utils/kv.ts";
 import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
-import type { Character } from "@utils/story/types.ts";
-import { characterKey, seriesKey } from "@utils/story/keys.ts";
+import type { Character, CharacterType } from "@utils/story/types.ts";
+import { characterKey, characterTypeKey, seriesKey } from "@utils/story/keys.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -44,6 +44,22 @@ export const handler: Handlers = {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name) return badRequest("name is required");
 
+    // Validate characterTypeId if provided
+    const characterTypeId = typeof body.characterTypeId === "string"
+      ? body.characterTypeId.trim()
+      : undefined;
+
+    if (characterTypeId) {
+      const typeEntry = await kv.get<CharacterType>(
+        characterTypeKey(user.id, seriesId, characterTypeId),
+      );
+      if (!typeEntry.value) {
+        return badRequest(
+          `Character type with id '${characterTypeId}' does not exist`,
+        );
+      }
+    }
+
     const now = Date.now();
     const id = crypto.randomUUID();
     const character: Character = {
@@ -54,9 +70,7 @@ export const handler: Handlers = {
       description: typeof body.description === "string"
         ? body.description.trim()
         : undefined,
-      characterTypeId: typeof body.characterTypeId === "string"
-        ? body.characterTypeId.trim()
-        : undefined,
+      characterTypeId,
       typeData: body.typeData &&
           typeof body.typeData === "object" &&
           !Array.isArray(body.typeData)

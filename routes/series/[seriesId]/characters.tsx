@@ -223,7 +223,6 @@ export default function CharactersPage({ data }: PageProps<Data>) {
             );
           })}
         </div>
-        </div>
 
         {data.characters.length === 0 && (
           <div class="alert">

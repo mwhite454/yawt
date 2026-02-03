@@ -53,12 +53,22 @@ export const handler: Handlers = {
       fields = fieldsValidation;
     }
 
+    let description = entry.value.description;
+    if (Object.hasOwn(body, "description")) {
+      if (body.description === null) {
+        description = undefined;
+      } else if (typeof body.description === "string") {
+        const trimmed = body.description.trim();
+        description = trimmed || undefined;
+      } else {
+        return badRequest("description must be a string or null");
+      }
+    }
+
     const updated: CharacterType = {
       ...entry.value,
       name: name ?? entry.value.name,
-      description: typeof body.description === "string"
-        ? body.description.trim()
-        : entry.value.description,
+      description,
       fields,
       updatedAt: Date.now(),
     };
@@ -89,12 +99,15 @@ export const handler: Handlers = {
     }
 
     if (charactersUsingType.length > 0) {
-      return badRequest(
-        `Cannot delete character type: ${
-          charactersUsingType.length
-        } character(s) are using it (${charactersUsingType.slice(0, 3).join(", ")}${
-          charactersUsingType.length > 3 ? ", ..." : ""
-        })`,
+      return json(
+        {
+          error: `Cannot delete character type: ${
+            charactersUsingType.length
+          } character(s) are using it (${charactersUsingType.slice(0, 3).join(", ")}${
+            charactersUsingType.length > 3 ? ", ..." : ""
+          })`,
+        },
+        { status: 409 },
       );
     }
 
