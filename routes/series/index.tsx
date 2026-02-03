@@ -6,6 +6,8 @@ import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
 import type { Series } from "@utils/story/types.ts";
 import { seriesKey } from "@utils/story/keys.ts";
+import { hasPermission } from "@utils/auth/permissions.ts";
+import { FREE_TIER_LIMITS } from "@utils/auth/types.ts";
 
 interface Data {
   user: User;
@@ -34,6 +36,28 @@ export const handler: Handlers<Data> = {
   async POST(req) {
     const user = await getUser(req);
     if (!user) return Response.redirect(new URL("/auth/signin", req.url), 303);
+
+    // Check free tier series limit
+    if (!hasPermission(user, "create:unlimited_series")) {
+      const existingSeries: Series[] = [];
+      for await (
+        const entry of kv.list<Series>({
+          prefix: ["yawt", "series", user.id],
+        })
+      ) {
+        if (entry.value) existingSeries.push(entry.value);
+      }
+
+      if (existingSeries.length >= FREE_TIER_LIMITS.maxSeries) {
+        return new Response(
+          "Series limit reached. Upgrade to create more series.",
+          {
+            status: 403,
+            headers: { "Content-Type": "text/plain" },
+          },
+        );
+      }
+    }
 
     const form = await req.formData();
     const title = String(form.get("title") ?? "").trim();

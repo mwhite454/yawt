@@ -3,6 +3,7 @@ import { handleCallback } from "@utils/oauth.ts";
 import { setUser, type User } from "@utils/session.ts";
 import { isValidTheme } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
+import { userProfileKey } from "@utils/auth/keys.ts";
 
 export const handler: Handlers = {
   async GET(req) {
@@ -49,6 +50,35 @@ export const handler: Handlers = {
         ? storedTheme
         : undefined;
 
+      // Initialize or update user profile for RBAC
+      const now = Date.now();
+      const existingProfile = await kv.get(userProfileKey(githubUser.id));
+
+      if (!existingProfile.value) {
+        // First sign-in - create profile with free tier
+        await kv.set(userProfileKey(githubUser.id), {
+          id: githubUser.id,
+          login: githubUser.login,
+          name: githubUser.name,
+          avatar_url: githubUser.avatar_url,
+          role: "free",
+          createdAt: now,
+          updatedAt: now,
+        });
+      } else {
+        // Update existing profile
+        await kv.set(userProfileKey(githubUser.id), {
+          ...existingProfile.value,
+          login: githubUser.login,
+          name: githubUser.name,
+          avatar_url: githubUser.avatar_url,
+          updatedAt: now,
+        });
+      }
+
+      // Load user profile to get role and subscription info
+      const userProfile = await kv.get(userProfileKey(githubUser.id));
+
       // Store user in session
       const user: User = {
         login: githubUser.login,
@@ -58,6 +88,12 @@ export const handler: Handlers = {
         email: githubUser.email,
         // Use validated theme preference if available
         defaultTheme: validatedTheme,
+        // Include RBAC fields from profile
+        role: userProfile.value?.role,
+        subscriptionTier: userProfile.value?.subscriptionTier,
+        subscriptionExpiresAt: userProfile.value?.subscriptionExpiresAt,
+        createdAt: userProfile.value?.createdAt,
+        updatedAt: userProfile.value?.updatedAt,
       };
 
       await setUser(sessionId, user);
