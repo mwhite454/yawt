@@ -1,5 +1,5 @@
 import { useSignal } from "@preact/signals";
-import { ComponentChildren } from "preact";
+import { type ComponentChildren } from "preact";
 
 interface SidebarDrawerProps {
   children: ComponentChildren;
@@ -31,7 +31,7 @@ export default function SidebarDrawer(
       <div class="drawer-side z-50">
         <label
           htmlFor="sidebar-drawer"
-          aria-label="close sidebar"
+          aria-label="Close sidebar"
           class="drawer-overlay"
         >
         </label>
@@ -42,7 +42,7 @@ export default function SidebarDrawer(
             <button
               class="btn btn-sm btn-circle btn-ghost"
               onClick={toggleDrawer}
-              aria-label="Close drawer"
+              aria-label="Close sidebar"
             >
               ✕
             </button>
