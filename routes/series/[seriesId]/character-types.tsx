@@ -116,8 +116,7 @@ export default function CharacterTypesPage({ data }: PageProps<Data>) {
                           <div key={idx} class="text-sm">
                             <span class="font-mono text-xs bg-base-200 px-1 rounded">
                               {field.name}
-                            </span>
-                            {" "}
+                            </span>{" "}
                             <span class="opacity-70">
                               ({field.type}
                               {field.required ? ", required" : ""})

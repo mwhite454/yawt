@@ -2,7 +2,8 @@
 
 ## Creating Your First Character Type
 
-This guide will walk you through creating a "Lead Character" type as described in the feature requirements.
+This guide will walk you through creating a "Lead Character" type as described
+in the feature requirements.
 
 ### Step 1: Navigate to Character Types
 
@@ -22,6 +23,7 @@ This guide will walk you through creating a "Lead Character" type as described i
 Click "Add Field" for each field you want to add:
 
 #### Field 1: Gender Identity (Select)
+
 - **Field Name**: `gender_identity`
 - **Label**: `Gender Identity`
 - **Type**: `Select (dropdown)`
@@ -34,6 +36,7 @@ Click "Add Field" for each field you want to add:
   - Other
 
 #### Field 2: Religion (Select)
+
 - **Field Name**: `religion`
 - **Label**: `Religion`
 - **Type**: `Select (dropdown)`
@@ -49,16 +52,19 @@ Click "Add Field" for each field you want to add:
   - Prefer not to say
 
 #### Field 3: Skin Tone (Text)
+
 - **Field Name**: `skin_tone`
 - **Label**: `Skin Tone`
 - **Type**: `Text`
 
 #### Field 4: Eye Color (Text)
+
 - **Field Name**: `eye_color`
 - **Label**: `Eye Color`
 - **Type**: `Text`
 
 #### Field 5: Faults (List)
+
 - **Field Name**: `faults`
 - **Label**: `Character Faults`
 - **Type**: `List (multiple values)`
@@ -90,29 +96,37 @@ Click "Save Character Type" to create it.
 ### Viewing Character Type Data
 
 After creating the character, you'll see:
+
 - A badge showing "Lead Character" below the character's name
 - A section displaying all the type-specific data you entered
 - The data is organized and easy to read
 
 ## Tips
 
-- **Plan Your Types**: Think about what information is essential for each character category
-- **Use Consistent Names**: Keep field names lowercase with underscores (e.g., `eye_color`)
-- **Select vs. Text**: Use select fields when you have a fixed set of options, text for free-form input
-- **Lists for Multiple Values**: Perfect for traits, skills, relationships, or any repeating data
-- **Don't Over-Complicate**: Start with essential fields, you can always create more character types
+- **Plan Your Types**: Think about what information is essential for each
+  character category
+- **Use Consistent Names**: Keep field names lowercase with underscores (e.g.,
+  `eye_color`)
+- **Select vs. Text**: Use select fields when you have a fixed set of options,
+  text for free-form input
+- **Lists for Multiple Values**: Perfect for traits, skills, relationships, or
+  any repeating data
+- **Don't Over-Complicate**: Start with essential fields, you can always create
+  more character types
 
 ## Example Character Types
 
 Here are some other character type ideas:
 
 ### Supporting Character
+
 - **role**: (select) Friend, Mentor, Sidekick, Love Interest
 - **loyalty**: (select) Protagonist, Antagonist, Neutral, Variable
 - **skills**: (list) Special abilities or talents
 - **relationship_to_protagonist**: (text)
 
 ### Villain
+
 - **motivation**: (text) Why are they antagonistic?
 - **moral_alignment**: (select) Lawful Evil, Neutral Evil, Chaotic Evil
 - **power_level**: (select) Minor Threat, Major Threat, World-Ending
@@ -120,6 +134,7 @@ Here are some other character type ideas:
 - **goals**: (list) What they're trying to achieve
 
 ### Minor Character
+
 - **occupation**: (text)
 - **appearances**: (list) Which chapters/scenes they appear in
 - **purpose**: (text) Why this character exists in the story
@@ -129,21 +144,26 @@ Here are some other character type ideas:
 ### Editing Character Types
 
 You can edit character types at any time:
+
 1. Go to Character Types page
 2. Click "Edit" on any type
 3. Add, remove, or modify fields
 4. Click "Save Character Type"
 
-**Note**: Existing characters will keep their data even if you rename or remove fields. However, the data may not display correctly if the field definition is removed.
+**Note**: Existing characters will keep their data even if you rename or remove
+fields. However, the data may not display correctly if the field definition is
+removed.
 
 ### Deleting Character Types
 
 To delete a character type:
+
 1. Go to Character Types page
 2. Click "Edit" on the type
 3. Click "Delete"
 
-**Important**: You cannot delete a character type if any characters are using it. You must first change or delete those characters.
+**Important**: You cannot delete a character type if any characters are using
+it. You must first change or delete those characters.
 
 ### Changing a Character's Type
 
@@ -155,16 +175,22 @@ To delete a character type:
 ## Troubleshooting
 
 ### Can't Delete a Character Type
+
 - **Problem**: You get an error when trying to delete
-- **Solution**: Some characters are using this type. The error will list which characters need to be updated first.
+- **Solution**: Some characters are using this type. The error will list which
+  characters need to be updated first.
 
 ### Lost Data When Changing Types
+
 - **Problem**: Data disappeared after changing a character's type
-- **Solution**: This is expected behavior. The system warns you before clearing data. To preserve data, don't change the character type.
+- **Solution**: This is expected behavior. The system warns you before clearing
+  data. To preserve data, don't change the character type.
 
 ### Field Not Showing
+
 - **Problem**: Added a field to a character type but it doesn't show
-- **Solution**: Refresh the page. The character form loads type information when the page loads.
+- **Solution**: Refresh the page. The character form loads type information when
+  the page loads.
 
 ## API Usage
 

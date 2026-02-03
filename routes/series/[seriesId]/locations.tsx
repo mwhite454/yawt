@@ -30,9 +30,11 @@ export const handler: Handlers<Data> = {
     }
 
     const locations: Location[] = [];
-    for await (const entry of kv.list<Location>({
-      prefix: ["yawt", "location", user.id, seriesId],
-    })) {
+    for await (
+      const entry of kv.list<Location>({
+        prefix: ["yawt", "location", user.id, seriesId],
+      })
+    ) {
       if (entry.value) locations.push(entry.value);
     }
 

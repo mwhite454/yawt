@@ -42,27 +42,33 @@ export const handler: Handlers<Data> = {
 
     // Fetch events
     const events: Event[] = [];
-    for await (const entry of kv.list<Event>({
-      prefix: ["yawt", "event", user.id, seriesId],
-    })) {
+    for await (
+      const entry of kv.list<Event>({
+        prefix: ["yawt", "event", user.id, seriesId],
+      })
+    ) {
       if (entry.value) events.push(entry.value);
     }
     events.sort((a, b) => b.updatedAt - a.updatedAt);
 
     // Fetch characters for dropdown
     const characters: Character[] = [];
-    for await (const entry of kv.list<Character>({
-      prefix: ["yawt", "character", user.id, seriesId],
-    })) {
+    for await (
+      const entry of kv.list<Character>({
+        prefix: ["yawt", "character", user.id, seriesId],
+      })
+    ) {
       if (entry.value) characters.push(entry.value);
     }
     characters.sort((a, b) => a.name.localeCompare(b.name));
 
     // Fetch locations for dropdown
     const locations: Location[] = [];
-    for await (const entry of kv.list<Location>({
-      prefix: ["yawt", "location", user.id, seriesId],
-    })) {
+    for await (
+      const entry of kv.list<Location>({
+        prefix: ["yawt", "location", user.id, seriesId],
+      })
+    ) {
       if (entry.value) locations.push(entry.value);
     }
     locations.sort((a, b) => a.name.localeCompare(b.name));
@@ -109,7 +115,7 @@ export const handler: Handlers<Data> = {
       if (!sceneIds.length) continue;
 
       const sceneKeys = sceneIds.map((id) =>
-        sceneKey(user.id, seriesId, bookId, id),
+        sceneKey(user.id, seriesId, bookId, id)
       );
       const sceneResults = await kv.getMany(sceneKeys);
       for (const res of sceneResults) {
@@ -287,7 +293,8 @@ export default function EventsPage({ data }: PageProps<Data>) {
                     <div class="flex flex-wrap gap-1 mt-1">
                       {event.characterIds.map((charId) => {
                         const char = data.characters.find(
-                          (c) => c.id === charId,
+                          (c) =>
+                            c.id === charId,
                         );
                         if (!char) {
                           // Orphaned character reference; skip rendering this ID
@@ -316,8 +323,7 @@ export default function EventsPage({ data }: PageProps<Data>) {
                           // Orphaned scene reference; skip rendering this ID
                           return null;
                         }
-                        const sceneLabel =
-                          scene.derived?.title ||
+                        const sceneLabel = scene.derived?.title ||
                           `Scene ${sceneId.slice(0, 6)}`;
                         return (
                           <span

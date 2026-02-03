@@ -30,9 +30,11 @@ export const handler: Handlers<Data> = {
     }
 
     const timelines: Timeline[] = [];
-    for await (const entry of kv.list<Timeline>({
-      prefix: ["yawt", "timeline", user.id, seriesId],
-    })) {
+    for await (
+      const entry of kv.list<Timeline>({
+        prefix: ["yawt", "timeline", user.id, seriesId],
+      })
+    ) {
       if (entry.value) timelines.push(entry.value);
     }
 

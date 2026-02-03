@@ -195,8 +195,9 @@ export default function TimelineDetail({ data }: PageProps<Data>) {
               <span>
                 Events come from Scenes. Add{" "}
                 <span class="font-mono">startDate</span>/{" "}
-                <span class="font-mono">endDate</span> in scene YAML
-                frontmatter. To scope a scene to this timeline, include{" "}
+                <span class="font-mono">endDate</span>{" "}
+                in scene YAML frontmatter. To scope a scene to this timeline,
+                include{" "}
                 <span class="font-mono">timelines: ["{data.timeline.id}"]</span>
                 .
               </span>
@@ -204,41 +205,43 @@ export default function TimelineDetail({ data }: PageProps<Data>) {
 
             <div class="divider" />
 
-            {data.events.length === 0 ? (
-              <div class="alert">
-                <span>No events yet.</span>
-              </div>
-            ) : (
-              <div class="overflow-x-auto">
-                <table class="table table-zebra">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Book</th>
-                      <th>Start</th>
-                      <th>End</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.events.map((e) => (
-                      <tr key={e.sceneId}>
-                        <td>
-                          <a
-                            class="link link-hover"
-                            href={`/series/${data.series.id}/books/${e.bookId}?scene=${e.sceneId}`}
-                          >
-                            {e.title}
-                          </a>
-                        </td>
-                        <td>{e.bookTitle ?? ""}</td>
-                        <td>{e.startDate ?? ""}</td>
-                        <td>{e.endDate ?? ""}</td>
+            {data.events.length === 0
+              ? (
+                <div class="alert">
+                  <span>No events yet.</span>
+                </div>
+              )
+              : (
+                <div class="overflow-x-auto">
+                  <table class="table table-zebra">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Book</th>
+                        <th>Start</th>
+                        <th>End</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {data.events.map((e) => (
+                        <tr key={e.sceneId}>
+                          <td>
+                            <a
+                              class="link link-hover"
+                              href={`/series/${data.series.id}/books/${e.bookId}?scene=${e.sceneId}`}
+                            >
+                              {e.title}
+                            </a>
+                          </td>
+                          <td>{e.bookTitle ?? ""}</td>
+                          <td>{e.startDate ?? ""}</td>
+                          <td>{e.endDate ?? ""}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
           </div>
         </div>
       </div>

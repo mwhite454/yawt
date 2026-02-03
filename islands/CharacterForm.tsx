@@ -42,12 +42,19 @@ export default function CharacterForm(props: Props) {
   const handleTypeChange = (newTypeId: string) => {
     if (characterTypeId && newTypeId !== characterTypeId) {
       // Check if there's any meaningful data in typeData
-      const hasData = Object.values(typeData).some(value => {
-        if (Array.isArray(value)) return value.length > 0 && value.some(v => v);
-        return value !== null && value !== undefined && value !== '';
+      const hasData = Object.values(typeData).some((value) => {
+        if (Array.isArray(value)) {
+          return value.length > 0 && value.some((v) => v);
+        }
+        return value !== null && value !== undefined && value !== "";
       });
-      
-      if (hasData && !confirm("Changing the character type will clear all type-specific data. Continue?")) {
+
+      if (
+        hasData &&
+        !confirm(
+          "Changing the character type will clear all type-specific data. Continue?",
+        )
+      ) {
         return;
       }
     }
@@ -91,7 +98,7 @@ export default function CharacterForm(props: Props) {
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    
+
     try {
       setStatus("saving");
       setError(null);
@@ -222,7 +229,8 @@ export default function CharacterForm(props: Props) {
                 <button
                   class="btn btn-sm btn-ghost btn-circle"
                   type="button"
-                  onClick={() => handleListRemove(field.name, idx)}
+                  onClick={() =>
+                    handleListRemove(field.name, idx)}
                   title="Remove item"
                 >
                   ✕

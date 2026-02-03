@@ -8,9 +8,11 @@ import type { Series } from "@utils/story/types.ts";
  */
 export async function getAllSeriesForUser(userId: number): Promise<Series[]> {
   const series: Series[] = [];
-  for await (const entry of kv.list<Series>({
-    prefix: ["yawt", "series", userId],
-  })) {
+  for await (
+    const entry of kv.list<Series>({
+      prefix: ["yawt", "series", userId],
+    })
+  ) {
     if (entry.value) series.push(entry.value);
   }
 

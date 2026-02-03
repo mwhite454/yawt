@@ -325,7 +325,8 @@ export default function CharacterTypeEditor(props: Props) {
                         <button
                           class="btn btn-sm btn-ghost btn-circle"
                           type="button"
-                          onClick={() => handleRemoveOption(idx, optIdx)}
+                          onClick={() =>
+                            handleRemoveOption(idx, optIdx)}
                           title="Remove option"
                         >
                           ✕

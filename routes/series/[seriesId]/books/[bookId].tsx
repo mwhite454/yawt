@@ -14,6 +14,7 @@ import {
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import { deriveSceneFields } from "@utils/story/frontmatter.ts";
+import SceneList from "@islands/SceneList.tsx";
 
 interface Data {
   user: User;
@@ -247,23 +248,16 @@ export default function BookDetail({ data }: PageProps<Data>) {
                   <span>No scenes yet. Create one.</span>
                 </div>
               ) : (
-                <ul class="menu bg-base-200 rounded-box">
-                  {scenes.map((s) => {
-                    const active = selectedScene?.id === s.id;
-                    const title =
-                      s.derived?.title || `Scene ${s.id.slice(0, 6)}`;
-                    return (
-                      <li key={s.id}>
-                        <a
-                          class={active ? "active" : ""}
-                          href={`/series/${series.id}/books/${book.id}?scene=${s.id}`}
-                        >
-                          {title}
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <SceneList
+                  seriesId={series.id}
+                  bookId={book.id}
+                  scenes={scenes.map((s) => ({
+                    id: s.id,
+                    title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
+                    rank: s.rank,
+                  }))}
+                  selectedSceneId={selectedScene?.id ?? null}
+                />
               )}
             </div>
           </div>

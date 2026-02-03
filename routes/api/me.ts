@@ -1,10 +1,10 @@
 import { Handlers } from "$fresh/server.ts";
 import { getSessionId } from "@utils/oauth.ts";
 import {
-  getUser,
-  setUser,
   DAISYUI_THEMES,
   type DaisyUITheme,
+  getUser,
+  setUser,
 } from "@utils/session.ts";
 import { DEFAULT_THEME } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
