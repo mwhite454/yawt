@@ -12,11 +12,13 @@ import {
   seriesKey,
 } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
+import { getAllSeriesForUser } from "@utils/story/series.ts";
 import { deriveSceneFields } from "@utils/story/frontmatter.ts";
 
 interface Data {
   user: User;
   series: Series;
+  allSeries: Series[];
   book: Book;
   scenes: Scene[];
   selectedScene: Scene | null;
@@ -34,9 +36,10 @@ export const handler: Handlers<Data> = {
 
     const { seriesId, bookId } = ctx.params;
 
-    const [seriesRes, bookRes] = await Promise.all([
+    const [seriesRes, bookRes, allSeries] = await Promise.all([
       kv.get<Series>(seriesKey(user.id, seriesId)),
       kv.get<Book>(bookKey(user.id, seriesId, bookId)),
+      getAllSeriesForUser(user.id),
     ]);
 
     if (!seriesRes.value) {
@@ -56,7 +59,7 @@ export const handler: Handlers<Data> = {
     const scenes: Scene[] = [];
     if (sceneIds.length) {
       const keys = sceneIds.map((id) =>
-        sceneKey(user.id, seriesId, bookId, id)
+        sceneKey(user.id, seriesId, bookId, id),
       );
       const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
       for (const res of results) if (res.value) scenes.push(res.value);
@@ -66,12 +69,13 @@ export const handler: Handlers<Data> = {
     const selectedSceneId =
       url.searchParams.get("scene") ?? scenes[0]?.id ?? null;
     const selectedScene = selectedSceneId
-      ? scenes.find((s) => s.id === selectedSceneId) ?? null
+      ? (scenes.find((s) => s.id === selectedSceneId) ?? null)
       : null;
 
     return ctx.render({
       user,
       series: seriesRes.value,
+      allSeries,
       book: bookRes.value,
       scenes,
       selectedScene,
@@ -97,7 +101,7 @@ export const handler: Handlers<Data> = {
       let lastRank: string | undefined;
       for await (const entry of kv.list(
         { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
-        { reverse: true, limit: 1 }
+        { reverse: true, limit: 1 },
       )) {
         const key = entry.key as unknown[];
         const maybeRank = key[key.length - 2];
@@ -134,7 +138,7 @@ export const handler: Handlers<Data> = {
 
       return Response.redirect(
         new URL(`/series/${seriesId}/books/${bookId}?scene=${id}`, req.url),
-        303
+        303,
       );
     }
 
@@ -145,12 +149,12 @@ export const handler: Handlers<Data> = {
       if (!sceneId) {
         return Response.redirect(
           new URL(`/series/${seriesId}/books/${bookId}`, req.url),
-          303
+          303,
         );
       }
 
       const sceneRes = await kv.get<Scene>(
-        sceneKey(user.id, seriesId, bookId, sceneId)
+        sceneKey(user.id, seriesId, bookId, sceneId),
       );
       if (!sceneRes.value) {
         return new Response("Scene not found", { status: 404 });
@@ -169,24 +173,30 @@ export const handler: Handlers<Data> = {
       return Response.redirect(
         new URL(
           `/series/${seriesId}/books/${bookId}?scene=${sceneId}`,
-          req.url
+          req.url,
         ),
-        303
+        303,
       );
     }
 
     return Response.redirect(
       new URL(`/series/${seriesId}/books/${bookId}`, req.url),
-      303
+      303,
     );
   },
 };
 
 export default function BookDetail({ data }: PageProps<Data>) {
-  const { series, book, scenes, selectedScene } = data;
+  const { series, allSeries, book, scenes, selectedScene } = data;
 
   return (
-    <Layout user={data.user} title={series.title}>
+    <Layout
+      user={data.user}
+      title={series.title}
+      series={allSeries}
+      currentSeriesId={series.id}
+      currentPage="books"
+    >
       <div class="breadcrumbs text-sm">
         <ul>
           <li>

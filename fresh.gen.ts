@@ -17,6 +17,8 @@ import * as $api_series_seriesId_characters from "./routes/api/series/[seriesId]
 import * as $api_series_seriesId_characters_characterId_ from "./routes/api/series/[seriesId]/characters/[characterId].ts";
 import * as $api_series_seriesId_characters_characterId_image_presign_2 from "./routes/api/series/[seriesId]/characters/[characterId]/image/presign 2.ts";
 import * as $api_series_seriesId_characters_characterId_image_upload from "./routes/api/series/[seriesId]/characters/[characterId]/image/upload.ts";
+import * as $api_series_seriesId_events from "./routes/api/series/[seriesId]/events.ts";
+import * as $api_series_seriesId_events_eventId_ from "./routes/api/series/[seriesId]/events/[eventId].ts";
 import * as $api_series_seriesId_locations from "./routes/api/series/[seriesId]/locations.ts";
 import * as $api_series_seriesId_locations_locationId_ from "./routes/api/series/[seriesId]/locations/[locationId].ts";
 import * as $api_series_seriesId_timelines from "./routes/api/series/[seriesId]/timelines.ts";
@@ -30,13 +32,16 @@ import * as $auth_signout from "./routes/auth/signout.ts";
 import * as $index from "./routes/index.tsx";
 import * as $series_seriesId_books_bookId_ from "./routes/series/[seriesId]/books/[bookId].tsx";
 import * as $series_seriesId_characters from "./routes/series/[seriesId]/characters.tsx";
+import * as $series_seriesId_events from "./routes/series/[seriesId]/events.tsx";
 import * as $series_seriesId_index from "./routes/series/[seriesId]/index.tsx";
 import * as $series_seriesId_locations from "./routes/series/[seriesId]/locations.tsx";
 import * as $series_seriesId_timelines from "./routes/series/[seriesId]/timelines.tsx";
 import * as $series_seriesId_timelines_timelineId_ from "./routes/series/[seriesId]/timelines/[timelineId].tsx";
 import * as $series_index from "./routes/series/index.tsx";
 import * as $CharacterImageUploader from "./islands/CharacterImageUploader.tsx";
+import * as $EventForm from "./islands/EventForm.tsx";
 import * as $KeyValueEditor from "./islands/KeyValueEditor.tsx";
+import * as $ThemeController from "./islands/ThemeController.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -64,6 +69,9 @@ const manifest = {
       $api_series_seriesId_characters_characterId_image_presign_2,
     "./routes/api/series/[seriesId]/characters/[characterId]/image/upload.ts":
       $api_series_seriesId_characters_characterId_image_upload,
+    "./routes/api/series/[seriesId]/events.ts": $api_series_seriesId_events,
+    "./routes/api/series/[seriesId]/events/[eventId].ts":
+      $api_series_seriesId_events_eventId_,
     "./routes/api/series/[seriesId]/locations.ts":
       $api_series_seriesId_locations,
     "./routes/api/series/[seriesId]/locations/[locationId].ts":
@@ -85,6 +93,7 @@ const manifest = {
     "./routes/series/[seriesId]/books/[bookId].tsx":
       $series_seriesId_books_bookId_,
     "./routes/series/[seriesId]/characters.tsx": $series_seriesId_characters,
+    "./routes/series/[seriesId]/events.tsx": $series_seriesId_events,
     "./routes/series/[seriesId]/index.tsx": $series_seriesId_index,
     "./routes/series/[seriesId]/locations.tsx": $series_seriesId_locations,
     "./routes/series/[seriesId]/timelines.tsx": $series_seriesId_timelines,
@@ -94,7 +103,9 @@ const manifest = {
   },
   islands: {
     "./islands/CharacterImageUploader.tsx": $CharacterImageUploader,
+    "./islands/EventForm.tsx": $EventForm,
     "./islands/KeyValueEditor.tsx": $KeyValueEditor,
+    "./islands/ThemeController.tsx": $ThemeController,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

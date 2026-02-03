@@ -4,8 +4,10 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { Layout } from "@components/Layout.tsx";
 import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
+
 import type { Character, CharacterType, Series } from "@utils/story/types.ts";
 import { characterKey, characterTypeKey, seriesKey } from "@utils/story/keys.ts";
+import { getAllSeriesForUser } from "@utils/story/series.ts";
 import CharacterImageUploader from "@islands/CharacterImageUploader.tsx";
 import KeyValueEditor from "@islands/KeyValueEditor.tsx";
 import CharacterForm from "@islands/CharacterForm.tsx";
@@ -13,6 +15,7 @@ import CharacterForm from "@islands/CharacterForm.tsx";
 interface Data {
   user: User;
   series: Series;
+  allSeries: Series[];
   characters: Character[];
   characterTypes: CharacterType[];
 }
@@ -23,7 +26,10 @@ export const handler: Handlers<Data> = {
     if (!user) return Response.redirect(new URL("/auth/signin", req.url), 303);
 
     const seriesId = ctx.params.seriesId;
-    const seriesRes = await kv.get<Series>(seriesKey(user.id, seriesId));
+    const [seriesRes, allSeries] = await Promise.all([
+      kv.get<Series>(seriesKey(user.id, seriesId)),
+      getAllSeriesForUser(user.id),
+    ]);
     if (!seriesRes.value) {
       return new Response("Series not found", { status: 404 });
     }
@@ -45,7 +51,7 @@ export const handler: Handlers<Data> = {
     characters.sort((a, b) => a.name.localeCompare(b.name));
     characterTypes.sort((a, b) => a.name.localeCompare(b.name));
 
-    return ctx.render({ user, series: seriesRes.value, characters, characterTypes });
+    return ctx.render({ user, series: seriesRes.value, allSeries, characters, characterTypes });
   },
 
   async POST(req, ctx) {
@@ -66,7 +72,7 @@ export const handler: Handlers<Data> = {
     if (!name) {
       return Response.redirect(
         new URL(`/series/${seriesId}/characters`, req.url),
-        303
+        303,
       );
     }
 
@@ -94,14 +100,20 @@ export const handler: Handlers<Data> = {
 
     return Response.redirect(
       new URL(`/series/${seriesId}/characters`, req.url),
-      303
+      303,
     );
   },
 };
 
 export default function CharactersPage({ data }: PageProps<Data>) {
   return (
-    <Layout user={data.user} title={data.series.title}>
+    <Layout
+      user={data.user}
+      title={data.series.title}
+      series={data.allSeries}
+      currentSeriesId={data.series.id}
+      currentPage="characters"
+    >
       <div class="breadcrumbs text-sm">
         <ul>
           <li>

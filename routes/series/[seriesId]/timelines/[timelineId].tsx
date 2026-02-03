@@ -11,6 +11,7 @@ import {
   seriesKey,
   timelineKey,
 } from "@utils/story/keys.ts";
+import { getAllSeriesForUser } from "@utils/story/series.ts";
 
 type SceneEvent = {
   sceneId: string;
@@ -32,7 +33,7 @@ function dateSortKey(value: string | undefined): number {
 async function listTimelineSceneEvents(
   userId: number,
   seriesId: string,
-  timelineId: string
+  timelineId: string,
 ): Promise<SceneEvent[]> {
   const bookOrderEntries = kv.list({
     prefix: ["yawt", "bookOrder", userId, seriesId],
@@ -113,6 +114,7 @@ async function listTimelineSceneEvents(
 interface Data {
   user: User;
   series: Series;
+  allSeries: Series[];
   timeline: Timeline;
   events: SceneEvent[];
 }
@@ -124,9 +126,10 @@ export const handler: Handlers<Data> = {
 
     const { seriesId, timelineId } = ctx.params;
 
-    const [seriesRes, timelineRes] = await Promise.all([
+    const [seriesRes, timelineRes, allSeries] = await Promise.all([
       kv.get<Series>(seriesKey(user.id, seriesId)),
       kv.get<Timeline>(timelineKey(user.id, seriesId, timelineId)),
+      getAllSeriesForUser(user.id),
     ]);
 
     if (!seriesRes.value) {
@@ -141,6 +144,7 @@ export const handler: Handlers<Data> = {
     return ctx.render({
       user,
       series: seriesRes.value,
+      allSeries,
       timeline: timelineRes.value,
       events,
     });
@@ -149,7 +153,13 @@ export const handler: Handlers<Data> = {
 
 export default function TimelineDetail({ data }: PageProps<Data>) {
   return (
-    <Layout user={data.user} title={data.series.title}>
+    <Layout
+      user={data.user}
+      title={data.series.title}
+      series={data.allSeries}
+      currentSeriesId={data.series.id}
+      currentPage="timelines"
+    >
       <div class="breadcrumbs text-sm">
         <ul>
           <li>
