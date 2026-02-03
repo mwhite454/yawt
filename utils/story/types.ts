@@ -56,7 +56,7 @@ export interface Scene {
   updatedAt: number;
 }
 
-export type FieldType = "text" | "select" | "list";
+export type FieldType = "text" | "number" | "textarea" | "select" | "list";
 
 export interface FieldDefinition {
   name: string;

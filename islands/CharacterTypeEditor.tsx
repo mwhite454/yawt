@@ -276,6 +276,8 @@ export default function CharacterTypeEditor(props: Props) {
                     }}
                   >
                     <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="textarea">Textarea</option>
                     <option value="select">Select (dropdown)</option>
                     <option value="list">List (multiple values)</option>
                   </select>

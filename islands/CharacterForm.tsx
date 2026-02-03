@@ -175,6 +175,53 @@ export default function CharacterForm(props: Props) {
       );
     }
 
+    if (field.type === "number") {
+      return (
+        <div key={field.name}>
+          <label class="label">
+            <span class="label-text">
+              {field.label}
+              {field.required && <span class="text-error">*</span>}
+            </span>
+          </label>
+          <input
+            class="input input-bordered input-sm w-full"
+            type="number"
+            value={value !== null && value !== undefined ? String(value) : ""}
+            onInput={(e) => {
+              const target = e.currentTarget as HTMLInputElement;
+              const numValue = target.value === "" ? null : Number(target.value);
+              handleFieldChange(field.name, numValue);
+            }}
+            required={field.required}
+          />
+        </div>
+      );
+    }
+
+    if (field.type === "textarea") {
+      return (
+        <div key={field.name}>
+          <label class="label">
+            <span class="label-text">
+              {field.label}
+              {field.required && <span class="text-error">*</span>}
+            </span>
+          </label>
+          <textarea
+            class="textarea textarea-bordered w-full"
+            value={String(value ?? "")}
+            onInput={(e) => {
+              const target = e.currentTarget as HTMLTextAreaElement;
+              handleFieldChange(field.name, target.value);
+            }}
+            required={field.required}
+            rows={3}
+          />
+        </div>
+      );
+    }
+
     if (field.type === "select") {
       return (
         <div key={field.name}>
