@@ -4,6 +4,19 @@ import { setUser, type User } from "@utils/session.ts";
 import { isValidTheme } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
 import { userProfileKey } from "@utils/auth/keys.ts";
+import type { UserRole, SubscriptionTier } from "@utils/auth/types.ts";
+
+interface UserProfile {
+  id: number;
+  login: string;
+  name?: string;
+  avatar_url?: string;
+  role?: UserRole;
+  subscriptionTier?: SubscriptionTier;
+  subscriptionExpiresAt?: number;
+  createdAt?: number;
+  updatedAt?: number;
+}
 
 export const handler: Handlers = {
   async GET(req) {
@@ -52,11 +65,11 @@ export const handler: Handlers = {
 
       // Initialize or update user profile for RBAC
       const now = Date.now();
-      const existingProfile = await kv.get(userProfileKey(githubUser.id));
+      const existingProfile = await kv.get<UserProfile>(userProfileKey(githubUser.id));
 
       if (!existingProfile.value) {
         // First sign-in - create profile with free tier
-        await kv.set(userProfileKey(githubUser.id), {
+        const newProfile: UserProfile = {
           id: githubUser.id,
           login: githubUser.login,
           name: githubUser.name,
@@ -64,20 +77,22 @@ export const handler: Handlers = {
           role: "free",
           createdAt: now,
           updatedAt: now,
-        });
+        };
+        await kv.set(userProfileKey(githubUser.id), newProfile);
       } else {
         // Update existing profile
-        await kv.set(userProfileKey(githubUser.id), {
+        const updatedProfile: UserProfile = {
           ...existingProfile.value,
           login: githubUser.login,
           name: githubUser.name,
           avatar_url: githubUser.avatar_url,
           updatedAt: now,
-        });
+        };
+        await kv.set(userProfileKey(githubUser.id), updatedProfile);
       }
 
       // Load user profile to get role and subscription info
-      const userProfile = await kv.get(userProfileKey(githubUser.id));
+      const userProfile = await kv.get<UserProfile>(userProfileKey(githubUser.id));
 
       // Store user in session
       const user: User = {

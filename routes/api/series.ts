@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { kv } from "@utils/kv.ts";
-import { badRequest, json, readJson, requireUser } from "@utils/http.ts";
+import { badRequest, json, readJson, requireUser, forbidden } from "@utils/http.ts";
 import type { Series } from "@utils/story/types.ts";
 import { seriesKey } from "@utils/story/keys.ts";
 import { hasPermission } from "@utils/auth/permissions.ts";
@@ -36,13 +36,7 @@ export const handler: Handlers = {
       ) {
         seriesCount++;
         if (seriesCount >= FREE_TIER_LIMITS.maxSeries) {
-          return new Response(
-            "Series limit reached. Upgrade to create more series.",
-            {
-              status: 403,
-              headers: { "Content-Type": "text/plain" },
-            },
-          );
+          return forbidden("Series limit reached. Upgrade to create more series.");
         }
       }
     }

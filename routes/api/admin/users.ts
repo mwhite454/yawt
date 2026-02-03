@@ -6,7 +6,7 @@ import {
   userProfileKey,
   auditLogKey,
 } from "@utils/auth/keys.ts";
-import type { UserRole } from "@utils/auth/types.ts";
+import type { UserRole, SubscriptionTier } from "@utils/auth/types.ts";
 
 interface UserProfile {
   id: number;
@@ -14,7 +14,7 @@ interface UserProfile {
   name?: string;
   avatar_url?: string;
   role?: UserRole;
-  subscriptionTier?: string;
+  subscriptionTier?: SubscriptionTier;
   subscriptionExpiresAt?: number;
   createdAt?: number;
   updatedAt?: number;

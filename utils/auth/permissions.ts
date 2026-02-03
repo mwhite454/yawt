@@ -8,9 +8,19 @@ import {
 
 /**
  * Get the effective role for a user (defaults to "free")
+ * Expired subscribers are downgraded to "free"
  */
 export function getUserRole(user: User): UserRole {
-  return user.role ?? "free";
+  const role = user.role ?? "free";
+  
+  // If subscriber, check if subscription has expired
+  if (role === "subscriber") {
+    if (user.subscriptionExpiresAt && user.subscriptionExpiresAt < Date.now()) {
+      return "free";
+    }
+  }
+  
+  return role;
 }
 
 /**

@@ -25,6 +25,10 @@ export function notFound(message = "Not found") {
   return json({ error: message }, { status: 404 });
 }
 
+export function forbidden(message: string) {
+  return json({ error: message }, { status: 403 });
+}
+
 export async function requireUser(req: Request): Promise<User | Response> {
   const user = await getUser(req);
   if (!user) return unauthorized();
@@ -42,7 +46,7 @@ export async function requirePermission(
   if (userOrRes instanceof Response) return userOrRes;
 
   if (!hasPermission(userOrRes, permission)) {
-    return new Response("Forbidden: insufficient permissions", { status: 403 });
+    return forbidden("Insufficient permissions");
   }
 
   return userOrRes;
@@ -56,7 +60,7 @@ export async function requireAdmin(req: Request): Promise<User | Response> {
   if (userOrRes instanceof Response) return userOrRes;
 
   if (!isAdmin(userOrRes)) {
-    return new Response("Forbidden: admin access required", { status: 403 });
+    return forbidden("Admin access required");
   }
 
   return userOrRes;
