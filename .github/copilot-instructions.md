@@ -205,11 +205,13 @@ User
 **Files/Directories to NEVER Edit:**
 
 - `.env` - Contains sensitive environment variables
-- `.env.example` - Template for environment variables (only edit if adding new env vars)
 - `fresh.gen.ts` - Auto-generated Fresh manifest
 - `.github/workflows/` - CI/CD workflows (requires specific approval)
 - `.git/` - Git internals
 
+**Files to Edit Only When Adding/Changing Env Vars:**
+
+- `.env.example` - Template for environment variables; update when introducing or changing env vars so others can configure them
 **Breaking Changes to Avoid:**
 
 - Do not change the Deno KV key structure without migration strategy
@@ -268,12 +270,12 @@ User
 Use curl to test API endpoints. Example workflow:
 
 ```bash
-# 1. Start dev server in background
-deno task start &
+# 1. In one terminal, start the dev server and leave it running
+deno task start
 
-# 2. Sign in via browser at http://localhost:8000 to get session cookie
+# 2. In your browser, sign in at http://localhost:8000 to get a session cookie
 
-# 3. Test API with cookie (use browser dev tools to copy session cookie)
+# 3. In another terminal, test the API with your session cookie
 curl -v http://localhost:8000/api/me \
   -H "Cookie: session=YOUR_SESSION_COOKIE"
 
@@ -297,9 +299,9 @@ curl -X POST http://localhost:8000/api/series \
 ### Key Files Reference
 
 - **`deno.json`** - Tasks, imports, compiler options
-- **`utils/http.ts`** - HTTP helpers (requireUser, json, error responses)
-- **`utils/kv.ts`** - Deno KV instance
-- **`utils/story/types.ts`** - Type definitions
-- **`utils/story/keys.ts`** - KV key helpers
-- **`utils/oauth.ts`** - OAuth configuration
-- **`utils/session.ts`** - Session management
+- **`@utils/http.ts`** - HTTP helpers (requireUser, json, error responses)
+- **`@utils/kv.ts`** - Deno KV instance
+- **`@utils/story/types.ts`** - Type definitions
+- **`@utils/story/keys.ts`** - KV key helpers
+- **`@utils/oauth.ts`** - OAuth configuration
+- **`@utils/session.ts`** - Session management
