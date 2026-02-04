@@ -19,10 +19,10 @@ export function BookCover(
       onClick={onClick}
       title="Click to upload or change cover image"
     >
-      <div class="card bg-base-100 shadow-xl h-full max-h-[250px] overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 transform">
-        {/* 8 empty divs as explicitly required in the problem statement
-            Requirement: "Make sure that the reusable component includes the 
-            8 empty required divs so that the 3d hover effect works"
+      <div class="card bg-base-100 shadow-xl h-full max-h-[250px] overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
+        {/* 8 empty divs - explicitly required by problem statement:
+            "Make sure that the reusable component includes the 8 empty 
+            required divs so that the 3d hover effect works"
         */}
         <div></div>
         <div></div>
