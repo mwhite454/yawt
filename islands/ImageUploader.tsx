@@ -1,4 +1,4 @@
-import { useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 
 type UploadResponse = {
   objectKey: string;
@@ -29,15 +29,23 @@ export default function ImageUploader(props: Props) {
     string | undefined
   >(props.existingContentType);
 
+  // Sync local state when props change (e.g., navigating between entities)
+  useEffect(() => {
+    setCurrentObjectKey(props.existingObjectKey);
+    setCurrentContentType(props.existingContentType);
+  }, [props.existingObjectKey, props.existingContentType]);
+
   const hasExisting = useMemo(() => {
     return Boolean(currentObjectKey);
   }, [currentObjectKey]);
 
-  // Generate stable ID for accessibility
+  // Generate stable ID for accessibility with robust sanitization
   const inputId = useMemo(() => {
-    return `image-upload-${props.fieldName}-${
-      props.updatePath.replace(/\//g, "-")
-    }`;
+    const sanitizedPath = props.updatePath
+      .replace(/[^a-zA-Z0-9-]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    return `image-upload-${props.fieldName}-${sanitizedPath}`;
   }, [props.fieldName, props.updatePath]);
 
   async function onPickFile(file: File | null) {
