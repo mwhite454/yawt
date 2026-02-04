@@ -1,0 +1,134 @@
+========================================================================================================
+YAWT - Admin Dashboard Preview
+========================================================================================================
+
+Navigation Bar (Top):
+┌────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  YAWT                                                    [Theme: yawt ▼]  [👤 Avatar ▼]            │
+└────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+User Menu Dropdown (when clicking avatar - ADMIN USER):
+                                                              ┌─────────────────────────────┐
+                                                              │ John Doe                    │
+                                                              ├─────────────────────────────┤
+                                                              │ 🎨 Theme                    │
+                                                              ├─────────────────────────────┤
+                                                              │ 👑 Admin Dashboard    ← NEW │
+                                                              ├─────────────────────────────┤
+                                                              │ 🚪 Sign out                 │
+                                                              └─────────────────────────────┘
+
+========================================================================================================
+Admin Dashboard Page (/admin)
+========================================================================================================
+
+┌────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Admin Dashboard                                                                                    │
+│  Manage users, roles, and application access.                                                       │
+└────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  User Management                                                                                    │
+│                                                                                                     │
+│  ┌──────────────────────────────────────────────────────────────────────────────────────────────┐ │
+│  │ User                      │ Email                   │ Role      │ Created    │ Status │ Actions│ │
+│  ├──────────────────────────────────────────────────────────────────────────────────────────────┤ │
+│  │ [🖼️]  John Doe            │ johndoe@github.com      │ Admin ▼   │ Jan 1 2024 │ Active │ Block  │ │
+│  │       @johndoe            │                         │           │            │  ✅    │        │ │
+│  ├──────────────────────────────────────────────────────────────────────────────────────────────┤ │
+│  │ [🖼️]  Jane Smith          │ janesmith@github.com    │ Subscr▼   │ Jan 2 2024 │ Active │ Block  │ │
+│  │       @janesmith          │                         │           │            │  ✅    │        │ │
+│  ├──────────────────────────────────────────────────────────────────────────────────────────────┤ │
+│  │ [🖼️]  Bob Johnson         │ bobjohnson@github.com   │ Free ▼    │ Jan 3 2024 │Blocked │Unblock │ │
+│  │       @bobjohnson         │                         │           │            │  🚫    │        │ │
+│  ├──────────────────────────────────────────────────────────────────────────────────────────────┤ │
+│  │ [🖼️]  Alice Williams      │ alicew@github.com       │ Free ▼    │ Jan 5 2024 │ Active │ Block  │ │
+│  │       @alicew             │                         │           │            │  ✅    │        │ │
+│  └──────────────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                                     │
+│  Total users: 4                                                                                     │
+└────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+========================================================================================================
+Component Details
+========================================================================================================
+
+Avatar Display:
+┌────────┐
+│  🖼️    │  - Rounded square (mask-squircle)
+│   JD   │  - Shows GitHub avatar if available
+└────────┘  - Otherwise shows initials with deterministic color based on username
+
+Role Dropdown (Interactive):
+┌──────────────┐
+│ Subscriber ▼ │  - Click to open dropdown
+└──────────────┘  - Options: Admin, Subscriber, Free
+                   - Instantly updates on selection
+                   - Shows loading spinner while saving
+                   - Admin cannot change own role
+
+Status Badge:
+ Active    - Green badge for non-blocked users
+ ✅        
+
+ Blocked   - Red badge for blocked users
+ 🚫        
+
+Action Button (Block):
+┌───────┐
+│ Block │  - Red button for active users
+└───────┘  - Changes to green "Unblock" for blocked users
+            - Shows spinner while updating
+            - Admin cannot block themselves
+
+========================================================================================================
+User Interactions
+========================================================================================================
+
+1. Change User Role:
+   Admin clicks dropdown → Selects new role → Dropdown shows spinner → Updates → Refreshes table
+
+2. Block User:
+   Admin clicks "Block" → Button shows spinner → User marked as blocked → Status changes to "Blocked"
+   → Button changes to "Unblock" → Blocked user gets 403 on next request
+
+3. Unblock User:
+   Admin clicks "Unblock" → Button shows spinner → Block removed → Status changes to "Active"
+   → Button changes to "Block" → User can access app again
+
+========================================================================================================
+Error States
+========================================================================================================
+
+Loading State:
+┌────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  User Management                                                                                    │
+│                                                                                                     │
+│                                       ⭕ Loading...                                                │
+│                                                                                                     │
+└────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+Error State:
+┌────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  User Management                                                                                    │
+│                                                                                                     │
+│  ┌──────────────────────────────────────────────────────────────────────────────────────────────┐ │
+│  │ ⚠️  Failed to load users: Network error                                                       │ │
+│  └──────────────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                                     │
+│  [Table may still show cached data if available]                                                   │
+└────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+========================================================================================================
+Security Features
+========================================================================================================
+
+✅ Admin-only access - All endpoints require admin role
+✅ Self-protection - Admins cannot change own role or block themselves  
+✅ Audit logging - All actions logged with timestamp, admin ID, and details
+✅ Blocked check - All protected routes check if user is blocked
+✅ Privacy - Avatar colors generated deterministically (no user enumeration)
+
+========================================================================================================
+End of Preview
+========================================================================================================
