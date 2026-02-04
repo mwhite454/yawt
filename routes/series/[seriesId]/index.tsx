@@ -116,15 +116,6 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
       currentSeriesId={series.id}
       currentPage="books"
     >
-      <div class="breadcrumbs text-sm">
-        <ul>
-          <li>
-            <a href="/series">Series</a>
-          </li>
-          <li>{series.title}</li>
-        </ul>
-      </div>
-
       <div class="grid gap-4 mt-3">
         <div class="card bg-base-100 shadow-sm">
           <div class="card-body">

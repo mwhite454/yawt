@@ -229,18 +229,6 @@ export default function EventsPage({ data }: PageProps<Data>) {
       currentSeriesId={data.series.id}
       currentPage="events"
     >
-      <div class="breadcrumbs text-sm">
-        <ul>
-          <li>
-            <a href="/series">Series</a>
-          </li>
-          <li>
-            <a href={`/series/${data.series.id}`}>{data.series.title}</a>
-          </li>
-          <li>Events</li>
-        </ul>
-      </div>
-
       <div class="grid gap-4 mt-3">
         <div class="card bg-base-100 shadow-sm">
           <div class="card-body">

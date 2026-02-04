@@ -46,21 +46,6 @@ export const handler: Handlers<Data> = {
 export default function CharacterTypesPage({ data }: PageProps<Data>) {
   return (
     <Layout user={data.user} title={data.series.title}>
-      <div class="breadcrumbs text-sm">
-        <ul>
-          <li>
-            <a href="/series">Series</a>
-          </li>
-          <li>
-            <a href={`/series/${data.series.id}`}>{data.series.title}</a>
-          </li>
-          <li>
-            <a href={`/series/${data.series.id}/characters`}>Characters</a>
-          </li>
-          <li>Character Types</li>
-        </ul>
-      </div>
-
       <div class="grid gap-4 mt-3">
         <div class="card bg-base-100 shadow-sm">
           <div class="card-body">

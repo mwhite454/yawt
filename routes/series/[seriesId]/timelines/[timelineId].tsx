@@ -160,21 +160,6 @@ export default function TimelineDetail({ data }: PageProps<Data>) {
       currentSeriesId={data.series.id}
       currentPage="timelines"
     >
-      <div class="breadcrumbs text-sm">
-        <ul>
-          <li>
-            <a href="/series">Series</a>
-          </li>
-          <li>
-            <a href={`/series/${data.series.id}`}>{data.series.title}</a>
-          </li>
-          <li>
-            <a href={`/series/${data.series.id}/timelines`}>Timelines</a>
-          </li>
-          <li>{data.timeline.title}</li>
-        </ul>
-      </div>
-
       <div class="grid gap-4 mt-3">
         <div class="card bg-base-100 shadow-sm">
           <div class="card-body">
