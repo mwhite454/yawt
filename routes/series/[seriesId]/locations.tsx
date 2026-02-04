@@ -7,6 +7,7 @@ import { getUser, type User } from "@utils/session.ts";
 import type { Location, Series } from "@utils/story/types.ts";
 import { locationKey, seriesKey } from "@utils/story/keys.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
+import ImageUploader from "@islands/ImageUploader.tsx";
 
 interface Data {
   user: User;
@@ -140,6 +141,17 @@ export default function LocationsPage({ data }: PageProps<Data>) {
                     {l.description}
                   </div>
                 )}
+
+                <div class="divider my-2" />
+
+                <ImageUploader
+                  uploadPath={`/api/series/${data.series.id}/locations/${l.id}/image/upload`}
+                  updatePath={`/api/series/${data.series.id}/locations/${l.id}`}
+                  fieldName="image"
+                  existingObjectKey={l.image?.objectKey}
+                  existingContentType={l.image?.contentType}
+                  label="Location Image"
+                />
               </div>
             </div>
           ))}
