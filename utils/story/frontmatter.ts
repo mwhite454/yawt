@@ -72,13 +72,13 @@ export function updateFrontmatterTags(
     return text;
   }
 
-  // Merge tags, preferring newTags if both exist
+  // Use newTags as the canonical source (don't fall back to existing tags)
   const updatedAttributes = {
     ...attributes,
-    tags: newTags.length > 0 ? newTags : attributes.tags,
+    tags: newTags,
   };
 
-  // Remove tags if empty array after merge
+  // Remove tags if empty array
   if (
     Array.isArray(updatedAttributes.tags) &&
     updatedAttributes.tags.length === 0
