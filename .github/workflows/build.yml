@@ -1,0 +1,69 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Verify formatting
+        run: deno fmt --check
+
+      - name: Run linter
+        run: deno lint
+
+      - name: Type check
+        run: |
+          find routes islands components utils -type f \( -name '*.ts' -o -name '*.tsx' \) -print0 | xargs -0 -n 50 deno check
+          deno check dev.ts fresh.config.ts fresh.gen.ts main.ts
+        env:
+          # OAuth Configuration
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+          OAUTH_REDIRECT_URI: ${{ secrets.OAUTH_REDIRECT_URI || 'http://localhost:8000/auth/callback' }}
+
+          # Cloudflare R2 Configuration
+          CLOUDFLARE_S3_ENDPOINT: ${{ secrets.CLOUDFLARE_S3_ENDPOINT }}
+          CLOUDFLARE_S3_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_S3_ACCESS_KEY_ID }}
+          CLOUDFLARE_S3_SECRET: ${{ secrets.CLOUDFLARE_S3_SECRET }}
+          CLOUDFLARE_S3_BUCKET: ${{ secrets.CLOUDFLARE_S3_BUCKET }}
+
+      - name: Build project
+        run: deno task build
+        env:
+          # OAuth Configuration
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+          OAUTH_REDIRECT_URI: ${{ secrets.OAUTH_REDIRECT_URI || 'http://localhost:8000/auth/callback' }}
+
+          # Cloudflare R2 Configuration
+          CLOUDFLARE_S3_ENDPOINT: ${{ secrets.CLOUDFLARE_S3_ENDPOINT }}
+          CLOUDFLARE_S3_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_S3_ACCESS_KEY_ID }}
+          CLOUDFLARE_S3_SECRET: ${{ secrets.CLOUDFLARE_S3_SECRET }}
+          CLOUDFLARE_S3_BUCKET: ${{ secrets.CLOUDFLARE_S3_BUCKET }}
+
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            static/styles.css
+          key: ${{ runner.os }}-build-${{ hashFiles('styles/**', 'tailwind.config.cjs') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
