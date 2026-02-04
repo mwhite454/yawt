@@ -1,4 +1,4 @@
-import { parse } from "$std/yaml/mod.ts";
+import { parse, stringify } from "$std/yaml/mod.ts";
 import type { SceneDerived } from "./types.ts";
 import { toStringArray, toStringValue } from "./convert.ts";
 
@@ -55,4 +55,43 @@ export function deriveSceneFields(text: string): SceneDerived {
     startDate: toStringValue(attributes.startDate ?? attributes.start_date),
     endDate: toStringValue(attributes.endDate ?? attributes.end_date),
   };
+}
+
+/**
+ * Updates the YAML frontmatter in text with new tags, merging with existing attributes.
+ * If no frontmatter exists and tags are provided, creates new frontmatter.
+ */
+export function updateFrontmatterTags(
+  text: string,
+  newTags: string[],
+): string {
+  const { attributes, body } = extractYamlFrontmatter(text);
+
+  // If no tags to add and no existing frontmatter, return as-is
+  if (newTags.length === 0 && Object.keys(attributes).length === 0) {
+    return text;
+  }
+
+  // Merge tags, preferring newTags if both exist
+  const updatedAttributes = {
+    ...attributes,
+    tags: newTags.length > 0 ? newTags : attributes.tags,
+  };
+
+  // Remove tags if empty array after merge
+  if (
+    Array.isArray(updatedAttributes.tags) &&
+    updatedAttributes.tags.length === 0
+  ) {
+    delete updatedAttributes.tags;
+  }
+
+  // If no attributes left, return just the body
+  if (Object.keys(updatedAttributes).length === 0) {
+    return body;
+  }
+
+  // Rebuild the text with frontmatter
+  const yamlString = stringify(updatedAttributes).trim();
+  return `---\n${yamlString}\n---\n${body}`;
 }

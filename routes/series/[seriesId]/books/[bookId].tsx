@@ -13,8 +13,12 @@ import {
 } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
-import { deriveSceneFields } from "@utils/story/frontmatter.ts";
+import {
+  deriveSceneFields,
+  updateFrontmatterTags,
+} from "@utils/story/frontmatter.ts";
 import SceneList from "@islands/SceneList.tsx";
+import TagInput from "@islands/TagInput.tsx";
 
 interface Data {
   user: User;
@@ -49,9 +53,11 @@ export const handler: Handlers<Data> = {
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
     const sceneIds: string[] = [];
-    for await (const entry of kv.list({
-      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
-    })) {
+    for await (
+      const entry of kv.list({
+        prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
+      })
+    ) {
       const key = entry.key as unknown[];
       const sceneId = key[key.length - 1];
       if (typeof sceneId === "string") sceneIds.push(sceneId);
@@ -60,15 +66,15 @@ export const handler: Handlers<Data> = {
     const scenes: Scene[] = [];
     if (sceneIds.length) {
       const keys = sceneIds.map((id) =>
-        sceneKey(user.id, seriesId, bookId, id),
+        sceneKey(user.id, seriesId, bookId, id)
       );
       const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
       for (const res of results) if (res.value) scenes.push(res.value);
     }
 
     const url = new URL(req.url);
-    const selectedSceneId =
-      url.searchParams.get("scene") ?? scenes[0]?.id ?? null;
+    const selectedSceneId = url.searchParams.get("scene") ?? scenes[0]?.id ??
+      null;
     const selectedScene = selectedSceneId
       ? (scenes.find((s) => s.id === selectedSceneId) ?? null)
       : null;
@@ -100,10 +106,12 @@ export const handler: Handlers<Data> = {
       const title = String(form.get("title") ?? "").trim() || "Untitled scene";
 
       let lastRank: string | undefined;
-      for await (const entry of kv.list(
-        { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
-        { reverse: true, limit: 1 },
-      )) {
+      for await (
+        const entry of kv.list(
+          { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
+          { reverse: true, limit: 1 },
+        )
+      ) {
         const key = entry.key as unknown[];
         const maybeRank = key[key.length - 2];
         if (typeof maybeRank === "string") lastRank = maybeRank;
@@ -145,7 +153,7 @@ export const handler: Handlers<Data> = {
 
     if (action === "saveScene") {
       const sceneId = String(form.get("sceneId") ?? "").trim();
-      const text = String(form.get("text") ?? "");
+      let text = String(form.get("text") ?? "");
 
       if (!sceneId) {
         return Response.redirect(
@@ -159,6 +167,16 @@ export const handler: Handlers<Data> = {
       );
       if (!sceneRes.value) {
         return new Response("Scene not found", { status: 404 });
+      }
+
+      // Get tags from form
+      const formTags = form.getAll("tags").map((t) => String(t)).filter((t) =>
+        t.trim()
+      );
+
+      // Update frontmatter with tags if provided
+      if (formTags.length > 0) {
+        text = updateFrontmatterTags(text, formTags);
       }
 
       const now = Date.now();
@@ -243,22 +261,24 @@ export default function BookDetail({ data }: PageProps<Data>) {
 
               <div class="divider my-2" />
 
-              {scenes.length === 0 ? (
-                <div class="alert">
-                  <span>No scenes yet. Create one.</span>
-                </div>
-              ) : (
-                <SceneList
-                  seriesId={series.id}
-                  bookId={book.id}
-                  scenes={scenes.map((s) => ({
-                    id: s.id,
-                    title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
-                    rank: s.rank,
-                  }))}
-                  selectedSceneId={selectedScene?.id ?? null}
-                />
-              )}
+              {scenes.length === 0
+                ? (
+                  <div class="alert">
+                    <span>No scenes yet. Create one.</span>
+                  </div>
+                )
+                : (
+                  <SceneList
+                    seriesId={series.id}
+                    bookId={book.id}
+                    scenes={scenes.map((s) => ({
+                      id: s.id,
+                      title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
+                      rank: s.rank,
+                    }))}
+                    selectedSceneId={selectedScene?.id ?? null}
+                  />
+                )}
             </div>
           </div>
         </div>
@@ -276,36 +296,43 @@ export default function BookDetail({ data }: PageProps<Data>) {
                 )}
               </div>
 
-              {!selectedScene ? (
-                <div class="alert">
-                  <span>Select or create a scene to edit.</span>
-                </div>
-              ) : (
-                <form method="POST" class="grid gap-3">
-                  <input type="hidden" name="action" value="saveScene" />
-                  <input
-                    type="hidden"
-                    name="sceneId"
-                    value={selectedScene.id}
-                  />
-
-                  <textarea
-                    class="textarea textarea-bordered font-mono"
-                    name="text"
-                    rows={22}
-                    value={selectedScene.text}
-                  />
-
-                  <div class="card-actions justify-between">
-                    <div class="text-sm opacity-70">
-                      YAML frontmatter supported at top of text.
-                    </div>
-                    <button class="btn btn-primary" type="submit">
-                      Save
-                    </button>
+              {!selectedScene
+                ? (
+                  <div class="alert">
+                    <span>Select or create a scene to edit.</span>
                   </div>
-                </form>
-              )}
+                )
+                : (
+                  <form method="POST" class="grid gap-3">
+                    <input type="hidden" name="action" value="saveScene" />
+                    <input
+                      type="hidden"
+                      name="sceneId"
+                      value={selectedScene.id}
+                    />
+
+                    <textarea
+                      class="textarea textarea-bordered font-mono"
+                      name="text"
+                      rows={18}
+                      value={selectedScene.text}
+                    />
+
+                    <TagInput
+                      seriesId={series.id}
+                      initialTags={selectedScene.derived?.tags ?? []}
+                    />
+
+                    <div class="card-actions justify-between">
+                      <div class="text-sm opacity-70">
+                        YAML frontmatter also supported in text editor.
+                      </div>
+                      <button class="btn btn-primary" type="submit">
+                        Save
+                      </button>
+                    </div>
+                  </form>
+                )}
             </div>
           </div>
         </div>
