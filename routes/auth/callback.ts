@@ -3,7 +3,7 @@ import { handleCallback } from "@utils/oauth.ts";
 import { setUser, type User } from "@utils/session.ts";
 import { isValidTheme } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
-import { userProfileKey } from "@utils/auth/keys.ts";
+import { allUserProfilesPrefix, userProfileKey } from "@utils/auth/keys.ts";
 import type { SubscriptionTier, UserRole } from "@utils/auth/types.ts";
 
 interface UserProfile {
@@ -70,20 +70,25 @@ export const handler: Handlers = {
         userProfileKey(githubUser.id),
       );
 
+      let currentProfile: UserProfile;
+      let userCountFromFirstScan: number | null = null;
+
       if (!existingProfile.value) {
         // First sign-in - create profile
         // Check if this is the first user in the system (more efficient with limit)
         const existingProfiles = kv.list({
-          prefix: ["yawt", "user_profile"],
-          limit: 1,
+          prefix: allUserProfilesPrefix(),
+          limit: 2, // Check up to 2 to determine if 0, 1, or 2+ users
         });
-        let isFirstUser = true;
+        let count = 0;
         for await (const _entry of existingProfiles) {
-          isFirstUser = false;
-          break;
+          count++;
+          if (count > 1) break; // No need to count further
         }
+        userCountFromFirstScan = count;
+        const isFirstUser = count === 0;
 
-        const newProfile: UserProfile = {
+        currentProfile = {
           id: githubUser.id,
           login: githubUser.login,
           name: githubUser.name,
@@ -92,25 +97,54 @@ export const handler: Handlers = {
           createdAt: now,
           updatedAt: now,
         };
-        await kv.set(userProfileKey(githubUser.id), newProfile);
+        await kv.set(userProfileKey(githubUser.id), currentProfile);
       } else {
         // Update existing profile
-        const updatedProfile: UserProfile = {
+        currentProfile = {
           ...existingProfile.value,
           login: githubUser.login,
           name: githubUser.name,
           avatar_url: githubUser.avatar_url,
           updatedAt: now,
         };
-        await kv.set(userProfileKey(githubUser.id), updatedProfile);
+        await kv.set(userProfileKey(githubUser.id), currentProfile);
       }
 
-      // Load user profile to get role and subscription info
-      const userProfile = await kv.get<UserProfile>(
-        userProfileKey(githubUser.id),
-      );
+      // Check if this user is the only user in the system
+      // If so, automatically grant admin access
+      // Note: This check runs on every login with limit=2, which is very efficient
+      // even for multi-user systems. It's designed for single-user development
+      // and small-scale deployments where automatic admin assignment is beneficial.
+      // On first sign-in, we reuse the count from above to avoid a second scan.
+      let userCount: number;
+      if (userCountFromFirstScan !== null) {
+        // Reuse count from first sign-in scan (we just created the profile, so add 1)
+        userCount = userCountFromFirstScan + 1;
+      } else {
+        // Existing user - need to count profiles
+        const allProfiles = kv.list({
+          prefix: allUserProfilesPrefix(),
+          limit: 2, // Only need to check if there are 1 or 2+ users
+        });
+        let count = 0;
+        for await (const _entry of allProfiles) {
+          count++;
+          if (count > 1) break; // No need to count further
+        }
+        userCount = count;
+      }
 
-      // Store user in session
+      // If only one user exists, ensure they have admin role
+      if (userCount === 1 && currentProfile.role !== "admin") {
+        currentProfile = {
+          ...currentProfile,
+          role: "admin",
+          updatedAt: Date.now(), // Use fresh timestamp for role upgrade
+        };
+        await kv.set(userProfileKey(githubUser.id), currentProfile);
+      }
+
+      // Store user in session using the current profile
       const user: User = {
         login: githubUser.login,
         id: githubUser.id,
@@ -120,12 +154,12 @@ export const handler: Handlers = {
         // Use validated theme preference if available
         defaultTheme: validatedTheme,
         // Include RBAC fields from profile
-        role: userProfile.value?.role,
-        subscriptionTier: userProfile.value?.subscriptionTier,
-        subscriptionExpiresAt: userProfile.value?.subscriptionExpiresAt,
-        createdAt: userProfile.value?.createdAt,
-        updatedAt: userProfile.value?.updatedAt,
-        blocked: userProfile.value?.blocked,
+        role: currentProfile.role,
+        subscriptionTier: currentProfile.subscriptionTier,
+        subscriptionExpiresAt: currentProfile.subscriptionExpiresAt,
+        createdAt: currentProfile.createdAt,
+        updatedAt: currentProfile.updatedAt,
+        blocked: currentProfile.blocked,
       };
 
       await setUser(sessionId, user);
