@@ -190,7 +190,9 @@ export default function CharacterForm(props: Props) {
             value={value !== null && value !== undefined ? String(value) : ""}
             onInput={(e) => {
               const target = e.currentTarget as HTMLInputElement;
-              const numValue = target.value === "" ? null : Number(target.value);
+              const numValue = target.value === ""
+                ? null
+                : Number(target.value);
               handleFieldChange(field.name, numValue);
             }}
             required={field.required}

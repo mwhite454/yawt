@@ -16,11 +16,12 @@ if (!OAUTH_CLIENT_ID || !OAUTH_CLIENT_SECRET) {
 
 // Create OAuth configuration for GitHub
 export const oauthConfig = createGitHubOAuthConfig({
-  redirectUri:
-    Deno.env.get("OAUTH_REDIRECT_URI") || "http://localhost:8000/auth/callback",
+  redirectUri: Deno.env.get("OAUTH_REDIRECT_URI") ||
+    "http://localhost:8000/auth/callback",
   scope: "user:email",
 });
 
 // Create OAuth helpers
-export const { signIn, signOut, handleCallback, getSessionId } =
-  createHelpers(oauthConfig);
+export const { signIn, signOut, handleCallback, getSessionId } = createHelpers(
+  oauthConfig,
+);

@@ -1,10 +1,13 @@
 # Denostories Guide for YAWT
 
-This project uses [Denostories](https://github.com/CAYdenberg/denostories) for component development and documentation.
+This project uses [Denostories](https://github.com/CAYdenberg/denostories) for
+component development and documentation.
 
 ## What is Denostories?
 
-Denostories is a Storybook-like implementation for the Fresh framework. It allows you to:
+Denostories is a Storybook-like implementation for the Fresh framework. It
+allows you to:
+
 - Develop components in isolation
 - Document component usage and variations
 - Automatically test that components render without errors
@@ -13,6 +16,7 @@ Denostories is a Storybook-like implementation for the Fresh framework. It allow
 ## Accessing Stories
 
 Once the development server is running (`deno task start`), visit:
+
 ```
 http://localhost:8000/stories/
 ```
@@ -25,7 +29,8 @@ All reusable components and islands **must** include a story file.
 
 ### File Location and Naming
 
-Story files should be placed in a `__stories__` directory alongside the component they document:
+Story files should be placed in a `__stories__` directory alongside the
+component they document:
 
 ```
 components/
@@ -41,7 +46,8 @@ islands/
 
 ### Story File Structure
 
-A story file exports one or more story functions. Each export becomes a separate story in the UI:
+A story file exports one or more story functions. Each export becomes a separate
+story in the UI:
 
 ```tsx
 import { MyComponent } from "../MyComponent.tsx";
@@ -58,7 +64,8 @@ export const Loading = () => <MyComponent isLoading={true} />;
 
 ### Best Practices
 
-1. **Show Different States**: Create stories for different component states (empty, loading, error, success, etc.)
+1. **Show Different States**: Create stories for different component states
+   (empty, loading, error, success, etc.)
 
 2. **Use Realistic Data**: Create mock data that resembles real data structure:
    ```tsx
@@ -79,7 +86,8 @@ export const Loading = () => <MyComponent isLoading={true} />;
    );
    ```
 
-4. **Name Stories Clearly**: Use descriptive names that explain what the story demonstrates:
+4. **Name Stories Clearly**: Use descriptive names that explain what the story
+   demonstrates:
    - ✅ `LoggedInWithSeries`
    - ✅ `EmptyList`
    - ✅ `WithValidationError`
@@ -119,14 +127,21 @@ Example.checkData = {
 ## Examples
 
 Check these existing story files for examples:
-- `components/__stories__/Layout.stories.tsx` - Complex component with multiple variations
-- `components/__stories__/SeriesDropdown.stories.tsx` - Simple component with different states
-- `islands/__stories__/DraggableList.stories.tsx` - Interactive component with event handlers
-- `islands/__stories__/ThemeController.stories.tsx` - Island with different configurations
+
+- `components/__stories__/Layout.stories.tsx` - Complex component with multiple
+  variations
+- `components/__stories__/SeriesDropdown.stories.tsx` - Simple component with
+  different states
+- `islands/__stories__/DraggableList.stories.tsx` - Interactive component with
+  event handlers
+- `islands/__stories__/ThemeController.stories.tsx` - Island with different
+  configurations
 
 ## Automatic Checks
 
-Denostories automatically renders all stories on startup to check for errors. If a story fails to render:
+Denostories automatically renders all stories on startup to check for errors. If
+a story fails to render:
+
 - You'll see an error in the terminal
 - An indicator will appear on the `/stories` page
 - The build will fail in CI/CD
@@ -148,6 +163,7 @@ export default {
 ```
 
 Default configuration:
+
 - **Route**: `/stories` (visit this URL to see stories)
 - **Pattern**: `**/*.stories.tsx` (all files ending in `.stories.tsx`)
 - **Headless Checks**: Enabled (automatically tests stories)
@@ -155,23 +171,29 @@ Default configuration:
 
 ## Tips
 
-1. **Hot Reload**: Stories support hot reload - edit a story file and see changes immediately
-2. **Parallel Development**: Use stories to develop components without running the full app
-3. **Quick Testing**: Verify visual changes across all component variations at once
+1. **Hot Reload**: Stories support hot reload - edit a story file and see
+   changes immediately
+2. **Parallel Development**: Use stories to develop components without running
+   the full app
+3. **Quick Testing**: Verify visual changes across all component variations at
+   once
 4. **Documentation**: Stories serve as living documentation for component usage
 
 ## Troubleshooting
 
 **Story not showing up?**
+
 - Ensure file ends with `.stories.tsx`
 - Check that functions are exported (not default export)
 - Restart the dev server
 
 **Story fails to render?**
+
 - Check browser console and terminal for errors
 - Verify all imported types and utilities are available
 - Ensure mock data matches required type structure
 
 **Interactive features not working?**
+
 - Islands must be in the `islands/` directory to hydrate on client
 - Check that event handlers are properly connected

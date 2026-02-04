@@ -112,14 +112,14 @@ export default function AdminDashboard() {
   // Generate a consistent background color based on username
   const getAvatarUrl = (user: UserProfile) => {
     if (user.avatar_url) return user.avatar_url;
-    
+
     // Generate a consistent color from the user's login
     let hash = 0;
     for (let i = 0; i < user.login.length; i++) {
       hash = user.login.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const color = Math.abs(hash).toString(16).substring(0, 6).padEnd(6, '0');
-    
+    const color = Math.abs(hash).toString(16).substring(0, 6).padEnd(6, "0");
+
     return `https://ui-avatars.com/api/?name=${
       encodeURIComponent(user.name || user.login)
     }&background=${color}&color=fff`;
@@ -174,86 +174,88 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {users.length === 0 ? (
-                <tr>
-                  <td colSpan={6} class="text-center py-8 opacity-60">
-                    No users found
-                  </td>
-                </tr>
-              ) : (
-                users.map((user) => (
-                  <tr key={user.id} class={user.blocked ? "opacity-50" : ""}>
-                    <td>
-                      <div class="flex items-center gap-3">
-                        <div class="avatar">
-                          <div class="mask mask-squircle w-12 h-12">
-                            <img
-                              src={getAvatarUrl(user)}
-                              alt={user.login}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <div class="font-bold">{user.name || user.login}</div>
-                          <div class="text-sm opacity-50">@{user.login}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="text-sm opacity-70">
-                        {user.login}@github.com
-                      </span>
-                    </td>
-                    <td>
-                      <select
-                        class="select select-bordered select-sm"
-                        value={user.role || "free"}
-                        disabled={updatingUserId === user.id}
-                        onChange={(e) =>
-                          updateUserRole(
-                            user.id,
-                            (e.target as HTMLSelectElement).value,
-                          )}
-                      >
-                        <option value="admin">Admin</option>
-                        <option value="subscriber">Subscriber</option>
-                        <option value="free">Free</option>
-                      </select>
-                    </td>
-                    <td>
-                      <span class="text-sm">
-                        {formatDate(user.createdAt)}
-                      </span>
-                    </td>
-                    <td>
-                      {user.blocked ? (
-                        <span class="badge badge-error">Blocked</span>
-                      ) : (
-                        <span class="badge badge-success">Active</span>
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        class={`btn btn-sm ${
-                          user.blocked ? "btn-success" : "btn-error"
-                        }`}
-                        disabled={updatingUserId === user.id}
-                        onClick={() =>
-                          toggleBlockUser(user.id, user.blocked || false)}
-                      >
-                        {updatingUserId === user.id
-                          ? (
-                            <span class="loading loading-spinner loading-xs">
-                            </span>
-                          )
-                          : user.blocked
-                          ? "Unblock"
-                          : "Block"}
-                      </button>
+              {users.length === 0
+                ? (
+                  <tr>
+                    <td colSpan={6} class="text-center py-8 opacity-60">
+                      No users found
                     </td>
                   </tr>
-                ))
-              )}
+                )
+                : (
+                  users.map((user) => (
+                    <tr key={user.id} class={user.blocked ? "opacity-50" : ""}>
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <div class="avatar">
+                            <div class="mask mask-squircle w-12 h-12">
+                              <img
+                                src={getAvatarUrl(user)}
+                                alt={user.login}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <div class="font-bold">
+                              {user.name || user.login}
+                            </div>
+                            <div class="text-sm opacity-50">@{user.login}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="text-sm opacity-70">
+                          {user.login}@github.com
+                        </span>
+                      </td>
+                      <td>
+                        <select
+                          class="select select-bordered select-sm"
+                          value={user.role || "free"}
+                          disabled={updatingUserId === user.id}
+                          onChange={(e) =>
+                            updateUserRole(
+                              user.id,
+                              (e.target as HTMLSelectElement).value,
+                            )}
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="subscriber">Subscriber</option>
+                          <option value="free">Free</option>
+                        </select>
+                      </td>
+                      <td>
+                        <span class="text-sm">
+                          {formatDate(user.createdAt)}
+                        </span>
+                      </td>
+                      <td>
+                        {user.blocked
+                          ? <span class="badge badge-error">Blocked</span>
+                          : <span class="badge badge-success">Active</span>}
+                      </td>
+                      <td>
+                        <button
+                          class={`btn btn-sm ${
+                            user.blocked ? "btn-success" : "btn-error"
+                          }`}
+                          disabled={updatingUserId === user.id}
+                          onClick={() =>
+                            toggleBlockUser(user.id, user.blocked || false)}
+                        >
+                          {updatingUserId === user.id
+                            ? (
+                              <span class="loading loading-spinner loading-xs">
+                              </span>
+                            )
+                            : user.blocked
+                            ? "Unblock"
+                            : "Block"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
             </tbody>
           </table>
         </div>

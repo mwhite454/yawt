@@ -2,21 +2,28 @@
 
 ## Overview
 
-This document describes the admin dashboard feature that allows administrators to view and manage users in the YAWT application.
+This document describes the admin dashboard feature that allows administrators
+to view and manage users in the YAWT application.
 
 ## Features
 
 ### 1. First User Auto-Admin Assignment
 
-The first user to register in the application is automatically assigned the `admin` role. This ensures there is always at least one administrator who can manage other users.
+The first user to register in the application is automatically assigned the
+`admin` role. This ensures there is always at least one administrator who can
+manage other users.
 
-**Implementation:** Modified `routes/auth/callback.ts` to check if any user profiles exist before creating a new one. If no profiles exist, the new user is assigned the `admin` role.
+**Implementation:** Modified `routes/auth/callback.ts` to check if any user
+profiles exist before creating a new one. If no profiles exist, the new user is
+assigned the `admin` role.
 
 ### 2. Admin Dashboard UI
 
-Located at `/admin`, the admin dashboard provides a comprehensive interface for user management.
+Located at `/admin`, the admin dashboard provides a comprehensive interface for
+user management.
 
 **Features:**
+
 - View all users in a table format
 - Display user information:
   - Avatar and name
@@ -30,21 +37,26 @@ Located at `/admin`, the admin dashboard provides a comprehensive interface for 
 - Loading states and error handling
 - User count display
 
-**Implementation:** 
-- Route: `routes/admin/index.tsx` 
+**Implementation:**
+
+- Route: `routes/admin/index.tsx`
 - Island: `islands/AdminDashboard.tsx`
 
 ### 3. Admin Menu Link
 
-Administrators see an "Admin Dashboard" link in the user menu dropdown. This link is only visible to users with the `admin` role.
+Administrators see an "Admin Dashboard" link in the user menu dropdown. This
+link is only visible to users with the `admin` role.
 
-**Implementation:** Modified `components/UserMenu.tsx` to conditionally show the admin link based on the user's role.
+**Implementation:** Modified `components/UserMenu.tsx` to conditionally show the
+admin link based on the user's role.
 
 ### 4. User Blocking
 
-Administrators can block users from accessing the application. Blocked users receive a 403 Forbidden error when attempting to access any protected resource.
+Administrators can block users from accessing the application. Blocked users
+receive a 403 Forbidden error when attempting to access any protected resource.
 
 **Implementation:**
+
 - Added `blocked` field to the User and UserProfile interfaces
 - Modified `utils/http.ts` `requireUser()` function to check if user is blocked
 - Added PUT endpoint to `routes/api/admin/users.ts` to toggle block status
@@ -52,9 +64,11 @@ Administrators can block users from accessing the application. Blocked users rec
 ### 5. API Endpoints
 
 #### GET `/api/admin/users`
+
 Lists all users in the system. Admin only.
 
 **Response:**
+
 ```json
 {
   "users": [
@@ -73,9 +87,11 @@ Lists all users in the system. Admin only.
 ```
 
 #### PATCH `/api/admin/users`
+
 Updates a user's role. Admin only.
 
 **Request:**
+
 ```json
 {
   "userId": 12345,
@@ -84,6 +100,7 @@ Updates a user's role. Admin only.
 ```
 
 **Response:**
+
 ```json
 {
   "user": {
@@ -96,13 +113,16 @@ Updates a user's role. Admin only.
 ```
 
 **Protections:**
+
 - Admins cannot demote themselves
 - Role changes are logged in the audit log
 
 #### PUT `/api/admin/users`
+
 Blocks or unblocks a user. Admin only.
 
 **Request:**
+
 ```json
 {
   "userId": 12345,
@@ -111,6 +131,7 @@ Blocks or unblocks a user. Admin only.
 ```
 
 **Response:**
+
 ```json
 {
   "user": {
@@ -123,27 +144,34 @@ Blocks or unblocks a user. Admin only.
 ```
 
 **Protections:**
+
 - Admins cannot block themselves
 - Block actions are logged in the audit log
 
 ## Data Model Changes
 
 ### User Interface (`utils/session.ts`)
+
 Added `blocked?: boolean` field to track user block status.
 
 ### UserProfile Interface
+
 Added `blocked?: boolean` field to:
+
 - `routes/auth/callback.ts`
 - `routes/api/admin/users.ts`
 
 ## Security
 
-1. **Admin-Only Access:** All admin endpoints require the `admin` role via `requireAdmin()` middleware
+1. **Admin-Only Access:** All admin endpoints require the `admin` role via
+   `requireAdmin()` middleware
 2. **Self-Protection:** Admins cannot:
    - Change their own role (prevent accidental demotion)
    - Block themselves (prevent self-lockout)
-3. **Blocked User Check:** All protected routes check if user is blocked via `requireUser()`
-4. **Audit Logging:** All admin actions (role changes, blocking) are logged with:
+3. **Blocked User Check:** All protected routes check if user is blocked via
+   `requireUser()`
+4. **Audit Logging:** All admin actions (role changes, blocking) are logged
+   with:
    - Timestamp
    - Admin ID and username
    - Target user ID
@@ -188,7 +216,8 @@ Added `blocked?: boolean` field to:
 
 ### For the First User
 
-The first user to register will automatically have admin privileges and can access the admin dashboard immediately.
+The first user to register will automatically have admin privileges and can
+access the admin dashboard immediately.
 
 ## Future Enhancements
 

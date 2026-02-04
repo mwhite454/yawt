@@ -1,6 +1,7 @@
 # RBAC Testing Guide
 
-This document describes how to test the newly implemented Role-Based Access Control (RBAC) system.
+This document describes how to test the newly implemented Role-Based Access
+Control (RBAC) system.
 
 ## Implementation Summary
 
@@ -76,6 +77,7 @@ The RBAC system has been successfully implemented with the following components:
 - [ ] Subsequent sign-ins update profile but preserve role
 
 **How to test:**
+
 1. Sign in with a new GitHub account
 2. Check KV database for user profile entry
 3. Verify role is set to "free"
@@ -91,6 +93,7 @@ The RBAC system has been successfully implemented with the following components:
 - [ ] Subscribers can create unlimited series
 
 **How to test:**
+
 1. As a free user, create 1 series via UI or API
 2. Try to create a 2nd series
 3. Verify 403 response with limit message
@@ -106,6 +109,7 @@ The RBAC system has been successfully implemented with the following components:
 - [ ] Subscribers can create unlimited books
 
 **How to test:**
+
 1. As a free user, create a series
 2. Create 3 books in that series
 3. Try to create a 4th book
@@ -116,11 +120,13 @@ The RBAC system has been successfully implemented with the following components:
 ### 4. Admin User Management API ✓ (Implemented)
 
 **GET /api/admin/users**
+
 - [ ] Returns 403 for non-admin users
 - [ ] Returns list of all users for admin
 - [ ] Users sorted by updatedAt (newest first)
 
 **PATCH /api/admin/users**
+
 - [ ] Returns 403 for non-admin users
 - [ ] Requires userId (number) and role (admin|subscriber|free)
 - [ ] Returns 400 for invalid inputs
@@ -131,6 +137,7 @@ The RBAC system has been successfully implemented with the following components:
 - [ ] Returns updated user profile
 
 **How to test:**
+
 1. Create a test admin user by manually setting role in KV
 2. Make GET request to `/api/admin/users` as admin
 3. Verify user list is returned
@@ -150,8 +157,8 @@ Test the permission utility functions:
 - [ ] Admins have all permissions
 - [ ] Undefined role defaults to "free"
 
-**How to test:**
-Create a test script or use Deno REPL to verify permission functions.
+**How to test:** Create a test script or use Deno REPL to verify permission
+functions.
 
 ### 6. Subscription Expiration (Future feature)
 
@@ -160,6 +167,7 @@ Create a test script or use Deno REPL to verify permission functions.
 - [ ] Expired users can't create beyond free limits
 
 **How to test:**
+
 1. Set subscriptionExpiresAt to past timestamp
 2. Verify user is treated as free tier
 3. Verify limits are enforced
@@ -256,7 +264,7 @@ for await (const entry of kv.list({ prefix: ["yawt", "user_profile"] })) {
 ## Expected Behavior Summary
 
 | User Role  | Max Series | Max Books/Series | Can Manage Users | Can Upload Images |
-|------------|------------|------------------|------------------|-------------------|
+| ---------- | ---------- | ---------------- | ---------------- | ----------------- |
 | free       | 1          | 3                | ❌               | ❌                |
 | subscriber | Unlimited  | Unlimited        | ❌               | ✅                |
 | admin      | Unlimited  | Unlimited        | ✅               | ✅                |
@@ -273,16 +281,19 @@ for await (const entry of kv.list({ prefix: ["yawt", "user_profile"] })) {
 ## Troubleshooting
 
 **Issue: User role not being set**
+
 - Check auth callback logs
 - Verify KV database connection
 - Check user profile KV entry
 
 **Issue: Limits not enforced**
+
 - Verify hasPermission() is being called
 - Check user.role value in session
 - Verify FREE_TIER_LIMITS constant
 
 **Issue: Admin API returns 403**
+
 - Check user's role in KV database
 - Verify session cookie is valid
 - Check requireAdmin() middleware
@@ -297,7 +308,8 @@ for await (const entry of kv.list({ prefix: ["yawt", "user_profile"] })) {
 
 ## Conclusion
 
-The RBAC system has been fully implemented according to specifications. All core functionality is in place:
+The RBAC system has been fully implemented according to specifications. All core
+functionality is in place:
 
 - ✅ Role-based permissions system
 - ✅ Free tier limits enforcement
@@ -306,4 +318,5 @@ The RBAC system has been fully implemented according to specifications. All core
 - ✅ Audit logging
 - ✅ Middleware for permission checking
 
-The system is ready for testing and integration with a billing system in the future.
+The system is ready for testing and integration with a billing system in the
+future.

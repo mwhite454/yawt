@@ -1,8 +1,8 @@
 import type { User } from "@utils/session.ts";
 import {
-  ROLE_PERMISSIONS,
   FREE_TIER_LIMITS,
   type Permission,
+  ROLE_PERMISSIONS,
   type UserRole,
 } from "./types.ts";
 
@@ -12,14 +12,14 @@ import {
  */
 export function getUserRole(user: User): UserRole {
   const role = user.role ?? "free";
-  
+
   // If subscriber, check if subscription has expired
   if (role === "subscriber") {
     if (user.subscriptionExpiresAt && user.subscriptionExpiresAt < Date.now()) {
       return "free";
     }
   }
-  
+
   return role;
 }
 

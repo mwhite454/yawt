@@ -336,11 +336,11 @@ export default function DraggableList<T extends DraggableItem>({
 
         {items.map((item, index) => {
           const isBeingDragged = currentDragIndex === index;
-          const isHoverTarget =
-            hoverIndex === index && currentDragIndex !== index;
+          const isHoverTarget = hoverIndex === index &&
+            currentDragIndex !== index;
           const isKeyboardGrabbed = keyboardGrabbedIndex === index;
-          const isActive =
-            activeId !== undefined && (item as { id?: string }).id === activeId;
+          const isActive = activeId !== undefined &&
+            (item as { id?: string }).id === activeId;
 
           const itemClasses = [
             // Base styling
@@ -348,7 +348,7 @@ export default function DraggableList<T extends DraggableItem>({
             // Drag visual feedback
             isBeingDragged && "opacity-50",
             isKeyboardGrabbed &&
-              "ring-2 ring-primary ring-offset-2 ring-offset-base-100",
+            "ring-2 ring-primary ring-offset-2 ring-offset-base-100",
             // Hover target indicator
             isHoverTarget && "border-t-2 border-primary",
             // Disabled state
@@ -397,25 +397,28 @@ export default function DraggableList<T extends DraggableItem>({
             "aria-dropeffect": isDragging
               ? ("move" as const)
               : ("none" as const),
-            style:
-              touchDragIndex === index ? { touchAction: "none" } : undefined,
+            style: touchDragIndex === index
+              ? { touchAction: "none" }
+              : undefined,
           };
 
           return (
             <li key={getItemKey(item, index)} class={itemClasses}>
-              {itemHref ? (
-                <a
-                  {...commonProps}
-                  href={itemHref(item, index)}
-                  class={isActive ? "active" : ""}
-                >
-                  {content}
-                </a>
-              ) : (
-                <div {...commonProps} class="cursor-grab">
-                  {content}
-                </div>
-              )}
+              {itemHref
+                ? (
+                  <a
+                    {...commonProps}
+                    href={itemHref(item, index)}
+                    class={isActive ? "active" : ""}
+                  >
+                    {content}
+                  </a>
+                )
+                : (
+                  <div {...commonProps} class="cursor-grab">
+                    {content}
+                  </div>
+                )}
             </li>
           );
         })}

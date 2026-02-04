@@ -1,12 +1,12 @@
 import { Handlers } from "$fresh/server.ts";
 import { kv } from "@utils/kv.ts";
-import { requireAdmin, json, badRequest, notFound } from "@utils/http.ts";
+import { badRequest, json, notFound, requireAdmin } from "@utils/http.ts";
 import {
   allUserProfilesPrefix,
-  userProfileKey,
   auditLogKey,
+  userProfileKey,
 } from "@utils/auth/keys.ts";
-import type { UserRole, SubscriptionTier } from "@utils/auth/types.ts";
+import type { SubscriptionTier, UserRole } from "@utils/auth/types.ts";
 
 interface UserProfile {
   id: number;
@@ -39,9 +39,11 @@ export const handler: Handlers = {
     if (adminOrRes instanceof Response) return adminOrRes;
 
     const users: UserProfile[] = [];
-    for await (const entry of kv.list<UserProfile>({
-      prefix: allUserProfilesPrefix(),
-    })) {
+    for await (
+      const entry of kv.list<UserProfile>({
+        prefix: allUserProfilesPrefix(),
+      })
+    ) {
       if (entry.value) users.push(entry.value);
     }
 
@@ -180,7 +182,10 @@ export const handler: Handlers = {
       .atomic()
       .check(userRes)
       .set(userProfileKey(userId), updatedUser)
-      .set(auditLogKey(now, blocked ? "user_blocked" : "user_unblocked"), auditEntry)
+      .set(
+        auditLogKey(now, blocked ? "user_blocked" : "user_unblocked"),
+        auditEntry,
+      )
       .commit();
 
     if (!result.ok) {

@@ -97,9 +97,9 @@ export type SubscriptionTier = "free" | "monthly" | "annual";
 ```typescript
 import type { User } from "@utils/session.ts";
 import {
-  ROLE_PERMISSIONS,
   FREE_TIER_LIMITS,
   type Permission,
+  ROLE_PERMISSIONS,
   type UserRole,
 } from "./types.ts";
 
@@ -226,7 +226,7 @@ Update the `User` interface to include RBAC fields:
 
 ```typescript
 // Add import at top:
-import type { UserRole, SubscriptionTier } from "@utils/auth/types.ts";
+import type { SubscriptionTier, UserRole } from "@utils/auth/types.ts";
 
 // Update User interface:
 export interface User {
@@ -295,11 +295,11 @@ export async function requireAdmin(req: Request): Promise<User | Response> {
 ```typescript
 import { Handlers } from "$fresh/server.ts";
 import { kv } from "@utils/kv.ts";
-import { requireAdmin, json, badRequest, notFound } from "@utils/http.ts";
+import { badRequest, json, notFound, requireAdmin } from "@utils/http.ts";
 import {
   allUserProfilesPrefix,
-  userProfileKey,
   auditLogKey,
+  userProfileKey,
 } from "@utils/auth/keys.ts";
 import type { User } from "@utils/session.ts";
 import type { UserRole } from "@utils/auth/types.ts";
@@ -334,9 +334,11 @@ export const handler: Handlers = {
     if (adminOrRes instanceof Response) return adminOrRes;
 
     const users: UserProfile[] = [];
-    for await (const entry of kv.list<UserProfile>({
-      prefix: allUserProfilesPrefix(),
-    })) {
+    for await (
+      const entry of kv.list<UserProfile>({
+        prefix: allUserProfilesPrefix(),
+      })
+    ) {
       if (entry.value) users.push(entry.value);
     }
 
@@ -457,9 +459,11 @@ import { FREE_TIER_LIMITS } from "@utils/auth/types.ts";
 // Check free tier book limit
 if (!hasPermission(user, "create:unlimited_books")) {
   let bookCount = 0;
-  for await (const _ of kv.list({
-    prefix: ["yawt", "book", user.id, seriesId],
-  })) {
+  for await (
+    const _ of kv.list({
+      prefix: ["yawt", "book", user.id, seriesId],
+    })
+  ) {
     bookCount++;
   }
 

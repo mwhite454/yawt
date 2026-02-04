@@ -5,7 +5,7 @@ import { kv } from "./kv.ts";
 export { DAISYUI_THEMES, type DaisyUITheme } from "./themes.ts";
 
 // Import RBAC types
-import type { UserRole, SubscriptionTier } from "@utils/auth/types.ts";
+import type { SubscriptionTier, UserRole } from "@utils/auth/types.ts";
 
 export interface User {
   login: string;

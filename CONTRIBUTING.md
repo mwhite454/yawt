@@ -1,3 +1,23 @@
+## Code Formatting
+
+**IMPORTANT: Always run `deno fmt` before committing code.**
+
+This project uses Deno's built-in formatter to maintain consistent code style.
+Before every commit, run:
+
+```bash
+deno fmt
+```
+
+To check if files are properly formatted without modifying them:
+
+```bash
+deno fmt --check
+```
+
+AI agents and contributors must ensure all code is formatted before committing
+to avoid formatting-related CI failures.
+
 ## Environment Setup
 
 This repository uses GitHub Secrets for sensitive configuration.

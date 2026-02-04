@@ -4,7 +4,7 @@ import { setUser, type User } from "@utils/session.ts";
 import { isValidTheme } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
 import { userProfileKey } from "@utils/auth/keys.ts";
-import type { UserRole, SubscriptionTier } from "@utils/auth/types.ts";
+import type { SubscriptionTier, UserRole } from "@utils/auth/types.ts";
 
 interface UserProfile {
   id: number;
@@ -66,12 +66,17 @@ export const handler: Handlers = {
 
       // Initialize or update user profile for RBAC
       const now = Date.now();
-      const existingProfile = await kv.get<UserProfile>(userProfileKey(githubUser.id));
+      const existingProfile = await kv.get<UserProfile>(
+        userProfileKey(githubUser.id),
+      );
 
       if (!existingProfile.value) {
         // First sign-in - create profile
         // Check if this is the first user in the system (more efficient with limit)
-        const existingProfiles = kv.list({ prefix: ["yawt", "user_profile"], limit: 1 });
+        const existingProfiles = kv.list({
+          prefix: ["yawt", "user_profile"],
+          limit: 1,
+        });
         let isFirstUser = true;
         for await (const _entry of existingProfiles) {
           isFirstUser = false;
@@ -101,7 +106,9 @@ export const handler: Handlers = {
       }
 
       // Load user profile to get role and subscription info
-      const userProfile = await kv.get<UserProfile>(userProfileKey(githubUser.id));
+      const userProfile = await kv.get<UserProfile>(
+        userProfileKey(githubUser.id),
+      );
 
       // Store user in session
       const user: User = {

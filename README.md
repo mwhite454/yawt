@@ -58,12 +58,13 @@ automatically reload when you make changes to your code with the `--watch` flag.
 
 ### Component Stories
 
-View component documentation and examples at `http://localhost:8000/stories/` when
-the development server is running.
+View component documentation and examples at `http://localhost:8000/stories/`
+when the development server is running.
 
 This project uses [Denostories](https://github.com/CAYdenberg/denostories) for
-component development and documentation. See [docs/DENOSTORIES.md](docs/DENOSTORIES.md)
-for a guide on creating story files for components and islands.
+component development and documentation. See
+[docs/DENOSTORIES.md](docs/DENOSTORIES.md) for a guide on creating story files
+for components and islands.
 
 ### Production
 
@@ -146,7 +147,8 @@ deno task check
   [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
 - **Storage**: Deno KV (built-in key-value database)
 - **Images**: Optional Cloudflare R2 (uploads via same-origin API route)
-- **Component Development**: Denostories 0.3.0 (component documentation and testing)
+- **Component Development**: Denostories 0.3.0 (component documentation and
+  testing)
 
 ## Features
 

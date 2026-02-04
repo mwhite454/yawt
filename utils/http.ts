@@ -34,15 +34,17 @@ export function forbidden(message: string) {
 export async function requireUser(req: Request): Promise<User | Response> {
   const user = await getUser(req);
   if (!user) return unauthorized();
-  
+
   // Check the live user profile from KV to ensure blocked status is current
   // This ensures that if a user is blocked, the block takes effect immediately
   // even for users with existing sessions
-  const userProfile = await kv.get<{ blocked?: boolean }>(userProfileKey(user.id));
+  const userProfile = await kv.get<{ blocked?: boolean }>(
+    userProfileKey(user.id),
+  );
   if (userProfile.value?.blocked) {
     return forbidden("Your account has been blocked. Please contact support.");
   }
-  
+
   return user;
 }
 
