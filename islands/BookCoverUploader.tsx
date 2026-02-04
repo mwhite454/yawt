@@ -37,6 +37,11 @@ export default function BookCoverUploader(props: Props) {
     };
   }, []);
 
+  // Keep local cover image state in sync with prop changes
+  useEffect(() => {
+    setCurrentCoverImage(props.existingCoverImage);
+  }, [props.existingCoverImage]);
+
   function handleBookCoverClick() {
     fileInputRef.current?.click();
   }
