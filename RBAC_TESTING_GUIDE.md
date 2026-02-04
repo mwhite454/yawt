@@ -53,8 +53,9 @@ The RBAC system has been successfully implemented with the following components:
    - Added `requireAdmin()`: Middleware to require admin role
 
 3. **`routes/auth/callback.ts`**
-   - Creates user profile on first sign-in with "free" role
+   - Creates user profile on first sign-in (admin if first user, free otherwise)
    - Updates profile on subsequent sign-ins
+   - Automatically grants admin role if user is the only user in the system
    - Loads role and subscription info into session
 
 4. **`routes/series/index.tsx`** and **`routes/api/series.ts`**

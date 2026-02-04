@@ -185,7 +185,8 @@ For existing users:
 2. User profiles will be created on next sign-in
 3. Existing series/books are NOT affected
 4. Limits only apply to NEW creations
-5. To create admin users, manually set role in KV database
+5. The only user in the system is automatically granted admin role on login
+6. To manually create admin users in multi-user systems, set role in KV database
 
 ## KV Database Schema
 
