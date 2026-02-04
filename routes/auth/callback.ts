@@ -70,6 +70,7 @@ export const handler: Handlers = {
         userProfileKey(githubUser.id),
       );
 
+      let currentProfile: UserProfile;
       if (!existingProfile.value) {
         // First sign-in - create profile
         // Check if this is the first user in the system (more efficient with limit)
@@ -83,7 +84,7 @@ export const handler: Handlers = {
           break;
         }
 
-        const newProfile: UserProfile = {
+        currentProfile = {
           id: githubUser.id,
           login: githubUser.login,
           name: githubUser.name,
@@ -92,17 +93,17 @@ export const handler: Handlers = {
           createdAt: now,
           updatedAt: now,
         };
-        await kv.set(userProfileKey(githubUser.id), newProfile);
+        await kv.set(userProfileKey(githubUser.id), currentProfile);
       } else {
         // Update existing profile
-        const updatedProfile: UserProfile = {
+        currentProfile = {
           ...existingProfile.value,
           login: githubUser.login,
           name: githubUser.name,
           avatar_url: githubUser.avatar_url,
           updatedAt: now,
         };
-        await kv.set(userProfileKey(githubUser.id), updatedProfile);
+        await kv.set(userProfileKey(githubUser.id), currentProfile);
       }
 
       // Check if this user is the only user in the system
@@ -118,26 +119,16 @@ export const handler: Handlers = {
       }
 
       // If only one user exists, ensure they have admin role
-      if (userCount === 1) {
-        const currentProfile = await kv.get<UserProfile>(
-          userProfileKey(githubUser.id),
-        );
-        if (currentProfile.value && currentProfile.value.role !== "admin") {
-          const adminProfile: UserProfile = {
-            ...currentProfile.value,
-            role: "admin",
-            updatedAt: now,
-          };
-          await kv.set(userProfileKey(githubUser.id), adminProfile);
-        }
+      if (userCount === 1 && currentProfile.role !== "admin") {
+        currentProfile = {
+          ...currentProfile,
+          role: "admin",
+          updatedAt: Date.now(), // Use fresh timestamp for role upgrade
+        };
+        await kv.set(userProfileKey(githubUser.id), currentProfile);
       }
 
-      // Load user profile to get role and subscription info
-      const userProfile = await kv.get<UserProfile>(
-        userProfileKey(githubUser.id),
-      );
-
-      // Store user in session
+      // Store user in session using the current profile
       const user: User = {
         login: githubUser.login,
         id: githubUser.id,
@@ -147,12 +138,12 @@ export const handler: Handlers = {
         // Use validated theme preference if available
         defaultTheme: validatedTheme,
         // Include RBAC fields from profile
-        role: userProfile.value?.role,
-        subscriptionTier: userProfile.value?.subscriptionTier,
-        subscriptionExpiresAt: userProfile.value?.subscriptionExpiresAt,
-        createdAt: userProfile.value?.createdAt,
-        updatedAt: userProfile.value?.updatedAt,
-        blocked: userProfile.value?.blocked,
+        role: currentProfile.role,
+        subscriptionTier: currentProfile.subscriptionTier,
+        subscriptionExpiresAt: currentProfile.subscriptionExpiresAt,
+        createdAt: currentProfile.createdAt,
+        updatedAt: currentProfile.updatedAt,
+        blocked: currentProfile.blocked,
       };
 
       await setUser(sessionId, user);
