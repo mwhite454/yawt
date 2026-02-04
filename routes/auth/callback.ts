@@ -105,6 +105,33 @@ export const handler: Handlers = {
         await kv.set(userProfileKey(githubUser.id), updatedProfile);
       }
 
+      // Check if this user is the only user in the system
+      // If so, automatically grant admin access
+      const allProfiles = kv.list({
+        prefix: ["yawt", "user_profile"],
+        limit: 2, // Only need to check if there are 1 or 2+ users
+      });
+      let userCount = 0;
+      for await (const _entry of allProfiles) {
+        userCount++;
+        if (userCount > 1) break; // No need to count further
+      }
+
+      // If only one user exists, ensure they have admin role
+      if (userCount === 1) {
+        const currentProfile = await kv.get<UserProfile>(
+          userProfileKey(githubUser.id),
+        );
+        if (currentProfile.value && currentProfile.value.role !== "admin") {
+          const adminProfile: UserProfile = {
+            ...currentProfile.value,
+            role: "admin",
+            updatedAt: now,
+          };
+          await kv.set(userProfileKey(githubUser.id), adminProfile);
+        }
+      }
+
       // Load user profile to get role and subscription info
       const userProfile = await kv.get<UserProfile>(
         userProfileKey(githubUser.id),
