@@ -9,6 +9,7 @@ import {
 } from "@utils/http.ts";
 import type { Book } from "@utils/story/types.ts";
 import { bookKey, bookOrderKey } from "@utils/story/keys.ts";
+import { deleteObject, getR2Bucket } from "@utils/r2.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -51,16 +52,80 @@ export const handler: Handlers = {
       : undefined;
     const isbn = typeof body.isbn === "string" ? body.isbn.trim() : undefined;
 
+    const expectedImagePrefix =
+      `yawt/user/${user.id}/series/${seriesId}/books/${bookId}/cover/`;
+
+    const prevObjectKey = entry.value.coverImage?.objectKey;
+
+    let nextCoverImage: Book["coverImage"] | undefined = entry.value
+      .coverImage;
+    if (Object.prototype.hasOwnProperty.call(body, "coverImage")) {
+      const raw = (body as { coverImage?: unknown }).coverImage;
+      if (raw === null) {
+        nextCoverImage = undefined;
+      } else if (raw === undefined) {
+        // no-op
+      } else if (typeof raw === "object" && raw && !Array.isArray(raw)) {
+        const img = raw as Record<string, unknown>;
+
+        const objectKey = typeof img.objectKey === "string"
+          ? img.objectKey.trim()
+          : "";
+        if (!objectKey) return badRequest("coverImage.objectKey is required");
+        if (!objectKey.startsWith(expectedImagePrefix)) {
+          return badRequest(
+            `coverImage.objectKey must start with ${expectedImagePrefix}`,
+          );
+        }
+
+        const contentType = typeof img.contentType === "string"
+          ? img.contentType.trim()
+          : undefined;
+        const url = typeof img.url === "string" ? img.url.trim() : undefined;
+
+        nextCoverImage = {
+          objectKey,
+          ...(contentType ? { contentType } : {}),
+          ...(url ? { url } : {}),
+        };
+      } else {
+        return badRequest("coverImage must be an object or null");
+      }
+    }
+
     const updated: Book = {
       ...entry.value,
       title: title ?? entry.value.title,
       author: author ?? entry.value.author,
       publishDate: publishDate ?? entry.value.publishDate,
       isbn: isbn ?? entry.value.isbn,
+      coverImage: nextCoverImage,
       updatedAt: Date.now(),
     };
 
     await kv.set(key, updated);
+
+    const nextObjectKey = updated.coverImage?.objectKey;
+    if (prevObjectKey && prevObjectKey !== nextObjectKey) {
+      const bucket = getR2Bucket();
+      if (!bucket) {
+        console.warn(
+          "R2 bucket env var missing; skipping old image deletion",
+          prevObjectKey,
+        );
+      } else {
+        try {
+          await deleteObject({ bucket, key: prevObjectKey });
+        } catch (err) {
+          console.warn(
+            "Failed to delete previous book cover from R2",
+            prevObjectKey,
+            String(err),
+          );
+        }
+      }
+    }
+
     return json({ book: updated }, { status: 200 });
   },
 

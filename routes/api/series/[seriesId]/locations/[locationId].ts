@@ -9,6 +9,7 @@ import {
 } from "@utils/http.ts";
 import type { Location } from "@utils/story/types.ts";
 import { locationKey } from "@utils/story/keys.ts";
+import { deleteObject, getR2Bucket } from "@utils/r2.ts";
 
 function toStringArray(value: unknown): string[] | undefined {
   if (value == null) return undefined;
@@ -57,12 +58,53 @@ export const handler: Handlers = {
     const name = typeof body.name === "string" ? body.name.trim() : undefined;
     if (name !== undefined && !name) return badRequest("name cannot be empty");
 
+    const expectedImagePrefix =
+      `yawt/user/${user.id}/series/${seriesId}/locations/${locationId}/`;
+
+    const prevObjectKey = entry.value.image?.objectKey;
+
+    let nextImage: Location["image"] | undefined = entry.value.image;
+    if (Object.prototype.hasOwnProperty.call(body, "image")) {
+      const raw = (body as { image?: unknown }).image;
+      if (raw === null) {
+        nextImage = undefined;
+      } else if (raw === undefined) {
+        // no-op
+      } else if (typeof raw === "object" && raw && !Array.isArray(raw)) {
+        const img = raw as Record<string, unknown>;
+
+        const objectKey = typeof img.objectKey === "string"
+          ? img.objectKey.trim()
+          : "";
+        if (!objectKey) return badRequest("image.objectKey is required");
+        if (!objectKey.startsWith(expectedImagePrefix)) {
+          return badRequest(
+            `image.objectKey must start with ${expectedImagePrefix}`,
+          );
+        }
+
+        const contentType = typeof img.contentType === "string"
+          ? img.contentType.trim()
+          : undefined;
+        const url = typeof img.url === "string" ? img.url.trim() : undefined;
+
+        nextImage = {
+          objectKey,
+          ...(contentType ? { contentType } : {}),
+          ...(url ? { url } : {}),
+        };
+      } else {
+        return badRequest("image must be an object or null");
+      }
+    }
+
     const updated: Location = {
       ...entry.value,
       name: name ?? entry.value.name,
       description: typeof body.description === "string"
         ? body.description.trim()
         : entry.value.description,
+      image: nextImage,
       tags: body.tags !== undefined
         ? toStringArray(body.tags)
         : entry.value.tags,
@@ -89,6 +131,28 @@ export const handler: Handlers = {
     };
 
     await kv.set(key, updated);
+
+    const nextObjectKey = updated.image?.objectKey;
+    if (prevObjectKey && prevObjectKey !== nextObjectKey) {
+      const bucket = getR2Bucket();
+      if (!bucket) {
+        console.warn(
+          "R2 bucket env var missing; skipping old image deletion",
+          prevObjectKey,
+        );
+      } else {
+        try {
+          await deleteObject({ bucket, key: prevObjectKey });
+        } catch (err) {
+          console.warn(
+            "Failed to delete previous location image from R2",
+            prevObjectKey,
+            String(err),
+          );
+        }
+      }
+    }
+
     return json({ location: updated }, { status: 200 });
   },
 

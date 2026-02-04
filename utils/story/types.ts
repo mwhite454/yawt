@@ -11,7 +11,7 @@ export interface Series {
   userId: UserId;
   title: string;
   description?: string;
-  assets?: AssetImage[];
+  icon?: AssetImage;
   createdAt: number;
   updatedAt: number;
 }
@@ -97,6 +97,7 @@ export interface Location {
   seriesId: string;
   name: string;
   description?: string;
+  image?: AssetImage;
   tags?: string[];
   links?: Array<{ locationId: string; kind?: string }>;
   coords?: { x?: number; y?: number };
