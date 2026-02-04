@@ -108,6 +108,9 @@ export const handler: Handlers = {
 
       // Check if this user is the only user in the system
       // If so, automatically grant admin access
+      // Note: This check runs on every login with limit=2, which is very efficient
+      // even for multi-user systems. It's designed for single-user development
+      // and small-scale deployments where automatic admin assignment is beneficial.
       const allProfiles = kv.list({
         prefix: ["yawt", "user_profile"],
         limit: 2, // Only need to check if there are 1 or 2+ users
