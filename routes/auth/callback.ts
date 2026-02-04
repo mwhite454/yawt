@@ -3,7 +3,7 @@ import { handleCallback } from "@utils/oauth.ts";
 import { setUser, type User } from "@utils/session.ts";
 import { isValidTheme } from "@utils/themes.ts";
 import { kv } from "@utils/kv.ts";
-import { userProfileKey } from "@utils/auth/keys.ts";
+import { allUserProfilesPrefix, userProfileKey } from "@utils/auth/keys.ts";
 import type { SubscriptionTier, UserRole } from "@utils/auth/types.ts";
 
 interface UserProfile {
@@ -71,18 +71,22 @@ export const handler: Handlers = {
       );
 
       let currentProfile: UserProfile;
+      let userCountFromFirstScan: number | null = null;
+
       if (!existingProfile.value) {
         // First sign-in - create profile
         // Check if this is the first user in the system (more efficient with limit)
         const existingProfiles = kv.list({
-          prefix: ["yawt", "user_profile"],
-          limit: 1,
+          prefix: allUserProfilesPrefix(),
+          limit: 2, // Check up to 2 to determine if 0, 1, or 2+ users
         });
-        let isFirstUser = true;
+        let count = 0;
         for await (const _entry of existingProfiles) {
-          isFirstUser = false;
-          break;
+          count++;
+          if (count > 1) break; // No need to count further
         }
+        userCountFromFirstScan = count;
+        const isFirstUser = count === 0;
 
         currentProfile = {
           id: githubUser.id,
@@ -111,14 +115,23 @@ export const handler: Handlers = {
       // Note: This check runs on every login with limit=2, which is very efficient
       // even for multi-user systems. It's designed for single-user development
       // and small-scale deployments where automatic admin assignment is beneficial.
-      const allProfiles = kv.list({
-        prefix: ["yawt", "user_profile"],
-        limit: 2, // Only need to check if there are 1 or 2+ users
-      });
-      let userCount = 0;
-      for await (const _entry of allProfiles) {
-        userCount++;
-        if (userCount > 1) break; // No need to count further
+      // On first sign-in, we reuse the count from above to avoid a second scan.
+      let userCount: number;
+      if (userCountFromFirstScan !== null) {
+        // Reuse count from first sign-in scan (we just created the profile, so add 1)
+        userCount = userCountFromFirstScan + 1;
+      } else {
+        // Existing user - need to count profiles
+        const allProfiles = kv.list({
+          prefix: allUserProfilesPrefix(),
+          limit: 2, // Only need to check if there are 1 or 2+ users
+        });
+        let count = 0;
+        for await (const _entry of allProfiles) {
+          count++;
+          if (count > 1) break; // No need to count further
+        }
+        userCount = count;
       }
 
       // If only one user exists, ensure they have admin role

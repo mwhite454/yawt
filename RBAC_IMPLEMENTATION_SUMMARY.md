@@ -145,7 +145,9 @@ All 8 tasks from the problem statement have been completed:
 
 Per the problem statement, the following should be tested:
 
-- [ ] New users default to "free" role
+- [ ] First user in system gets "admin" role
+- [ ] Subsequent users default to "free" role
+- [ ] Sole user (only user) is auto-promoted to "admin" on login
 - [ ] Free users cannot create more than 1 series
 - [ ] Free users cannot create more than 3 books per series
 - [ ] Subscribers have no limits

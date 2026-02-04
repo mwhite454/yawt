@@ -72,18 +72,23 @@ The RBAC system has been successfully implemented with the following components:
 
 ### 1. User Profile Initialization ✓ (Auto-tested on sign-in)
 
-- [ ] First-time user gets "free" role automatically
+- [ ] First user in system gets "admin" role automatically
+- [ ] Subsequent users get "free" role automatically
+- [ ] Sole user (only user in system) is auto-promoted to "admin" on login
 - [ ] User profile is created in KV at `["yawt", "user_profile", userId]`
 - [ ] Profile includes: id, login, name, avatar_url, role, createdAt, updatedAt
-- [ ] Subsequent sign-ins update profile but preserve role
+- [ ] Subsequent sign-ins update profile but preserve role (unless sole user)
 
 **How to test:**
 
-1. Sign in with a new GitHub account
+1. Sign in with a new GitHub account as the first user
 2. Check KV database for user profile entry
-3. Verify role is set to "free"
-4. Sign out and sign in again
-5. Verify role is preserved
+3. Verify role is set to "admin" (first user)
+4. Add a second user (sign in with different account)
+5. Verify second user has role "free"
+6. Remove the first user's profile from KV
+7. Sign in again as the second user
+8. Verify role is now "admin" (sole user auto-promotion)
 
 ### 2. Free Tier Series Limit ✓ (Enforced in code)
 
