@@ -32,7 +32,7 @@ export default function BookCoverUploader(props: Props) {
   useEffect(() => {
     return () => {
       if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current);
+        window.clearTimeout(timeoutRef.current);
       }
     };
   }, []);
@@ -44,7 +44,7 @@ export default function BookCoverUploader(props: Props) {
   async function onPickFile(file: File | null) {
     // Clear any existing timeout
     if (timeoutRef.current !== null) {
-      clearTimeout(timeoutRef.current);
+      window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
 
@@ -111,10 +111,11 @@ export default function BookCoverUploader(props: Props) {
       setStatus("done");
 
       // Clear the done status after 3 seconds
-      timeoutRef.current = setTimeout(() => {
+      // Using window.setTimeout to get correct return type (number in browser)
+      timeoutRef.current = window.setTimeout(() => {
         setStatus((prevStatus) => prevStatus === "done" ? "idle" : prevStatus);
         timeoutRef.current = null;
-      }, 3000) as unknown as number;
+      }, 3000);
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : String(err));
