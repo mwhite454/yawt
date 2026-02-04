@@ -16,6 +16,7 @@ interface UserProfile {
   subscriptionExpiresAt?: number;
   createdAt?: number;
   updatedAt?: number;
+  blocked?: boolean;
 }
 
 export const handler: Handlers = {
