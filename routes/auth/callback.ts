@@ -16,6 +16,7 @@ interface UserProfile {
   subscriptionExpiresAt?: number;
   createdAt?: number;
   updatedAt?: number;
+  blocked?: boolean;
 }
 
 export const handler: Handlers = {
@@ -68,13 +69,21 @@ export const handler: Handlers = {
       const existingProfile = await kv.get<UserProfile>(userProfileKey(githubUser.id));
 
       if (!existingProfile.value) {
-        // First sign-in - create profile with free tier
+        // First sign-in - create profile
+        // Check if this is the first user in the system (more efficient with limit)
+        const existingProfiles = kv.list({ prefix: ["yawt", "user_profile"], limit: 1 });
+        let isFirstUser = true;
+        for await (const _entry of existingProfiles) {
+          isFirstUser = false;
+          break;
+        }
+
         const newProfile: UserProfile = {
           id: githubUser.id,
           login: githubUser.login,
           name: githubUser.name,
           avatar_url: githubUser.avatar_url,
-          role: "free",
+          role: isFirstUser ? "admin" : "free",
           createdAt: now,
           updatedAt: now,
         };
@@ -109,6 +118,7 @@ export const handler: Handlers = {
         subscriptionExpiresAt: userProfile.value?.subscriptionExpiresAt,
         createdAt: userProfile.value?.createdAt,
         updatedAt: userProfile.value?.updatedAt,
+        blocked: userProfile.value?.blocked,
       };
 
       await setUser(sessionId, user);
