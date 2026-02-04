@@ -19,7 +19,11 @@ export function BookCover(
       title="Click to upload or change cover image"
     >
       <div class="card bg-base-100 shadow-xl h-full max-h-[250px] overflow-hidden hover:shadow-2xl transition-shadow duration-300">
-        {/* 8 empty divs required for 3D hover effect */}
+        {/* 8 empty divs required for daisyUI 3D hover effect 
+            These divs are part of the daisyUI hover-3d component pattern
+            See: https://daisyui.com/components/hover-3d/
+            They create the layered effect needed for the 3D transformation
+        */}
         <div></div>
         <div></div>
         <div></div>

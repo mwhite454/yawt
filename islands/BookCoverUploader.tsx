@@ -1,4 +1,4 @@
-import { useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { BookCover } from "@components/BookCover.tsx";
 import type { AssetImage } from "@utils/story/types.ts";
 
@@ -19,6 +19,7 @@ type Props = {
 
 export default function BookCoverUploader(props: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<number | null>(null);
   const [status, setStatus] = useState<
     "idle" | "uploading" | "saving" | "done" | "error"
   >("idle");
@@ -27,11 +28,26 @@ export default function BookCoverUploader(props: Props) {
     AssetImage | undefined
   >(props.existingCoverImage);
 
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   function handleBookCoverClick() {
     fileInputRef.current?.click();
   }
 
   async function onPickFile(file: File | null) {
+    // Clear any existing timeout
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
     setError(null);
     setStatus("idle");
 
@@ -95,9 +111,10 @@ export default function BookCoverUploader(props: Props) {
       setStatus("done");
 
       // Clear the done status after 3 seconds
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         setStatus((prevStatus) => prevStatus === "done" ? "idle" : prevStatus);
-      }, 3000);
+        timeoutRef.current = null;
+      }, 3000) as unknown as number;
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : String(err));
