@@ -96,7 +96,7 @@ export default function BookCoverUploader(props: Props) {
 
       // Clear the done status after 3 seconds
       setTimeout(() => {
-        if (status === "done") setStatus("idle");
+        setStatus((prevStatus) => prevStatus === "done" ? "idle" : prevStatus);
       }, 3000);
     } catch (err) {
       setStatus("error");
