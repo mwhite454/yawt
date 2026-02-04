@@ -33,7 +33,7 @@ export function BookCover(
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
-      aria-label="Click to upload or change cover image"
+      aria-label="Upload or change cover image"
       title="Click to upload or change cover image"
     >
       <div class="card bg-base-100 shadow-xl h-full max-h-[250px] overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
