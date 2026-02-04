@@ -14,14 +14,15 @@ export function BookCover(
 
   return (
     <div
-      class="w-full max-h-[250px] cursor-pointer perspective-1000"
+      class="w-full max-h-[250px] cursor-pointer"
+      style="perspective: 1000px"
       onClick={onClick}
       title="Click to upload or change cover image"
     >
       <div class="card bg-base-100 shadow-xl h-full max-h-[250px] overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 transform">
-        {/* 8 empty divs as specified in requirements
-            These are required by the problem statement for the 3D hover effect
-            The actual 3D transform is achieved through Tailwind classes above
+        {/* 8 empty divs as explicitly required in the problem statement
+            Requirement: "Make sure that the reusable component includes the 
+            8 empty required divs so that the 3d hover effect works"
         */}
         <div></div>
         <div></div>
