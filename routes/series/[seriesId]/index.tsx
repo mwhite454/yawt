@@ -9,6 +9,7 @@ import { bookKey, bookOrderKey, seriesKey } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import ImageUploader from "@islands/ImageUploader.tsx";
+import BookCoverUploader from "@islands/BookCoverUploader.tsx";
 
 interface Data {
   user: User;
@@ -195,32 +196,23 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
                 </div>
               )
               : (
-                <div class="grid md:grid-cols-2 gap-3">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {data.books.map((b) => (
-                    <div
-                      key={b.id}
-                      class="card bg-base-200"
-                    >
-                      <div class="card-body p-4">
-                        <a
-                          class="font-semibold hover:underline"
-                          href={`/series/${series.id}/books/${b.id}`}
-                        >
-                          {b.title}
-                        </a>
-                        <div class="text-sm opacity-70">Open scenes</div>
-
-                        <div class="divider my-2" />
-
-                        <ImageUploader
-                          uploadPath={`/api/series/${series.id}/books/${b.id}/image/upload`}
-                          updatePath={`/api/series/${series.id}/books/${b.id}`}
-                          fieldName="coverImage"
-                          existingObjectKey={b.coverImage?.objectKey}
-                          existingContentType={b.coverImage?.contentType}
-                          label="Cover Image"
-                        />
-                      </div>
+                    <div key={b.id}>
+                      <BookCoverUploader
+                        title={b.title}
+                        authorName={data.user.name}
+                        uploadPath={`/api/series/${series.id}/books/${b.id}/image/upload`}
+                        updatePath={`/api/series/${series.id}/books/${b.id}`}
+                        fieldName="coverImage"
+                        existingCoverImage={b.coverImage}
+                      />
+                      <a
+                        class="btn btn-sm btn-block mt-2"
+                        href={`/series/${series.id}/books/${b.id}`}
+                      >
+                        Open scenes
+                      </a>
                     </div>
                   ))}
                 </div>
