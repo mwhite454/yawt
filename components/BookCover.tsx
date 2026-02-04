@@ -14,7 +14,11 @@ export function BookCover(
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
+      // Always prevent Space from scrolling the page
+      // Only prevent Enter if onClick is defined
+      if (e.key === " " || onClick) {
+        e.preventDefault();
+      }
       if (onClick) {
         onClick();
       }
@@ -48,9 +52,9 @@ export function BookCover(
 
         <div class="card-body flex flex-col justify-between p-4 h-full">
           {coverImage?.url ? (
-            // Negative margins counteract card-body padding (p-4 = 1rem on all sides)
-            // to allow image to fill the full card area
-            <figure class="flex-1 -m-4 mb-0">
+            // Negative margins counteract card-body padding (p-4 = 1rem)
+            // to allow image to fill the card area while keeping bottom padding for author text
+            <figure class="flex-1 -mt-4 -mx-4">
               <img
                 src={coverImage.url}
                 alt={`Cover for ${title}`}
