@@ -32,6 +32,9 @@ export function forbidden(message: string) {
 export async function requireUser(req: Request): Promise<User | Response> {
   const user = await getUser(req);
   if (!user) return unauthorized();
+  if (user.blocked) {
+    return forbidden("Your account has been blocked. Please contact support.");
+  }
   return user;
 }
 

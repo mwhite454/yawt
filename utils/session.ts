@@ -20,6 +20,7 @@ export interface User {
   subscriptionExpiresAt?: number; // Unix timestamp when subscription expires
   createdAt?: number; // When user first signed up
   updatedAt?: number; // Last profile update
+  blocked?: boolean; // Whether user is blocked from using the application
 }
 
 export async function getUser(request: Request): Promise<User | null> {

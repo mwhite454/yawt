@@ -1,6 +1,7 @@
 import type { User } from "@utils/session.ts";
 import { DEFAULT_THEME } from "@utils/themes.ts";
 import ThemeController from "@islands/ThemeController.tsx";
+import { getUserRole } from "@utils/auth/permissions.ts";
 
 export function UserMenu(props: { user: User | null }) {
   if (!props.user) {
@@ -13,6 +14,8 @@ export function UserMenu(props: { user: User | null }) {
       </div>
     );
   }
+
+  const isAdmin = getUserRole(props.user) === "admin";
 
   return (
     <div class="dropdown dropdown-end">
@@ -43,6 +46,14 @@ export function UserMenu(props: { user: User | null }) {
           </div>
         </li>
         <div class="divider my-1"></div>
+        {isAdmin && (
+          <>
+            <li>
+              <a href="/admin">Admin Dashboard</a>
+            </li>
+            <div class="divider my-1"></div>
+          </>
+        )}
         <li>
           <a href="/auth/signout">Sign out</a>
         </li>

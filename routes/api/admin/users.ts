@@ -18,6 +18,7 @@ interface UserProfile {
   subscriptionExpiresAt?: number;
   createdAt?: number;
   updatedAt?: number;
+  blocked?: boolean;
 }
 
 interface AuditLogEntry {
@@ -110,6 +111,76 @@ export const handler: Handlers = {
       .check(userRes)
       .set(userProfileKey(userId), updatedUser)
       .set(auditLogKey(now, "role_change"), auditEntry)
+      .commit();
+
+    if (!result.ok) {
+      return new Response("Failed to update user (concurrent modification)", {
+        status: 409,
+      });
+    }
+
+    return json({ user: updatedUser }, { status: 200 });
+  },
+
+  /**
+   * PUT /api/admin/users - Block or unblock a user (admin only)
+   * Body: { userId: number, blocked: boolean }
+   */
+  async PUT(req) {
+    const adminOrRes = await requireAdmin(req);
+    if (adminOrRes instanceof Response) return adminOrRes;
+    const admin = adminOrRes;
+
+    let requestBody: { userId?: number; blocked?: boolean };
+    try {
+      requestBody = await req.json();
+    } catch {
+      return badRequest("Invalid JSON body");
+    }
+
+    const { userId, blocked } = requestBody;
+
+    if (!userId || typeof userId !== "number") {
+      return badRequest("userId is required and must be a number");
+    }
+
+    if (typeof blocked !== "boolean") {
+      return badRequest("blocked must be a boolean");
+    }
+
+    if (userId === admin.id) {
+      return badRequest("Cannot block yourself");
+    }
+
+    const userRes = await kv.get<UserProfile>(userProfileKey(userId));
+    if (!userRes.value) {
+      return notFound("User not found");
+    }
+
+    const now = Date.now();
+
+    const updatedUser: UserProfile = {
+      ...userRes.value,
+      blocked,
+      updatedAt: now,
+    };
+
+    const auditEntry: AuditLogEntry = {
+      timestamp: now,
+      adminId: admin.id,
+      adminLogin: admin.login,
+      action: blocked ? "user_blocked" : "user_unblocked",
+      targetUserId: userId,
+      details: {
+        blocked,
+      },
+    };
+
+    const result = await kv
+      .atomic()
+      .check(userRes)
+      .set(userProfileKey(userId), updatedUser)
+      .set(auditLogKey(now, blocked ? "user_blocked" : "user_unblocked"), auditEntry)
       .commit();
 
     if (!result.ok) {
