@@ -35,8 +35,8 @@ This guide walks you through setting up GitHub OAuth2 authentication for YAWT.
 2. Edit `.env` and update with your GitHub OAuth credentials:
 
    ```env
-   GITHUB_CLIENT_ID=your_actual_client_id_here
-   GITHUB_CLIENT_SECRET=your_actual_client_secret_here
+   OAUTH_CLIENT_ID=your_actual_client_id_here
+   OAUTH_CLIENT_SECRET=your_actual_client_secret_here
    OAUTH_REDIRECT_URI=http://localhost:8000/auth/callback
    ```
 
@@ -118,8 +118,8 @@ For production deployment:
 1. Create a new GitHub OAuth App with your production URL
 2. Update the callback URL to match your production domain
 3. Set environment variables on your hosting platform:
-   - `GITHUB_CLIENT_ID`
-   - `GITHUB_CLIENT_SECRET`
+   - `OAUTH_CLIENT_ID`
+   - `OAUTH_CLIENT_SECRET`
    - `OAUTH_REDIRECT_URI` (e.g., `https://yourdomain.com/auth/callback`)
 
 4. Ensure your deploy pipeline runs the CSS build step:
@@ -143,7 +143,7 @@ For production deployment:
 
 ### "Invalid credentials" errors
 
-- Double-check your `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in `.env`
+- Double-check your `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` in `.env`
 - Make sure there are no extra spaces or quotes in the values
 
 ### Server won't start

@@ -178,8 +178,8 @@ User
 
 ### Environment Variables
 
-- `GITHUB_CLIENT_ID`: Required for OAuth
-- `GITHUB_CLIENT_SECRET`: Required for OAuth
+- `OAUTH_CLIENT_ID`: Required for OAuth
+- `OAUTH_CLIENT_SECRET`: Required for OAuth
 - `OAUTH_REDIRECT_URI`: OAuth callback URL (default:
   `http://localhost:8000/auth/callback`)
 - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`:

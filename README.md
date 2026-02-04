@@ -39,8 +39,8 @@ cp .env.example .env
 ```
 
 4. Update `.env` with your GitHub OAuth credentials:
-   - `GITHUB_CLIENT_ID`: Your GitHub OAuth App Client ID
-   - `GITHUB_CLIENT_SECRET`: Your GitHub OAuth App Client Secret
+   - `OAUTH_CLIENT_ID`: Your GitHub OAuth App Client ID
+   - `OAUTH_CLIENT_SECRET`: Your GitHub OAuth App Client Secret
 
 ### Development
 

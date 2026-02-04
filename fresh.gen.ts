@@ -3,6 +3,8 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $_app from "./routes/_app.tsx";
+import * as $admin_index from "./routes/admin/index.tsx";
+import * as $api_admin_users from "./routes/api/admin/users.ts";
 import * as $api_me from "./routes/api/me.ts";
 import * as $api_notes from "./routes/api/notes.ts";
 import * as $api_notes_id_ from "./routes/api/notes/[id].ts";
@@ -23,6 +25,7 @@ import * as $api_series_seriesId_events from "./routes/api/series/[seriesId]/eve
 import * as $api_series_seriesId_events_eventId_ from "./routes/api/series/[seriesId]/events/[eventId].ts";
 import * as $api_series_seriesId_locations from "./routes/api/series/[seriesId]/locations.ts";
 import * as $api_series_seriesId_locations_locationId_ from "./routes/api/series/[seriesId]/locations/[locationId].ts";
+import * as $api_series_seriesId_tags from "./routes/api/series/[seriesId]/tags.ts";
 import * as $api_series_seriesId_timelines from "./routes/api/series/[seriesId]/timelines.ts";
 import * as $api_series_seriesId_timelines_timelineId_ from "./routes/api/series/[seriesId]/timelines/[timelineId].ts";
 import * as $api_series_seriesId_timelines_timelineId_events from "./routes/api/series/[seriesId]/timelines/[timelineId]/events.ts";
@@ -43,6 +46,7 @@ import * as $series_seriesId_locations from "./routes/series/[seriesId]/location
 import * as $series_seriesId_timelines from "./routes/series/[seriesId]/timelines.tsx";
 import * as $series_seriesId_timelines_timelineId_ from "./routes/series/[seriesId]/timelines/[timelineId].tsx";
 import * as $series_index from "./routes/series/index.tsx";
+import * as $AdminDashboard from "./islands/AdminDashboard.tsx";
 import * as $CharacterForm from "./islands/CharacterForm.tsx";
 import * as $CharacterImageUploader from "./islands/CharacterImageUploader.tsx";
 import * as $CharacterTypeEditor from "./islands/CharacterTypeEditor.tsx";
@@ -50,12 +54,23 @@ import * as $DraggableList from "./islands/DraggableList.tsx";
 import * as $EventForm from "./islands/EventForm.tsx";
 import * as $KeyValueEditor from "./islands/KeyValueEditor.tsx";
 import * as $SceneList from "./islands/SceneList.tsx";
+import * as $TagInput from "./islands/TagInput.tsx";
 import * as $ThemeController from "./islands/ThemeController.tsx";
+import * as $_stories_CharacterForm_stories from "./islands/__stories__/CharacterForm.stories.tsx";
+import * as $_stories_CharacterImageUploader_stories from "./islands/__stories__/CharacterImageUploader.stories.tsx";
+import * as $_stories_CharacterTypeEditor_stories from "./islands/__stories__/CharacterTypeEditor.stories.tsx";
+import * as $_stories_DraggableList_stories from "./islands/__stories__/DraggableList.stories.tsx";
+import * as $_stories_EventForm_stories from "./islands/__stories__/EventForm.stories.tsx";
+import * as $_stories_KeyValueEditor_stories from "./islands/__stories__/KeyValueEditor.stories.tsx";
+import * as $_stories_SceneList_stories from "./islands/__stories__/SceneList.stories.tsx";
+import * as $_stories_ThemeController_stories from "./islands/__stories__/ThemeController.stories.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
+    "./routes/admin/index.tsx": $admin_index,
+    "./routes/api/admin/users.ts": $api_admin_users,
     "./routes/api/me.ts": $api_me,
     "./routes/api/notes.ts": $api_notes,
     "./routes/api/notes/[id].ts": $api_notes_id_,
@@ -89,6 +104,7 @@ const manifest = {
       $api_series_seriesId_locations,
     "./routes/api/series/[seriesId]/locations/[locationId].ts":
       $api_series_seriesId_locations_locationId_,
+    "./routes/api/series/[seriesId]/tags.ts": $api_series_seriesId_tags,
     "./routes/api/series/[seriesId]/timelines.ts":
       $api_series_seriesId_timelines,
     "./routes/api/series/[seriesId]/timelines/[timelineId].ts":
@@ -121,6 +137,7 @@ const manifest = {
     "./routes/series/index.tsx": $series_index,
   },
   islands: {
+    "./islands/AdminDashboard.tsx": $AdminDashboard,
     "./islands/CharacterForm.tsx": $CharacterForm,
     "./islands/CharacterImageUploader.tsx": $CharacterImageUploader,
     "./islands/CharacterTypeEditor.tsx": $CharacterTypeEditor,
@@ -128,7 +145,22 @@ const manifest = {
     "./islands/EventForm.tsx": $EventForm,
     "./islands/KeyValueEditor.tsx": $KeyValueEditor,
     "./islands/SceneList.tsx": $SceneList,
+    "./islands/TagInput.tsx": $TagInput,
     "./islands/ThemeController.tsx": $ThemeController,
+    "./islands/__stories__/CharacterForm.stories.tsx":
+      $_stories_CharacterForm_stories,
+    "./islands/__stories__/CharacterImageUploader.stories.tsx":
+      $_stories_CharacterImageUploader_stories,
+    "./islands/__stories__/CharacterTypeEditor.stories.tsx":
+      $_stories_CharacterTypeEditor_stories,
+    "./islands/__stories__/DraggableList.stories.tsx":
+      $_stories_DraggableList_stories,
+    "./islands/__stories__/EventForm.stories.tsx": $_stories_EventForm_stories,
+    "./islands/__stories__/KeyValueEditor.stories.tsx":
+      $_stories_KeyValueEditor_stories,
+    "./islands/__stories__/SceneList.stories.tsx": $_stories_SceneList_stories,
+    "./islands/__stories__/ThemeController.stories.tsx":
+      $_stories_ThemeController_stories,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
