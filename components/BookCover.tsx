@@ -52,8 +52,9 @@ export function BookCover(
 
         <div class="card-body flex flex-col justify-between p-4 h-full">
           {coverImage?.url ? (
-            // Negative margins counteract card-body padding (p-4 = 1rem)
-            // to allow image to fill the card area while keeping bottom padding for author text
+            // Negative margins (-mt-4 = -1rem, -mx-4 = -1rem) counteract card-body 
+            // padding (p-4 = 1rem) to allow image to fill top and sides of card
+            // while preserving bottom padding for author text
             <figure class="flex-1 -mt-4 -mx-4">
               <img
                 src={coverImage.url}
