@@ -103,18 +103,6 @@ export default function LocationsPage({ data }: PageProps<Data>) {
       currentSeriesId={data.series.id}
       currentPage="locations"
     >
-      <div class="breadcrumbs text-sm">
-        <ul>
-          <li>
-            <a href="/series">Series</a>
-          </li>
-          <li>
-            <a href={`/series/${data.series.id}`}>{data.series.title}</a>
-          </li>
-          <li>Locations</li>
-        </ul>
-      </div>
-
       <div class="grid gap-4 mt-3">
         <div class="card bg-base-100 shadow-sm">
           <div class="card-body">

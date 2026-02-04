@@ -216,18 +216,6 @@ export default function BookDetail({ data }: PageProps<Data>) {
       currentSeriesId={series.id}
       currentPage="books"
     >
-      <div class="breadcrumbs text-sm">
-        <ul>
-          <li>
-            <a href="/series">Series</a>
-          </li>
-          <li>
-            <a href={`/series/${series.id}`}>{series.title}</a>
-          </li>
-          <li>{book.title}</li>
-        </ul>
-      </div>
-
       <div class="grid lg:grid-cols-12 gap-4 mt-3">
         <div class="lg:col-span-4">
           <div class="card bg-base-100 shadow-sm">
