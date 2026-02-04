@@ -8,6 +8,7 @@ import type { Book, Series } from "@utils/story/types.ts";
 import { bookKey, bookOrderKey, seriesKey } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
+import ImageUploader from "@islands/ImageUploader.tsx";
 
 interface Data {
   user: User;
@@ -127,6 +128,17 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
                     {series.description}
                   </p>
                 )}
+
+                <div class="divider my-2" />
+
+                <ImageUploader
+                  uploadPath={`/api/series/${series.id}/image/upload`}
+                  updatePath={`/api/series/${series.id}`}
+                  fieldName="icon"
+                  existingObjectKey={series.icon?.objectKey}
+                  existingContentType={series.icon?.contentType}
+                  label="Series Icon"
+                />
               </div>
               <div class="join">
                 <a
@@ -185,16 +197,31 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
               : (
                 <div class="grid md:grid-cols-2 gap-3">
                   {data.books.map((b) => (
-                    <a
+                    <div
                       key={b.id}
-                      class="card bg-base-200 hover:shadow transition"
-                      href={`/series/${series.id}/books/${b.id}`}
+                      class="card bg-base-200"
                     >
                       <div class="card-body p-4">
-                        <div class="font-semibold">{b.title}</div>
+                        <a
+                          class="font-semibold hover:underline"
+                          href={`/series/${series.id}/books/${b.id}`}
+                        >
+                          {b.title}
+                        </a>
                         <div class="text-sm opacity-70">Open scenes</div>
+
+                        <div class="divider my-2" />
+
+                        <ImageUploader
+                          uploadPath={`/api/series/${series.id}/books/${b.id}/image/upload`}
+                          updatePath={`/api/series/${series.id}/books/${b.id}`}
+                          fieldName="coverImage"
+                          existingObjectKey={b.coverImage?.objectKey}
+                          existingContentType={b.coverImage?.contentType}
+                          label="Cover Image"
+                        />
                       </div>
-                    </a>
+                    </div>
                   ))}
                 </div>
               )}
