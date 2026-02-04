@@ -95,6 +95,22 @@ export default function AdminDashboard() {
     });
   };
 
+  // Generate a consistent background color based on username
+  const getAvatarUrl = (user: UserProfile) => {
+    if (user.avatar_url) return user.avatar_url;
+    
+    // Generate a consistent color from the user's login
+    let hash = 0;
+    for (let i = 0; i < user.login.length; i++) {
+      hash = user.login.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const color = Math.abs(hash).toString(16).substring(0, 6).padEnd(6, '0');
+    
+    return `https://ui-avatars.com/api/?name=${
+      encodeURIComponent(user.name || user.login)
+    }&background=${color}&color=fff`;
+  };
+
   if (loading) {
     return (
       <div class="card bg-base-100 shadow-sm">
@@ -158,10 +174,7 @@ export default function AdminDashboard() {
                         <div class="avatar">
                           <div class="mask mask-squircle w-12 h-12">
                             <img
-                              src={user.avatar_url ||
-                                `https://ui-avatars.com/api/?name=${
-                                  encodeURIComponent(user.name || user.login)
-                                }&background=random`}
+                              src={getAvatarUrl(user)}
                               alt={user.login}
                             />
                           </div>

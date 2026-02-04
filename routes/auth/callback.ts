@@ -70,9 +70,10 @@ export const handler: Handlers = {
 
       if (!existingProfile.value) {
         // First sign-in - create profile
-        // Check if this is the first user in the system
+        // Check if this is the first user in the system (more efficient with limit)
+        const existingProfiles = kv.list({ prefix: ["yawt", "user_profile"], limit: 1 });
         let isFirstUser = true;
-        for await (const _entry of kv.list({ prefix: ["yawt", "user_profile"] })) {
+        for await (const _entry of existingProfiles) {
           isFirstUser = false;
           break;
         }
