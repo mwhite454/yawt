@@ -200,6 +200,23 @@ User
 - Session cookies are HTTP-only
 - Use separate OAuth apps for dev/staging/prod
 
+## Boundaries and Restrictions
+
+**Files/Directories to NEVER Edit:**
+
+- `.env` - Contains sensitive environment variables
+- `.env.example` - Template for environment variables (only edit if adding new env vars)
+- `fresh.gen.ts` - Auto-generated Fresh manifest
+- `.github/workflows/` - CI/CD workflows (requires specific approval)
+- `.git/` - Git internals
+
+**Breaking Changes to Avoid:**
+
+- Do not change the Deno KV key structure without migration strategy
+- Do not modify OAuth flow without thorough testing
+- Do not change API endpoint URLs or response formats without versioning
+- Do not modify the rank ordering system for books/scenes without careful consideration
+
 ## Common Tasks
 
 ### Adding a New API Endpoint
@@ -229,3 +246,60 @@ User
 2. Use Tailwind utility classes in components
 3. Run `deno task start` to rebuild CSS automatically
 4. For production, run `deno task build`
+
+## Verification and Testing
+
+### Before Submitting Changes
+
+1. **Type Check and Lint**: Always run `deno task check` before submitting
+   - This runs formatting check, linting, and type checking
+   - Fix any errors before committing
+
+2. **Manual Testing**: Since there are no automated tests:
+   - Start the dev server with `deno task start`
+   - Test your changes manually through the UI and API
+   - Verify OAuth flow if authentication code was modified
+   - Test API endpoints with curl or browser dev tools
+
+3. **Build Verification**: Run `deno task build` to ensure CSS builds successfully
+
+### Testing API Changes
+
+Use curl to test API endpoints. Example workflow:
+
+```bash
+# 1. Start dev server in background
+deno task start &
+
+# 2. Sign in via browser at http://localhost:8000 to get session cookie
+
+# 3. Test API with cookie (use browser dev tools to copy session cookie)
+curl -v http://localhost:8000/api/me \
+  -H "Cookie: session=YOUR_SESSION_COOKIE"
+
+# 4. Test CRUD operations
+curl -X POST http://localhost:8000/api/series \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=YOUR_SESSION_COOKIE" \
+  -d '{"title": "Test Series"}'
+```
+
+## Quick Reference
+
+### Most Common Tasks
+
+1. **Add new API endpoint**: Create file in `routes/api/`, use `requireUser()`, return with `json()`
+2. **Add interactive UI**: Create island in `islands/`, export Preact component
+3. **Add new data type**: Update `@utils/story/types.ts` and `@utils/story/keys.ts`
+4. **Fix styling**: Edit component's Tailwind classes or `styles/tailwind.css`
+5. **Update dependencies**: Modify `imports` in `deno.json`
+
+### Key Files Reference
+
+- **`deno.json`** - Tasks, imports, compiler options
+- **`utils/http.ts`** - HTTP helpers (requireUser, json, error responses)
+- **`utils/kv.ts`** - Deno KV instance
+- **`utils/story/types.ts`** - Type definitions
+- **`utils/story/keys.ts`** - KV key helpers
+- **`utils/oauth.ts`** - OAuth configuration
+- **`utils/session.ts`** - Session management
