@@ -107,22 +107,30 @@ export const handler: Handlers = {
 
     const nextObjectKey = updated.coverImage?.objectKey;
     if (prevObjectKey && prevObjectKey !== nextObjectKey) {
-      const bucket = getR2Bucket();
-      if (!bucket) {
-        console.warn(
-          "R2 bucket env var missing; skipping old image deletion",
-          prevObjectKey,
-        );
-      } else {
-        try {
-          await deleteObject({ bucket, key: prevObjectKey });
-        } catch (err) {
+      // Validate the previous object key is within expected scope before deletion
+      if (prevObjectKey.startsWith(expectedImagePrefix)) {
+        const bucket = getR2Bucket();
+        if (!bucket) {
           console.warn(
-            "Failed to delete previous book cover from R2",
+            "R2 bucket env var missing; skipping old image deletion",
             prevObjectKey,
-            String(err),
           );
+        } else {
+          try {
+            await deleteObject({ bucket, key: prevObjectKey });
+          } catch (err) {
+            console.warn(
+              "Failed to delete previous book cover from R2",
+              prevObjectKey,
+              String(err),
+            );
+          }
         }
+      } else {
+        console.warn(
+          "Skipping deletion of previous book cover with unexpected path",
+          { prevObjectKey, expectedImagePrefix },
+        );
       }
     }
 

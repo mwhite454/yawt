@@ -21,10 +21,24 @@ export default function ImageUploader(props: Props) {
   >("idle");
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  // Track current image state locally so UI updates immediately after upload
+  const [currentObjectKey, setCurrentObjectKey] = useState<string | undefined>(
+    props.existingObjectKey,
+  );
+  const [currentContentType, setCurrentContentType] = useState<
+    string | undefined
+  >(props.existingContentType);
 
   const hasExisting = useMemo(() => {
-    return Boolean(props.existingObjectKey);
-  }, [props.existingObjectKey]);
+    return Boolean(currentObjectKey);
+  }, [currentObjectKey]);
+
+  // Generate stable ID for accessibility
+  const inputId = useMemo(() => {
+    return `image-upload-${props.fieldName}-${
+      props.updatePath.replace(/\//g, "-")
+    }`;
+  }, [props.fieldName, props.updatePath]);
 
   async function onPickFile(file: File | null) {
     setError(null);
@@ -83,6 +97,9 @@ export default function ImageUploader(props: Props) {
         throw new Error(body.detail ? `${msg}: ${body.detail}` : msg);
       }
 
+      // Update local state so UI reflects new image immediately
+      setCurrentObjectKey(uploaded.objectKey);
+      setCurrentContentType(uploaded.contentType);
       setStatus("done");
     } catch (err) {
       setStatus("error");
@@ -93,7 +110,7 @@ export default function ImageUploader(props: Props) {
   return (
     <div class="grid gap-2">
       {props.label && (
-        <label class="label">
+        <label class="label" htmlFor={inputId}>
           <span class="label-text">{props.label}</span>
         </label>
       )}
@@ -101,14 +118,15 @@ export default function ImageUploader(props: Props) {
       <div class="flex items-center gap-2">
         {hasExisting && <span class="badge badge-success">has image</span>}
         {!hasExisting && <span class="badge badge-ghost">no image</span>}
-        {props.existingObjectKey && (
+        {currentObjectKey && (
           <span class="text-xs opacity-60 truncate max-w-xs">
-            {props.existingObjectKey}
+            {currentObjectKey}
           </span>
         )}
       </div>
 
       <input
+        id={inputId}
         class="file-input file-input-bordered file-input-sm w-full"
         type="file"
         accept="image/*"

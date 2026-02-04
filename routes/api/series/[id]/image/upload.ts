@@ -4,15 +4,7 @@ import { kv } from "@utils/kv.ts";
 import { seriesKey } from "@utils/story/keys.ts";
 import type { Series } from "@utils/story/types.ts";
 import { getR2Bucket, putObject } from "@utils/r2.ts";
-
-const ALLOWED_CONTENT_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
-
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MiB
+import { ALLOWED_CONTENT_TYPES, MAX_BYTES } from "@utils/image-upload.ts";
 
 export const handler: Handlers = {
   async POST(req, ctx) {
@@ -67,8 +59,14 @@ export const handler: Handlers = {
         body: bytes,
       });
     } catch (err) {
+      console.error("Failed to upload series image to R2", {
+        error: err,
+        userId: user.id,
+        seriesId,
+        objectKey,
+      });
       return json(
-        { error: "Failed to upload", detail: String(err) },
+        { error: "Failed to upload" },
         { status: 500 },
       );
     }
