@@ -7,10 +7,13 @@ import {
   readJson,
   requireUser,
 } from "@utils/http.ts";
-import type { Scene } from "@utils/story/types.ts";
-import { bookKey, sceneKey, sceneOrderKey } from "@utils/story/keys.ts";
+import type { Chapter } from "@utils/story/types.ts";
+import {
+  bookKey,
+  chapterKey,
+  chapterOrderKey,
+} from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
-import { deriveSceneFields } from "@utils/story/frontmatter.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -22,33 +25,29 @@ export const handler: Handlers = {
     const book = await kv.get(bookKey(user.id, seriesId, bookId));
     if (!book.value) return notFound("Book not found");
 
-    // Get scenes that are NOT in any chapter (book-level scenes)
     const orderEntries = kv.list({
-      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
+      prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
     });
 
-    const sceneIds: string[] = [];
+    const chapterIds: string[] = [];
     for await (const entry of orderEntries) {
       const key = entry.key as unknown[];
-      // Only include scenes that are at book level (5 parts in key, not 7 for chapter-level)
-      if (key.length === 6) {
-        const sceneId = key[key.length - 1];
-        if (typeof sceneId === "string") sceneIds.push(sceneId);
-      }
+      const chapterId = key[key.length - 1];
+      if (typeof chapterId === "string") chapterIds.push(chapterId);
     }
 
-    const scenes: Scene[] = [];
-    if (sceneIds.length) {
-      const keys = sceneIds.map((id) =>
-        sceneKey(user.id, seriesId, bookId, id)
+    const chapters: Chapter[] = [];
+    if (chapterIds.length) {
+      const keys = chapterIds.map((id) =>
+        chapterKey(user.id, seriesId, bookId, id)
       );
-      const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
+      const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Chapter>[];
       for (const res of results) {
-        if (res.value) scenes.push(res.value);
+        if (res.value) chapters.push(res.value);
       }
     }
 
-    return json({ scenes }, { status: 200 });
+    return json({ chapters }, { status: 200 });
   },
 
   async POST(req, ctx) {
@@ -63,13 +62,17 @@ export const handler: Handlers = {
     const bodyOrRes = await readJson(req);
     if (bodyOrRes instanceof Response) return bodyOrRes;
     const body = bodyOrRes as Record<string, unknown>;
-    const text = typeof body.text === "string" ? body.text : "";
-    if (!text.trim()) return badRequest("text is required");
+    const title = typeof body.title === "string" ? body.title.trim() : "";
+    if (!title) return badRequest("title is required");
+
+    const description = typeof body.description === "string"
+      ? body.description.trim()
+      : undefined;
 
     let lastRank: string | undefined;
     for await (
       const entry of kv.list(
-        { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
+        { prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId] },
         { reverse: true, limit: 1 },
       )
     ) {
@@ -81,28 +84,27 @@ export const handler: Handlers = {
     const rank = lastRank ? rankAfter(lastRank) : rankInitial();
     const now = Date.now();
     const id = crypto.randomUUID();
-    const derived = deriveSceneFields(text);
-    const scene: Scene = {
+    const chapter: Chapter = {
       id,
       userId: user.id,
       seriesId,
       bookId,
       rank,
-      text,
-      derived,
+      title,
+      description,
       createdAt: now,
       updatedAt: now,
     };
 
     const ok = await kv
       .atomic()
-      .set(sceneKey(user.id, seriesId, bookId, id), scene)
-      .set(sceneOrderKey(user.id, seriesId, bookId, rank, id), 1)
+      .set(chapterKey(user.id, seriesId, bookId, id), chapter)
+      .set(chapterOrderKey(user.id, seriesId, bookId, rank, id), 1)
       .commit();
     if (!ok.ok) {
-      return json({ error: "Failed to create scene" }, { status: 500 });
+      return json({ error: "Failed to create chapter" }, { status: 500 });
     }
 
-    return json({ scene }, { status: 201 });
+    return json({ chapter }, { status: 201 });
   },
 };

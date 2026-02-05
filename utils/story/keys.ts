@@ -23,6 +23,25 @@ export function bookOrderKey(
   return ["yawt", "bookOrder", userId, seriesId, rank, bookId];
 }
 
+export function chapterKey(
+  userId: UserId,
+  seriesId: string,
+  bookId: string,
+  chapterId: string,
+): Deno.KvKey {
+  return ["yawt", "chapter", userId, seriesId, bookId, chapterId];
+}
+
+export function chapterOrderKey(
+  userId: UserId,
+  seriesId: string,
+  bookId: string,
+  rank: string,
+  chapterId: string,
+): Deno.KvKey {
+  return ["yawt", "chapterOrder", userId, seriesId, bookId, rank, chapterId];
+}
+
 export function sceneKey(
   userId: UserId,
   seriesId: string,
@@ -38,7 +57,11 @@ export function sceneOrderKey(
   bookId: string,
   rank: string,
   sceneId: string,
+  chapterId?: string,
 ): Deno.KvKey {
+  if (chapterId) {
+    return ["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId];
+  }
   return ["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId];
 }
 
