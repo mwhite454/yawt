@@ -10,8 +10,10 @@ import * as $api_notes from "./routes/api/notes.ts";
 import * as $api_notes_id_ from "./routes/api/notes/[id].ts";
 import * as $api_series from "./routes/api/series.ts";
 import * as $api_series_id_ from "./routes/api/series/[id].ts";
+import * as $api_series_id_image_upload from "./routes/api/series/[id]/image/upload.ts";
 import * as $api_series_seriesId_books from "./routes/api/series/[seriesId]/books.ts";
 import * as $api_series_seriesId_books_bookId_ from "./routes/api/series/[seriesId]/books/[bookId].ts";
+import * as $api_series_seriesId_books_bookId_image_upload from "./routes/api/series/[seriesId]/books/[bookId]/image/upload.ts";
 import * as $api_series_seriesId_books_bookId_scenes from "./routes/api/series/[seriesId]/books/[bookId]/scenes.ts";
 import * as $api_series_seriesId_books_bookId_scenes_sceneId_ from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts";
 import * as $api_series_seriesId_books_bookId_scenes_sceneId_reorder from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts";
@@ -25,6 +27,7 @@ import * as $api_series_seriesId_events from "./routes/api/series/[seriesId]/eve
 import * as $api_series_seriesId_events_eventId_ from "./routes/api/series/[seriesId]/events/[eventId].ts";
 import * as $api_series_seriesId_locations from "./routes/api/series/[seriesId]/locations.ts";
 import * as $api_series_seriesId_locations_locationId_ from "./routes/api/series/[seriesId]/locations/[locationId].ts";
+import * as $api_series_seriesId_locations_locationId_image_upload from "./routes/api/series/[seriesId]/locations/[locationId]/image/upload.ts";
 import * as $api_series_seriesId_tags from "./routes/api/series/[seriesId]/tags.ts";
 import * as $api_series_seriesId_timelines from "./routes/api/series/[seriesId]/timelines.ts";
 import * as $api_series_seriesId_timelines_timelineId_ from "./routes/api/series/[seriesId]/timelines/[timelineId].ts";
@@ -47,11 +50,13 @@ import * as $series_seriesId_timelines from "./routes/series/[seriesId]/timeline
 import * as $series_seriesId_timelines_timelineId_ from "./routes/series/[seriesId]/timelines/[timelineId].tsx";
 import * as $series_index from "./routes/series/index.tsx";
 import * as $AdminDashboard from "./islands/AdminDashboard.tsx";
+import * as $BookCoverUploader from "./islands/BookCoverUploader.tsx";
 import * as $CharacterForm from "./islands/CharacterForm.tsx";
 import * as $CharacterImageUploader from "./islands/CharacterImageUploader.tsx";
 import * as $CharacterTypeEditor from "./islands/CharacterTypeEditor.tsx";
 import * as $DraggableList from "./islands/DraggableList.tsx";
 import * as $EventForm from "./islands/EventForm.tsx";
+import * as $ImageUploader from "./islands/ImageUploader.tsx";
 import * as $KeyValueEditor from "./islands/KeyValueEditor.tsx";
 import * as $SceneList from "./islands/SceneList.tsx";
 import * as $TagInput from "./islands/TagInput.tsx";
@@ -76,9 +81,12 @@ const manifest = {
     "./routes/api/notes/[id].ts": $api_notes_id_,
     "./routes/api/series.ts": $api_series,
     "./routes/api/series/[id].ts": $api_series_id_,
+    "./routes/api/series/[id]/image/upload.ts": $api_series_id_image_upload,
     "./routes/api/series/[seriesId]/books.ts": $api_series_seriesId_books,
     "./routes/api/series/[seriesId]/books/[bookId].ts":
       $api_series_seriesId_books_bookId_,
+    "./routes/api/series/[seriesId]/books/[bookId]/image/upload.ts":
+      $api_series_seriesId_books_bookId_image_upload,
     "./routes/api/series/[seriesId]/books/[bookId]/scenes.ts":
       $api_series_seriesId_books_bookId_scenes,
     "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts":
@@ -104,6 +112,8 @@ const manifest = {
       $api_series_seriesId_locations,
     "./routes/api/series/[seriesId]/locations/[locationId].ts":
       $api_series_seriesId_locations_locationId_,
+    "./routes/api/series/[seriesId]/locations/[locationId]/image/upload.ts":
+      $api_series_seriesId_locations_locationId_image_upload,
     "./routes/api/series/[seriesId]/tags.ts": $api_series_seriesId_tags,
     "./routes/api/series/[seriesId]/timelines.ts":
       $api_series_seriesId_timelines,
@@ -138,11 +148,13 @@ const manifest = {
   },
   islands: {
     "./islands/AdminDashboard.tsx": $AdminDashboard,
+    "./islands/BookCoverUploader.tsx": $BookCoverUploader,
     "./islands/CharacterForm.tsx": $CharacterForm,
     "./islands/CharacterImageUploader.tsx": $CharacterImageUploader,
     "./islands/CharacterTypeEditor.tsx": $CharacterTypeEditor,
     "./islands/DraggableList.tsx": $DraggableList,
     "./islands/EventForm.tsx": $EventForm,
+    "./islands/ImageUploader.tsx": $ImageUploader,
     "./islands/KeyValueEditor.tsx": $KeyValueEditor,
     "./islands/SceneList.tsx": $SceneList,
     "./islands/TagInput.tsx": $TagInput,
