@@ -28,10 +28,12 @@ export const handler: Handlers = {
     });
 
     const sceneIds: string[] = [];
+    // Book-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId] = 7 parts
+    // Chapter-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId] = 8 parts
+    const BOOK_LEVEL_SCENE_KEY_LENGTH = 7;
     for await (const entry of orderEntries) {
       const key = entry.key as unknown[];
-      // Only include scenes that are at book level (5 parts in key, not 7 for chapter-level)
-      if (key.length === 6) {
+      if (key.length === BOOK_LEVEL_SCENE_KEY_LENGTH) {
         const sceneId = key[key.length - 1];
         if (typeof sceneId === "string") sceneIds.push(sceneId);
       }
