@@ -27,8 +27,8 @@ interface Props {
 
 // Union type for items in the unified list
 type ListItem = 
-  | { type: 'scene'; scene: SceneItem }
-  | { type: 'chapter'; chapter: ChapterItem; scenes: SceneItem[] };
+  | { type: "scene"; scene: SceneItem }
+  | { type: "chapter"; chapter: ChapterItem; scenes: SceneItem[] };
 
 export default function HierarchicalSceneList({
   seriesId,
@@ -43,20 +43,33 @@ export default function HierarchicalSceneList({
   
   // Add all book-level scenes
   initialBookLevelScenes.forEach(scene => {
-    unifiedList.push({ type: 'scene', scene });
+    unifiedList.push({ type: "scene", scene });
   });
   
   // Add all chapters
   initialChapters.forEach(({ chapter, scenes }) => {
-    unifiedList.push({ type: 'chapter', chapter, scenes });
+    unifiedList.push({ type: "chapter", chapter, scenes });
   });
   
   // Sort by rank to get the correct reading order
   // Ranks use fractional indexing (lexicographically sortable strings)
+  // Use direct string comparison (not localeCompare) for code-point ordering
   unifiedList.sort((a, b) => {
-    const rankA = a.type === 'scene' ? a.scene.rank : a.chapter.rank;
-    const rankB = b.type === 'scene' ? b.scene.rank : b.chapter.rank;
-    return rankA.localeCompare(rankB);
+    const rankA = a.type === "scene" ? a.scene.rank : a.chapter.rank;
+    const rankB = b.type === "scene" ? b.scene.rank : b.chapter.rank;
+    
+    // Primary sort by rank
+    if (rankA < rankB) return -1;
+    if (rankA > rankB) return 1;
+    
+    // Tie-breaker: if ranks are equal, sort by type then id
+    if (a.type !== b.type) {
+      return a.type < b.type ? -1 : 1;
+    }
+    
+    const idA = a.type === "scene" ? a.scene.id : a.chapter.id;
+    const idB = b.type === "scene" ? b.scene.id : b.chapter.id;
+    return idA < idB ? -1 : idA > idB ? 1 : 0;
   });
 
   const [draggedScene, setDraggedScene] = useState<SceneItem | null>(null);
@@ -166,7 +179,7 @@ export default function HierarchicalSceneList({
   const renderSceneItem = useCallback(
     (scene: SceneItem, chapterId: string | null, index: number, isNested: boolean) => {
       const isBeingDragged = draggedScene?.id === scene.id;
-      const isDropTarget = dropTarget?.type === 'chapter' &&
+      const isDropTarget = dropTarget?.type === "chapter" &&
         dropTarget?.chapterId === chapterId &&
         dropTarget.position === index;
       const isActive = selectedSceneId === scene.id;
@@ -188,7 +201,7 @@ export default function HierarchicalSceneList({
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer!.dropEffect = "move";
-            setDropTarget({ type: 'chapter', chapterId, position: index });
+            setDropTarget({ type: "chapter", chapterId, position: index });
           }}
           onDrop={(e) => {
             e.preventDefault();
@@ -228,14 +241,83 @@ export default function HierarchicalSceneList({
     ],
   );
 
+  // Precompute id-to-index map for O(1) lookup instead of O(n) findIndex
+  const bookLevelSceneIndexMap = new Map<string, number>();
+  initialBookLevelScenes.forEach((scene, index) => {
+    bookLevelSceneIndexMap.set(scene.id, index);
+  });
+
   return (
     <div class="space-y-1">
       <ul class="menu p-0 space-y-1">
-        {unifiedList.map((item, idx) => {
-          if (item.type === 'scene') {
-            // Book-level scene - find its actual position among book-level scenes
-            const bookLevelIndex = initialBookLevelScenes.findIndex(s => s.id === item.scene.id);
-            return renderSceneItem(item.scene, null, bookLevelIndex, false);
+        {/* Book-level end/empty drop zone when there are no book-level scenes */}
+        {initialBookLevelScenes.length === 0 && (
+          <li
+            class={`h-8 transition-all duration-150 rounded ${
+              dropTarget?.type === "book" &&
+              dropTarget.position === 0
+                ? "border-2 border-dashed border-primary bg-primary/10"
+                : "border-2 border-dashed border-transparent"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer!.dropEffect = "move";
+              setDropTarget({ type: "book", chapterId: null, position: 0 });
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              handleDrop(null, 0, initialBookLevelScenes);
+            }}
+          >
+            {dropTarget?.type === "book" &&
+              dropTarget.position === 0 && (
+                <div class="text-xs opacity-50 p-2 text-center">
+                  Drop scene here
+                </div>
+              )}
+          </li>
+        )}
+        {unifiedList.map((item) => {
+          if (item.type === "scene") {
+            // Book-level scene - use precomputed index map for O(1) lookup
+            const bookLevelIndex = bookLevelSceneIndexMap.get(item.scene.id) ?? 0;
+            const isLastBookScene =
+              bookLevelIndex === initialBookLevelScenes.length - 1;
+            return (
+              <>
+                {renderSceneItem(item.scene, null, bookLevelIndex, false)}
+                {isLastBookScene && (
+                  <li
+                    class={`h-8 transition-all duration-150 rounded ${
+                      dropTarget?.type === "book" &&
+                      dropTarget.position === initialBookLevelScenes.length
+                        ? "border-2 border-dashed border-primary bg-primary/10"
+                        : "border-2 border-dashed border-transparent"
+                    }`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer!.dropEffect = "move";
+                      setDropTarget({
+                        type: "book",
+                        chapterId: null,
+                        position: initialBookLevelScenes.length,
+                      });
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      handleDrop(null, initialBookLevelScenes.length, initialBookLevelScenes);
+                    }}
+                  >
+                    {dropTarget?.type === "book" &&
+                      dropTarget.position === initialBookLevelScenes.length && (
+                        <div class="text-xs opacity-50 p-2 text-center">
+                          Drop scene here
+                        </div>
+                      )}
+                  </li>
+                )}
+              </>
+            );
           } else {
             // Chapter with its scenes
             const isExpanded = item.scenes.some((s) => s.id === selectedSceneId) ||
@@ -243,7 +325,7 @@ export default function HierarchicalSceneList({
             
             return (
               <li key={item.chapter.id} class="border-l-2 border-base-300 pl-2">
-                <details open={isExpanded}>
+                <details defaultOpen={isExpanded}>
                   <summary 
                     class="font-bold bg-base-200 hover:bg-base-300 cursor-pointer"
                     aria-label={`${item.chapter.title} chapter with ${item.scenes.length} scenes`}
@@ -260,7 +342,7 @@ export default function HierarchicalSceneList({
                     {/* Drop zone at the end of chapter scenes */}
                     <li
                       class={`h-8 ml-4 transition-all duration-150 rounded ${
-                        dropTarget?.type === 'chapter' &&
+                        dropTarget?.type === "chapter" &&
                         dropTarget?.chapterId === item.chapter.id &&
                           dropTarget.position === item.scenes.length
                           ? "border-2 border-dashed border-primary bg-primary/10"
@@ -269,14 +351,14 @@ export default function HierarchicalSceneList({
                       onDragOver={(e) => {
                         e.preventDefault();
                         e.dataTransfer!.dropEffect = "move";
-                        setDropTarget({ type: 'chapter', chapterId: item.chapter.id, position: item.scenes.length });
+                        setDropTarget({ type: "chapter", chapterId: item.chapter.id, position: item.scenes.length });
                       }}
                       onDrop={(e) => {
                         e.preventDefault();
                         handleDrop(item.chapter.id, item.scenes.length, item.scenes);
                       }}
                     >
-                      {dropTarget?.type === 'chapter' &&
+                      {dropTarget?.type === "chapter" &&
                         dropTarget?.chapterId === item.chapter.id &&
                           dropTarget.position === item.scenes.length && (
                         <div class="text-xs opacity-50 p-2 text-center">Drop scene here</div>
