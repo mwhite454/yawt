@@ -3,14 +3,14 @@ import { useCallback, useState } from "preact/hooks";
 interface SceneItem {
   id: string;
   title: string;
-  rank: string;
+  rank: string; // Fractional indexing rank (e.g., "a", "b", "c", "aV", etc.)
   chapterId?: string;
 }
 
 interface ChapterItem {
   id: string;
   title: string;
-  rank: string;
+  rank: string; // Fractional indexing rank (e.g., "a", "b", "c", "aV", etc.)
 }
 
 interface Props {
@@ -52,6 +52,7 @@ export default function HierarchicalSceneList({
   });
   
   // Sort by rank to get the correct reading order
+  // Ranks use fractional indexing (lexicographically sortable strings)
   unifiedList.sort((a, b) => {
     const rankA = a.type === 'scene' ? a.scene.rank : a.chapter.rank;
     const rankB = b.type === 'scene' ? b.scene.rank : b.chapter.rank;
@@ -248,7 +249,7 @@ export default function HierarchicalSceneList({
                     aria-label={`${item.chapter.title} chapter with ${item.scenes.length} scenes`}
                   >
                     <span class="flex items-center justify-between w-full">
-                      <span class="text-sm"><span aria-hidden="true">📖</span> {item.chapter.title}</span>
+                      <span class="text-sm"><span aria-hidden="true">📖 </span>{item.chapter.title}</span>
                       <span class="badge badge-sm badge-neutral">{item.scenes.length}</span>
                     </span>
                   </summary>
