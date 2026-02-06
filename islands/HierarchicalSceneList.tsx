@@ -205,6 +205,7 @@ export default function HierarchicalSceneList({
             class={`flex items-center gap-2 w-full px-3 py-2 hover:bg-base-200 rounded transition-colors ${
               isActive ? "bg-primary text-primary-content font-semibold" : ""
             }`}
+            aria-current={isActive ? "page" : undefined}
           >
             <span class="opacity-40 text-xs" aria-hidden="true">⋮⋮</span>
             <span class="flex-1 text-sm">{scene.title}</span>
@@ -242,9 +243,12 @@ export default function HierarchicalSceneList({
             return (
               <li key={item.chapter.id} class="border-l-2 border-base-300 pl-2">
                 <details open={isExpanded}>
-                  <summary class="font-bold bg-base-200 hover:bg-base-300 cursor-pointer">
+                  <summary 
+                    class="font-bold bg-base-200 hover:bg-base-300 cursor-pointer"
+                    aria-label={`${item.chapter.title} chapter with ${item.scenes.length} scenes`}
+                  >
                     <span class="flex items-center justify-between w-full">
-                      <span class="text-sm">📖 {item.chapter.title}</span>
+                      <span class="text-sm"><span aria-hidden="true">📖</span> {item.chapter.title}</span>
                       <span class="badge badge-sm badge-neutral">{item.scenes.length}</span>
                     </span>
                   </summary>
