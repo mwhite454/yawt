@@ -176,7 +176,7 @@ export default function HierarchicalSceneList({
           class={`relative transition-all duration-150 ${
             isBeingDragged ? "opacity-50" : ""
           } ${isDropTarget ? "border-t-2 border-primary" : ""} ${
-            isNested ? "ml-6" : ""
+            isNested ? "ml-4" : ""
           }`}
           draggable
           onDragStart={(e) => {
@@ -202,12 +202,12 @@ export default function HierarchicalSceneList({
             href={`/series/${seriesId}/books/${bookId}?scene=${scene.id}${
               chapterId ? `&chapter=${chapterId}` : ""
             }`}
-            class={`flex items-center gap-2 w-full px-4 py-2 hover:bg-base-200 rounded ${
-              isActive ? "bg-base-300 font-semibold" : ""
+            class={`flex items-center gap-2 w-full px-3 py-2 hover:bg-base-200 rounded transition-colors ${
+              isActive ? "bg-primary text-primary-content font-semibold" : ""
             }`}
           >
-            <span class="opacity-40" aria-hidden="true">⋮⋮</span>
-            <span class="flex-1">{scene.title}</span>
+            <span class="opacity-40 text-xs" aria-hidden="true">⋮⋮</span>
+            <span class="flex-1 text-sm">{scene.title}</span>
           </a>
         </li>
       );
@@ -228,7 +228,7 @@ export default function HierarchicalSceneList({
 
   return (
     <div class="space-y-1">
-      <ul class="menu p-0">
+      <ul class="menu p-0 space-y-1">
         {unifiedList.map((item, idx) => {
           if (item.type === 'scene') {
             // Book-level scene - find its actual position among book-level scenes
@@ -240,26 +240,26 @@ export default function HierarchicalSceneList({
               selectedChapterId === item.chapter.id;
             
             return (
-              <li key={item.chapter.id}>
+              <li key={item.chapter.id} class="border-l-2 border-base-300 pl-2">
                 <details open={isExpanded}>
-                  <summary class="font-semibold bg-base-200">
+                  <summary class="font-bold bg-base-200 hover:bg-base-300 cursor-pointer">
                     <span class="flex items-center justify-between w-full">
-                      <span>{item.chapter.title}</span>
-                      <span class="badge badge-sm badge-ghost">{item.scenes.length}</span>
+                      <span class="text-sm">📖 {item.chapter.title}</span>
+                      <span class="badge badge-sm badge-neutral">{item.scenes.length}</span>
                     </span>
                   </summary>
-                  <ul class="p-0 space-y-1">
+                  <ul class="p-0 mt-1 space-y-1">
                     {item.scenes.map((scene, sceneIdx) => 
                       renderSceneItem(scene, item.chapter.id, sceneIdx, true)
                     )}
                     {/* Drop zone at the end of chapter scenes */}
                     <li
-                      class={`h-8 ml-6 transition-all duration-150 ${
+                      class={`h-8 ml-4 transition-all duration-150 rounded ${
                         dropTarget?.type === 'chapter' &&
                         dropTarget?.chapterId === item.chapter.id &&
                           dropTarget.position === item.scenes.length
-                          ? "border-t-2 border-primary bg-base-300"
-                          : ""
+                          ? "border-2 border-dashed border-primary bg-primary/10"
+                          : "border-2 border-dashed border-transparent"
                       }`}
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -273,30 +273,30 @@ export default function HierarchicalSceneList({
                     >
                       {dropTarget?.type === 'chapter' &&
                         dropTarget?.chapterId === item.chapter.id &&
-                          dropTarget.position === item.scenes.length
-                        ? <div class="text-xs opacity-50 p-2">Drop here</div>
-                        : <div class="h-full"></div>}
+                          dropTarget.position === item.scenes.length && (
+                        <div class="text-xs opacity-50 p-2 text-center">Drop scene here</div>
+                      )}
                     </li>
                     {/* Add scene to chapter form */}
                     {item.scenes.length === 0 && (
-                      <li class="ml-6">
-                        <div class="text-xs opacity-50 p-2">
-                          No scenes in this chapter. Drag scenes here or add new.
+                      <li class="ml-4">
+                        <div class="text-xs opacity-50 p-2 italic">
+                          No scenes yet. Drag scenes here or create new.
                         </div>
                       </li>
                     )}
-                    <li class="ml-6">
-                      <form method="POST" class="p-2">
+                    <li class="ml-4">
+                      <form method="POST" class="p-2 bg-base-100 rounded">
                         <input type="hidden" name="action" value="createScene" />
                         <input type="hidden" name="chapterId" value={item.chapter.id} />
                         <div class="flex gap-2">
                           <input
                             class="input input-bordered input-xs flex-1"
                             name="title"
-                            placeholder="New scene in chapter"
+                            placeholder="Add new scene..."
                             required
                           />
-                          <button class="btn btn-xs btn-ghost" type="submit">+</button>
+                          <button class="btn btn-xs btn-primary" type="submit">+</button>
                         </div>
                       </form>
                     </li>
