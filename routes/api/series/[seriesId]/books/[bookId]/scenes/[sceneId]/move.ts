@@ -9,7 +9,7 @@ import {
 } from "@utils/http.ts";
 import type { Scene } from "@utils/story/types.ts";
 import { chapterKey, sceneKey, sceneOrderKey } from "@utils/story/keys.ts";
-import { rankAfter, rankBefore, rankBetween, rankInitial } from "@utils/story/rank.ts";
+import { rankAfter, rankBetween, rankInitial } from "@utils/story/rank.ts";
 
 export const handler: Handlers = {
   async POST(req, ctx) {

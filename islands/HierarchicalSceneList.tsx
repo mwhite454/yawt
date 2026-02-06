@@ -21,6 +21,7 @@ interface Props {
     scenes: SceneItem[];
   }>;
   selectedSceneId: string | null;
+  selectedChapterId: string | null;
 }
 
 export default function HierarchicalSceneList({
@@ -29,27 +30,23 @@ export default function HierarchicalSceneList({
   bookLevelScenes: initialBookLevelScenes,
   chapters: initialChapters,
   selectedSceneId,
+  selectedChapterId,
 }: Props) {
   const [draggedScene, setDraggedScene] = useState<SceneItem | null>(null);
-  const [draggedFromChapter, setDraggedFromChapter] = useState<string | null>(
-    null,
-  );
   const [dropTarget, setDropTarget] = useState<{
     chapterId: string | null;
     position: number;
   } | null>(null);
 
   const handleDragStart = useCallback(
-    (scene: SceneItem, fromChapterId: string | null) => {
+    (scene: SceneItem) => {
       setDraggedScene(scene);
-      setDraggedFromChapter(fromChapterId);
     },
     [],
   );
 
   const handleDragEnd = useCallback(() => {
     setDraggedScene(null);
-    setDraggedFromChapter(null);
     setDropTarget(null);
   }, []);
 
@@ -64,17 +61,26 @@ export default function HierarchicalSceneList({
       // Determine the new chapterId
       const newChapterId = targetChapterId ?? undefined;
 
-      // If dropping in the same position within the same chapter, do nothing
-      if (
-        draggedScene.chapterId === newChapterId &&
-        targetScenes[targetPosition]?.id === draggedScene.id
-      ) {
-        handleDragEnd();
-        return;
-      }
-
       // Filter out the dragged scene from the target scenes to avoid self-references
       const filteredScenes = targetScenes.filter((s) => s.id !== draggedScene.id);
+
+      // If dropping in the same chapter
+      if (draggedScene.chapterId === newChapterId) {
+        // Find the current position of the dragged scene in the original list
+        const currentIndex = targetScenes.findIndex((s) => s.id === draggedScene.id);
+        
+        // If dropping at the same position or immediately after current position, do nothing
+        if (currentIndex === targetPosition || currentIndex + 1 === targetPosition) {
+          handleDragEnd();
+          return;
+        }
+        
+        // If dropping at the end and already the last item, do nothing
+        if (targetPosition >= filteredScenes.length && currentIndex === targetScenes.length - 1) {
+          handleDragEnd();
+          return;
+        }
+      }
 
       // Determine before/after scene IDs for positioning
       let body: {
@@ -95,8 +101,11 @@ export default function HierarchicalSceneList({
         // Dropping at the end
         body.afterSceneId = filteredScenes[filteredScenes.length - 1]?.id;
       } else {
-        // Dropping in the middle
-        body.afterSceneId = filteredScenes[targetPosition - 1]?.id;
+        // Dropping in the middle - send both before and after for precise positioning
+        const afterScene = filteredScenes[targetPosition - 1];
+        const beforeScene = filteredScenes[targetPosition];
+        if (afterScene) body.afterSceneId = afterScene.id;
+        if (beforeScene) body.beforeSceneId = beforeScene.id;
       }
 
       try {
@@ -147,7 +156,7 @@ export default function HierarchicalSceneList({
                   draggable
                   onDragStart={(e) => {
                     e.dataTransfer!.effectAllowed = "move";
-                    handleDragStart(scene, chapterId);
+                    handleDragStart(scene);
                   }}
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => {
@@ -215,13 +224,13 @@ export default function HierarchicalSceneList({
 
   return (
     <div class="space-y-3">
-      {/* Book-level scenes */}
-      {initialBookLevelScenes.length > 0 &&
-        renderSceneList(initialBookLevelScenes, null, "Book-level Scenes")}
+      {/* Book-level scenes - always render to allow drops */}
+      {renderSceneList(initialBookLevelScenes, null, "Book-level Scenes")}
 
       {/* Chapters and their scenes */}
       {initialChapters.map(({ chapter, scenes }) => {
-        const isExpanded = scenes.some((s) => s.id === selectedSceneId);
+        const isExpanded = scenes.some((s) => s.id === selectedSceneId) ||
+          selectedChapterId === chapter.id;
         return (
           <div
             key={chapter.id}
@@ -261,13 +270,12 @@ export default function HierarchicalSceneList({
                   </div>
                 </form>
 
-                {scenes.length === 0
-                  ? (
-                    <div class="text-sm opacity-50">
-                      No scenes in this chapter. Drag scenes here.
-                    </div>
-                  )
-                  : renderSceneList(scenes, chapter.id, "")}
+                {scenes.length === 0 && (
+                  <div class="text-sm opacity-50">
+                    No scenes in this chapter. Drag scenes here.
+                  </div>
+                )}
+                {renderSceneList(scenes, chapter.id, "")}
               </div>
             </div>
           </div>

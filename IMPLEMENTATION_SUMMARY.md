@@ -64,7 +64,8 @@ To test the feature:
 - Atomic KV operations ensure data consistency
 - Page reloads after each move to ensure UI reflects latest state
 - Self-references in positioning logic are filtered out
-- Empty target lists are handled correctly
+- Empty chapters and book-level areas provide drop zones for dragging scenes
+- Sends both before and after scene IDs for middle insertions to ensure precise positioning
 
 ## Future Improvements
 

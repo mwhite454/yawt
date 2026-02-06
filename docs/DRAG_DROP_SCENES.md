@@ -36,13 +36,22 @@ This feature allows users to drag and drop scenes between chapters and between c
 **Request Body:**
 ```json
 {
-  "targetChapterId": "chapter-uuid" | null,
-  "beforeSceneId": "scene-uuid" (optional),
-  "afterSceneId": "scene-uuid" (optional)
+  "targetChapterId": "chapter-uuid",
+  "beforeSceneId": "scene-uuid",
+  "afterSceneId": "scene-uuid"
 }
 ```
 
-- `targetChapterId`: The chapter to move the scene to, or `null` for book-level
+Or for book-level:
+```json
+{
+  "targetChapterId": null,
+  "beforeSceneId": "scene-uuid",
+  "afterSceneId": "scene-uuid"
+}
+```
+
+- `targetChapterId`: The chapter to move the scene to (string), or `null` for book-level (required)
 - `beforeSceneId`: Position the scene before this scene (optional)
 - `afterSceneId`: Position the scene after this scene (optional)
 
@@ -53,9 +62,18 @@ If neither `beforeSceneId` nor `afterSceneId` is provided, the scene is appended
 {
   "scene": {
     "id": "scene-uuid",
-    "chapterId": "chapter-uuid" | undefined,
-    "rank": "new-rank-value",
-    // ... other scene properties
+    "chapterId": "chapter-uuid",
+    "rank": "new-rank-value"
+  }
+}
+```
+
+Or for book-level scenes:
+```json
+{
+  "scene": {
+    "id": "scene-uuid",
+    "rank": "new-rank-value"
   }
 }
 ```
@@ -96,7 +114,7 @@ Scenes use fractional indexing for their `rank` field, allowing efficient insert
 
 1. **Page Reload**: After each move, the page reloads to ensure data consistency. This could be optimized in the future to update the UI locally.
 2. **No Undo**: There's no built-in undo functionality. Users would need to manually drag scenes back to their original positions.
-3. **Desktop-focused**: While touch events are handled, the UI is optimized for desktop browsers with mouse/trackpad input.
+3. **Desktop-focused**: Drag and drop is primarily designed and tested for desktop browsers with mouse/trackpad input; touch devices may have limited or unreliable support.
 
 ## Future Enhancements
 

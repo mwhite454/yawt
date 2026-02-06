@@ -394,6 +394,7 @@ export default function BookDetail({ data }: PageProps<Data>) {
                     bookLevelScenes={bookLevelSceneItems}
                     chapters={chaptersWithScenes}
                     selectedSceneId={selectedScene?.id ?? null}
+                    selectedChapterId={selectedChapterId}
                   />
                 )}
             </div>
