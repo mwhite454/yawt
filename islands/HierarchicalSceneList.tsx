@@ -73,6 +73,9 @@ export default function HierarchicalSceneList({
         return;
       }
 
+      // Filter out the dragged scene from the target scenes to avoid self-references
+      const filteredScenes = targetScenes.filter(s => s.id !== draggedScene.id);
+
       // Determine before/after scene IDs for positioning
       let body: {
         targetChapterId?: string | null;
@@ -82,15 +85,18 @@ export default function HierarchicalSceneList({
         targetChapterId: targetChapterId,
       };
 
-      if (targetPosition === 0) {
+      if (filteredScenes.length === 0) {
+        // Dropping into an empty list (or list with only the dragged scene)
+        // No positioning needed - will append to end
+      } else if (targetPosition === 0) {
         // Dropping at the beginning
-        body.beforeSceneId = targetScenes[0]?.id;
-      } else if (targetPosition >= targetScenes.length) {
+        body.beforeSceneId = filteredScenes[0]?.id;
+      } else if (targetPosition >= filteredScenes.length) {
         // Dropping at the end
-        body.afterSceneId = targetScenes[targetScenes.length - 1]?.id;
+        body.afterSceneId = filteredScenes[filteredScenes.length - 1]?.id;
       } else {
         // Dropping in the middle
-        body.afterSceneId = targetScenes[targetPosition - 1]?.id;
+        body.afterSceneId = filteredScenes[targetPosition - 1]?.id;
       }
 
       try {
