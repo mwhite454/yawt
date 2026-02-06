@@ -400,6 +400,7 @@ export default function BookDetail({ data }: PageProps<Data>) {
                         <div key={chapter.id} class="collapse collapse-arrow border border-base-300">
                           <input
                             type="checkbox"
+                            aria-label={`Toggle ${chapter.title}`}
                             defaultChecked={isSelected || chapterScenes.some((s) => s.id === selectedScene?.id)}
                           />
                           <div class="collapse-title font-medium">
