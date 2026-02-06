@@ -27,10 +27,19 @@ export const handler: Handlers = {
     if (bodyOrRes instanceof Response) return bodyOrRes;
     const body = bodyOrRes as Record<string, unknown>;
 
-    // Target chapter (undefined for book-level, string for chapter)
-    const targetChapterId = body.targetChapterId === null || body.targetChapterId === undefined
+    // Validate required target chapter field: must exist (string or null)
+    if (!Object.prototype.hasOwnProperty.call(body, "targetChapterId")) {
+      return badRequest("targetChapterId is required (use null for book-level)");
+    }
+    const rawTargetChapterId = (body as { targetChapterId: unknown }).targetChapterId;
+    if (rawTargetChapterId !== null && typeof rawTargetChapterId !== "string") {
+      return badRequest("targetChapterId must be a string or null");
+    }
+
+    // Target chapter (null => book-level, string => chapter)
+    const targetChapterId = rawTargetChapterId === null
       ? undefined
-      : String(body.targetChapterId);
+      : rawTargetChapterId;
 
     // Validate target chapter exists if provided
     if (targetChapterId !== undefined) {
