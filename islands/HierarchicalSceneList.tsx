@@ -74,7 +74,7 @@ export default function HierarchicalSceneList({
       }
 
       // Filter out the dragged scene from the target scenes to avoid self-references
-      const filteredScenes = targetScenes.filter(s => s.id !== draggedScene.id);
+      const filteredScenes = targetScenes.filter((s) => s.id !== draggedScene.id);
 
       // Determine before/after scene IDs for positioning
       let body: {
