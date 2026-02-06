@@ -45,14 +45,20 @@ export const handler: Handlers = {
       return badRequest("Title cannot be empty");
     }
 
-    const description = typeof body.description === "string"
+    const hasDescription = Object.prototype.hasOwnProperty.call(
+      body,
+      "description",
+    );
+    const description = hasDescription && typeof body.description === "string"
       ? body.description.trim()
+      : hasDescription
+      ? ""
       : undefined;
 
     const updated: Chapter = {
       ...entry.value,
       title: title ?? entry.value.title,
-      description: description ?? entry.value.description,
+      description: hasDescription ? description : entry.value.description,
       updatedAt: Date.now(),
     };
 
