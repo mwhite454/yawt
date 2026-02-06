@@ -307,7 +307,7 @@ export default function BookDetail({ data }: PageProps<Data>) {
   
   // Prepare data for HierarchicalSceneList
   const chaptersWithScenes = chapters.map((chapter) => ({
-    chapter: { id: chapter.id, title: chapter.title },
+    chapter: { id: chapter.id, title: chapter.title, rank: chapter.rank },
     scenes: (scenesByChapter.get(chapter.id) ?? []).map((s) => ({
       id: s.id,
       title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
