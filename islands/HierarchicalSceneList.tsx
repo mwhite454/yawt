@@ -60,6 +60,7 @@ export default function HierarchicalSceneList({
 
   const [draggedScene, setDraggedScene] = useState<SceneItem | null>(null);
   const [dropTarget, setDropTarget] = useState<{
+    type: 'chapter' | 'book';
     chapterId: string | null;
     position: number;
   } | null>(null);
@@ -164,7 +165,8 @@ export default function HierarchicalSceneList({
   const renderSceneItem = useCallback(
     (scene: SceneItem, chapterId: string | null, index: number, isNested: boolean) => {
       const isBeingDragged = draggedScene?.id === scene.id;
-      const isDropTarget = dropTarget?.chapterId === chapterId &&
+      const isDropTarget = dropTarget?.type === 'chapter' &&
+        dropTarget?.chapterId === chapterId &&
         dropTarget.position === index;
       const isActive = selectedSceneId === scene.id;
 
@@ -185,7 +187,7 @@ export default function HierarchicalSceneList({
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer!.dropEffect = "move";
-            setDropTarget({ chapterId, position: index });
+            setDropTarget({ type: 'chapter', chapterId, position: index });
           }}
           onDrop={(e) => {
             e.preventDefault();
@@ -229,8 +231,9 @@ export default function HierarchicalSceneList({
       <ul class="menu p-0">
         {unifiedList.map((item, idx) => {
           if (item.type === 'scene') {
-            // Book-level scene
-            return renderSceneItem(item.scene, null, idx, false);
+            // Book-level scene - find its actual position among book-level scenes
+            const bookLevelIndex = initialBookLevelScenes.findIndex(s => s.id === item.scene.id);
+            return renderSceneItem(item.scene, null, bookLevelIndex, false);
           } else {
             // Chapter with its scenes
             const isExpanded = item.scenes.some((s) => s.id === selectedSceneId) ||
@@ -252,6 +255,7 @@ export default function HierarchicalSceneList({
                     {/* Drop zone at the end of chapter scenes */}
                     <li
                       class={`h-8 ml-6 transition-all duration-150 ${
+                        dropTarget?.type === 'chapter' &&
                         dropTarget?.chapterId === item.chapter.id &&
                           dropTarget.position === item.scenes.length
                           ? "border-t-2 border-primary bg-base-300"
@@ -260,14 +264,15 @@ export default function HierarchicalSceneList({
                       onDragOver={(e) => {
                         e.preventDefault();
                         e.dataTransfer!.dropEffect = "move";
-                        setDropTarget({ chapterId: item.chapter.id, position: item.scenes.length });
+                        setDropTarget({ type: 'chapter', chapterId: item.chapter.id, position: item.scenes.length });
                       }}
                       onDrop={(e) => {
                         e.preventDefault();
                         handleDrop(item.chapter.id, item.scenes.length, item.scenes);
                       }}
                     >
-                      {dropTarget?.chapterId === item.chapter.id &&
+                      {dropTarget?.type === 'chapter' &&
+                        dropTarget?.chapterId === item.chapter.id &&
                           dropTarget.position === item.scenes.length
                         ? <div class="text-xs opacity-50 p-2">Drop here</div>
                         : <div class="h-full"></div>}
