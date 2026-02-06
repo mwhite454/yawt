@@ -196,7 +196,7 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
                 </div>
               )
               : (
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                   {data.books.map((b) => (
                     <div key={b.id}>
                       <BookCoverUploader

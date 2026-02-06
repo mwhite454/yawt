@@ -45,37 +45,39 @@ export function Layout(props: {
   return (
     <div class="min-h-screen bg-base-200">
       <div class="navbar bg-base-100 shadow-sm">
-        <div class="navbar-start">
-          <a class="btn btn-ghost text-xl" href={props.user ? "/series" : "/"}>
-            {title}
-          </a>
-        </div>
-        <div class="navbar-center hidden md:flex gap-2">
-          {props.user && props.series && (
-            <>
-              <SeriesDropdown
-                series={props.series}
-                currentSeriesId={props.currentSeriesId}
-              />
-              {seriesNavItems.length > 0 && (
-                <ul class="menu menu-horizontal px-1">
-                  {seriesNavItems.map((item) => (
-                    <li key={item.href}>
-                      <a
-                        href={item.href}
-                        class={props.currentPage === item.page ? "active" : ""}
-                      >
-                        {item.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          )}
-        </div>
-        <div class="navbar-end">
-          <UserMenu user={props.user} />
+        <div class="max-w-full sm:max-w-full md:max-w-6xl lg:max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1920px] mx-auto w-full px-2 sm:px-4">
+          <div class="navbar-start">
+            <a class="btn btn-ghost text-xl" href={props.user ? "/series" : "/"}>
+              {title}
+            </a>
+          </div>
+          <div class="navbar-center hidden md:flex gap-2">
+            {props.user && props.series && (
+              <>
+                <SeriesDropdown
+                  series={props.series}
+                  currentSeriesId={props.currentSeriesId}
+                />
+                {seriesNavItems.length > 0 && (
+                  <ul class="menu menu-horizontal px-1">
+                    {seriesNavItems.map((item) => (
+                      <li key={item.href}>
+                        <a
+                          href={item.href}
+                          class={props.currentPage === item.page ? "active" : ""}
+                        >
+                          {item.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
+          </div>
+          <div class="navbar-end">
+            <UserMenu user={props.user} />
+          </div>
         </div>
       </div>
 
@@ -99,8 +101,10 @@ export function Layout(props: {
         </div>
       )}
 
-      <main class="p-4">
-        <div class="max-w-6xl mx-auto">{props.children}</div>
+      <main class="p-2 sm:p-4 md:p-6 lg:p-8">
+        <div class="max-w-full sm:max-w-full md:max-w-6xl lg:max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1920px] mx-auto">
+          {props.children}
+        </div>
       </main>
     </div>
   );
