@@ -28,9 +28,16 @@ export const handler: Handlers = {
     });
 
     const sceneIds: string[] = [];
-    // Book-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId] = 7 parts
-    // Chapter-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId] = 8 parts
-    const BOOK_LEVEL_SCENE_KEY_LENGTH = 7;
+    // Book-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId]
+    // Chapter-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]
+    // Derive the expected length of book-level scene keys from the key helper
+    const BOOK_LEVEL_SCENE_KEY_LENGTH = sceneOrderKey(
+      user.id,
+      seriesId,
+      bookId,
+      "rank",
+      "sceneId",
+    ).length;
     for await (const entry of orderEntries) {
       const key = entry.key as unknown[];
       if (key.length === BOOK_LEVEL_SCENE_KEY_LENGTH) {
