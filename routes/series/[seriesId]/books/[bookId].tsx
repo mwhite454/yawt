@@ -19,7 +19,7 @@ import {
   deriveSceneFields,
   updateFrontmatterTags,
 } from "@utils/story/frontmatter.ts";
-import SceneList from "@islands/SceneList.tsx";
+import HierarchicalSceneList from "@islands/HierarchicalSceneList.tsx";
 import TagInput from "@islands/TagInput.tsx";
 
 interface Data {
@@ -304,6 +304,24 @@ export default function BookDetail({ data }: PageProps<Data>) {
   });
 
   const bookLevelScenes = scenesByChapter.get(null) ?? [];
+  
+  // Prepare data for HierarchicalSceneList
+  const chaptersWithScenes = chapters.map((chapter) => ({
+    chapter: { id: chapter.id, title: chapter.title },
+    scenes: (scenesByChapter.get(chapter.id) ?? []).map((s) => ({
+      id: s.id,
+      title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
+      rank: s.rank,
+      chapterId: s.chapterId,
+    })),
+  }));
+
+  const bookLevelSceneItems = bookLevelScenes.map((s) => ({
+    id: s.id,
+    title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
+    rank: s.rank,
+    chapterId: s.chapterId,
+  }));
 
   return (
     <Layout
@@ -370,97 +388,14 @@ export default function BookDetail({ data }: PageProps<Data>) {
                   </div>
                 )
                 : (
-                  <div class="space-y-3">
-                    {/* Book-level scenes */}
-                    {bookLevelScenes.length > 0 && (
-                      <div>
-                        <div class="font-semibold text-sm mb-2 opacity-70">
-                          Book-level Scenes
-                        </div>
-                        <SceneList
-                          seriesId={series.id}
-                          bookId={book.id}
-                          scenes={bookLevelScenes.map((s) => ({
-                            id: s.id,
-                            title: s.derived?.title ||
-                              `Scene ${s.id.slice(0, 6)}`,
-                            rank: s.rank,
-                          }))}
-                          selectedSceneId={selectedScene?.id ?? null}
-                        />
-                      </div>
-                    )}
-
-                    {/* Chapters and their scenes */}
-                    {chapters.map((chapter) => {
-                      const chapterScenes = scenesByChapter.get(chapter.id) ??
-                        [];
-                      const isSelected = selectedChapterId === chapter.id;
-                      return (
-                        <div key={chapter.id} class="collapse collapse-arrow border border-base-300">
-                          <input
-                            type="checkbox"
-                            aria-label={`Toggle ${chapter.title}`}
-                            defaultChecked={isSelected || chapterScenes.some((s) => s.id === selectedScene?.id)}
-                          />
-                          <div class="collapse-title font-medium">
-                            <div class="flex items-center justify-between">
-                              <span>{chapter.title}</span>
-                              <span class="badge badge-sm">{chapterScenes.length}</span>
-                            </div>
-                          </div>
-                          <div class="collapse-content">
-                            <div class="mt-2 space-y-2">
-                              {/* Add scene to chapter button */}
-                              <form method="POST">
-                                <input
-                                  type="hidden"
-                                  name="action"
-                                  value="createScene"
-                                />
-                                <input
-                                  type="hidden"
-                                  name="chapterId"
-                                  value={chapter.id}
-                                />
-                                <div class="flex gap-2">
-                                  <input
-                                    class="input input-bordered input-xs flex-1"
-                                    name="title"
-                                    placeholder="New scene"
-                                    required
-                                  />
-                                  <button class="btn btn-xs" type="submit">
-                                    +
-                                  </button>
-                                </div>
-                              </form>
-
-                              {chapterScenes.length === 0
-                                ? (
-                                  <div class="text-sm opacity-50">
-                                    No scenes in this chapter
-                                  </div>
-                                )
-                                : (
-                                  <SceneList
-                                    seriesId={series.id}
-                                    bookId={book.id}
-                                    scenes={chapterScenes.map((s) => ({
-                                      id: s.id,
-                                      title: s.derived?.title ||
-                                        `Scene ${s.id.slice(0, 6)}`,
-                                      rank: s.rank,
-                                    }))}
-                                    selectedSceneId={selectedScene?.id ?? null}
-                                  />
-                                )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <HierarchicalSceneList
+                    seriesId={series.id}
+                    bookId={book.id}
+                    bookLevelScenes={bookLevelSceneItems}
+                    chapters={chaptersWithScenes}
+                    selectedSceneId={selectedScene?.id ?? null}
+                    selectedChapterId={selectedChapterId}
+                  />
                 )}
             </div>
           </div>
