@@ -150,7 +150,7 @@ export default function CharactersPage({ data }: PageProps<Data>) {
           </div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-3">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {data.characters.map((c) => {
             const charType = data.characterTypes.find(
               (ct) => ct.id === c.characterTypeId,

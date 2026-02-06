@@ -121,7 +121,7 @@ export default function SeriesIndex({ data }: PageProps<Data>) {
           </div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-4">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {data.series.length === 0
             ? (
               <div class="alert">

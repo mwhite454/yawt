@@ -332,7 +332,7 @@ export default function BookDetail({ data }: PageProps<Data>) {
       currentPage="books"
     >
       <div class="grid lg:grid-cols-12 gap-4 mt-3">
-        <div class="lg:col-span-4">
+        <div class="lg:col-span-4 xl:col-span-3">
           <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
               <div class="flex items-center justify-between gap-2">
@@ -401,7 +401,7 @@ export default function BookDetail({ data }: PageProps<Data>) {
           </div>
         </div>
 
-        <div class="lg:col-span-8">
+        <div class="lg:col-span-8 xl:col-span-9">
           <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
               <div class="flex items-center justify-between gap-2">

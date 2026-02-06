@@ -131,7 +131,7 @@ export default function LocationsPage({ data }: PageProps<Data>) {
           </div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-3">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {data.locations.map((l) => (
             <div key={l.id} class="card bg-base-100 shadow-sm">
               <div class="card-body">
