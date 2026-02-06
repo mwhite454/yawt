@@ -30,6 +30,18 @@ export interface Book {
   updatedAt: number;
 }
 
+export interface Chapter {
+  id: string;
+  userId: UserId;
+  seriesId: string;
+  bookId: string;
+  rank: string;
+  title: string;
+  description?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface SceneDerived {
   title?: string;
   chapter?: string | number;
@@ -49,6 +61,7 @@ export interface Scene {
   userId: UserId;
   seriesId: string;
   bookId: string;
+  chapterId?: string;
   rank: string;
   text: string;
   derived: SceneDerived;

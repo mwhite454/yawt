@@ -67,7 +67,14 @@ export const handler: Handlers = {
       .atomic()
       .delete(sceneKey(user.id, seriesId, bookId, sceneId))
       .delete(
-        sceneOrderKey(user.id, seriesId, bookId, entry.value.rank, sceneId),
+        sceneOrderKey(
+          user.id,
+          seriesId,
+          bookId,
+          entry.value.rank,
+          sceneId,
+          entry.value.chapterId,
+        ),
       )
       .commit();
 

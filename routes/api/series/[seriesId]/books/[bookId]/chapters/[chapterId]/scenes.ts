@@ -8,7 +8,11 @@ import {
   requireUser,
 } from "@utils/http.ts";
 import type { Scene } from "@utils/story/types.ts";
-import { bookKey, sceneKey, sceneOrderKey } from "@utils/story/keys.ts";
+import {
+  chapterKey,
+  sceneKey,
+  sceneOrderKey,
+} from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { deriveSceneFields } from "@utils/story/frontmatter.ts";
 
@@ -17,33 +21,22 @@ export const handler: Handlers = {
     const userOrRes = await requireUser(req);
     if (userOrRes instanceof Response) return userOrRes;
     const user = userOrRes;
-    const { seriesId, bookId } = ctx.params;
+    const { seriesId, bookId, chapterId } = ctx.params;
 
-    const book = await kv.get(bookKey(user.id, seriesId, bookId));
-    if (!book.value) return notFound("Book not found");
+    const chapter = await kv.get(
+      chapterKey(user.id, seriesId, bookId, chapterId),
+    );
+    if (!chapter.value) return notFound("Chapter not found");
 
-    // Get scenes that are NOT in any chapter (book-level scenes)
     const orderEntries = kv.list({
-      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
+      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId, chapterId],
     });
 
     const sceneIds: string[] = [];
-    // Book-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId]
-    // Chapter-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]
-    // Derive the expected length of book-level scene keys from the key helper
-    const BOOK_LEVEL_SCENE_KEY_LENGTH = sceneOrderKey(
-      user.id,
-      seriesId,
-      bookId,
-      "rank",
-      "sceneId",
-    ).length;
     for await (const entry of orderEntries) {
       const key = entry.key as unknown[];
-      if (key.length === BOOK_LEVEL_SCENE_KEY_LENGTH) {
-        const sceneId = key[key.length - 1];
-        if (typeof sceneId === "string") sceneIds.push(sceneId);
-      }
+      const sceneId = key[key.length - 1];
+      if (typeof sceneId === "string") sceneIds.push(sceneId);
     }
 
     const scenes: Scene[] = [];
@@ -64,10 +57,12 @@ export const handler: Handlers = {
     const userOrRes = await requireUser(req);
     if (userOrRes instanceof Response) return userOrRes;
     const user = userOrRes;
-    const { seriesId, bookId } = ctx.params;
+    const { seriesId, bookId, chapterId } = ctx.params;
 
-    const book = await kv.get(bookKey(user.id, seriesId, bookId));
-    if (!book.value) return notFound("Book not found");
+    const chapter = await kv.get(
+      chapterKey(user.id, seriesId, bookId, chapterId),
+    );
+    if (!chapter.value) return notFound("Chapter not found");
 
     const bodyOrRes = await readJson(req);
     if (bodyOrRes instanceof Response) return bodyOrRes;
@@ -78,7 +73,7 @@ export const handler: Handlers = {
     let lastRank: string | undefined;
     for await (
       const entry of kv.list(
-        { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
+        { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId, chapterId] },
         { reverse: true, limit: 1 },
       )
     ) {
@@ -96,6 +91,7 @@ export const handler: Handlers = {
       userId: user.id,
       seriesId,
       bookId,
+      chapterId,
       rank,
       text,
       derived,
@@ -106,7 +102,7 @@ export const handler: Handlers = {
     const ok = await kv
       .atomic()
       .set(sceneKey(user.id, seriesId, bookId, id), scene)
-      .set(sceneOrderKey(user.id, seriesId, bookId, rank, id), 1)
+      .set(sceneOrderKey(user.id, seriesId, bookId, rank, id, chapterId), 1)
       .commit();
     if (!ok.ok) {
       return json({ error: "Failed to create scene" }, { status: 500 });

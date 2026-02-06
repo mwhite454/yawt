@@ -4,9 +4,11 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { Layout } from "@components/Layout.tsx";
 import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
-import type { Book, Scene, Series } from "@utils/story/types.ts";
+import type { Book, Chapter, Scene, Series } from "@utils/story/types.ts";
 import {
   bookKey,
+  chapterKey,
+  chapterOrderKey,
   sceneKey,
   sceneOrderKey,
   seriesKey,
@@ -25,9 +27,11 @@ interface Data {
   series: Series;
   allSeries: Series[];
   book: Book;
+  chapters: Chapter[];
   scenes: Scene[];
   selectedScene: Scene | null;
   selectedSceneId: string | null;
+  selectedChapterId: string | null;
 }
 
 function defaultSceneText(title: string) {
@@ -52,6 +56,28 @@ export const handler: Handlers<Data> = {
     }
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
+    // Get chapters
+    const chapterIds: string[] = [];
+    for await (
+      const entry of kv.list({
+        prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
+      })
+    ) {
+      const key = entry.key as unknown[];
+      const chapterId = key[key.length - 1];
+      if (typeof chapterId === "string") chapterIds.push(chapterId);
+    }
+
+    const chapters: Chapter[] = [];
+    if (chapterIds.length) {
+      const keys = chapterIds.map((id) =>
+        chapterKey(user.id, seriesId, bookId, id)
+      );
+      const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Chapter>[];
+      for (const res of results) if (res.value) chapters.push(res.value);
+    }
+
+    // Get all scenes (both in chapters and at book level)
     const sceneIds: string[] = [];
     for await (
       const entry of kv.list({
@@ -73,6 +99,7 @@ export const handler: Handlers<Data> = {
     }
 
     const url = new URL(req.url);
+    const selectedChapterId = url.searchParams.get("chapter") ?? null;
     const selectedSceneId = url.searchParams.get("scene") ?? scenes[0]?.id ??
       null;
     const selectedScene = selectedSceneId
@@ -84,9 +111,11 @@ export const handler: Handlers<Data> = {
       series: seriesRes.value,
       allSeries,
       book: bookRes.value,
+      chapters,
       scenes,
       selectedScene,
       selectedSceneId,
+      selectedChapterId,
     });
   },
 
@@ -102,13 +131,68 @@ export const handler: Handlers<Data> = {
     const bookRes = await kv.get<Book>(bookKey(user.id, seriesId, bookId));
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
-    if (action === "createScene") {
-      const title = String(form.get("title") ?? "").trim() || "Untitled scene";
+    if (action === "createChapter") {
+      const title = String(form.get("title") ?? "").trim() ||
+        "Untitled chapter";
 
       let lastRank: string | undefined;
       for await (
         const entry of kv.list(
-          { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
+          { prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId] },
+          { reverse: true, limit: 1 },
+        )
+      ) {
+        const key = entry.key as unknown[];
+        const maybeRank = key[key.length - 2];
+        if (typeof maybeRank === "string") lastRank = maybeRank;
+      }
+
+      const rank = lastRank ? rankAfter(lastRank) : rankInitial();
+      const now = Date.now();
+      const id = crypto.randomUUID();
+
+      const chapter: Chapter = {
+        id,
+        userId: user.id,
+        seriesId,
+        bookId,
+        rank,
+        title,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      const ok = await kv
+        .atomic()
+        .set(chapterKey(user.id, seriesId, bookId, id), chapter)
+        .set(chapterOrderKey(user.id, seriesId, bookId, rank, id), 1)
+        .commit();
+
+      if (!ok.ok) {
+        return new Response("Failed to create chapter", { status: 500 });
+      }
+
+      return Response.redirect(
+        new URL(
+          `/series/${seriesId}/books/${bookId}?chapter=${id}`,
+          req.url,
+        ),
+        303,
+      );
+    }
+
+    if (action === "createScene") {
+      const title = String(form.get("title") ?? "").trim() || "Untitled scene";
+      const chapterId = String(form.get("chapterId") ?? "").trim() || undefined;
+
+      let lastRank: string | undefined;
+      const prefix = chapterId
+        ? ["yawt", "sceneOrder", user.id, seriesId, bookId, chapterId]
+        : ["yawt", "sceneOrder", user.id, seriesId, bookId];
+
+      for await (
+        const entry of kv.list(
+          { prefix },
           { reverse: true, limit: 1 },
         )
       ) {
@@ -128,6 +212,7 @@ export const handler: Handlers<Data> = {
         userId: user.id,
         seriesId,
         bookId,
+        chapterId,
         rank,
         text,
         derived,
@@ -138,17 +223,17 @@ export const handler: Handlers<Data> = {
       const ok = await kv
         .atomic()
         .set(sceneKey(user.id, seriesId, bookId, id), scene)
-        .set(sceneOrderKey(user.id, seriesId, bookId, rank, id), 1)
+        .set(sceneOrderKey(user.id, seriesId, bookId, rank, id, chapterId), 1)
         .commit();
 
       if (!ok.ok) {
         return new Response("Failed to create scene", { status: 500 });
       }
 
-      return Response.redirect(
-        new URL(`/series/${seriesId}/books/${bookId}?scene=${id}`, req.url),
-        303,
-      );
+      const redirectUrl = chapterId
+        ? `/series/${seriesId}/books/${bookId}?chapter=${chapterId}&scene=${id}`
+        : `/series/${seriesId}/books/${bookId}?scene=${id}`;
+      return Response.redirect(new URL(redirectUrl, req.url), 303);
     }
 
     if (action === "saveScene") {
@@ -206,7 +291,19 @@ export const handler: Handlers<Data> = {
 };
 
 export default function BookDetail({ data }: PageProps<Data>) {
-  const { series, allSeries, book, scenes, selectedScene } = data;
+  const { series, allSeries, book, chapters, scenes, selectedScene, selectedChapterId } = data;
+
+  // Organize scenes by chapter
+  const scenesByChapter = new Map<string | null, Scene[]>();
+  scenes.forEach((scene) => {
+    const chId = scene.chapterId ?? null;
+    if (!scenesByChapter.has(chId)) {
+      scenesByChapter.set(chId, []);
+    }
+    scenesByChapter.get(chId)!.push(scene);
+  });
+
+  const bookLevelScenes = scenesByChapter.get(null) ?? [];
 
   return (
     <Layout
@@ -221,11 +318,28 @@ export default function BookDetail({ data }: PageProps<Data>) {
           <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
               <div class="flex items-center justify-between gap-2">
-                <h2 class="card-title">Scenes</h2>
+                <h2 class="card-title">Structure</h2>
                 <details class="dropdown dropdown-end">
                   <summary class="btn btn-sm">New</summary>
                   <div class="dropdown-content z-10 card card-compact bg-base-100 shadow w-80">
                     <div class="card-body">
+                      <form method="POST" class="grid gap-2">
+                        <input
+                          type="hidden"
+                          name="action"
+                          value="createChapter"
+                        />
+                        <input
+                          class="input input-bordered input-sm"
+                          name="title"
+                          placeholder="Chapter title"
+                          required
+                        />
+                        <button class="btn btn-primary btn-sm" type="submit">
+                          Create Chapter
+                        </button>
+                      </form>
+                      <div class="divider my-1">OR</div>
                       <form method="POST" class="grid gap-2">
                         <input
                           type="hidden"
@@ -238,8 +352,8 @@ export default function BookDetail({ data }: PageProps<Data>) {
                           placeholder="Scene title"
                           required
                         />
-                        <button class="btn btn-primary btn-sm" type="submit">
-                          Create
+                        <button class="btn btn-secondary btn-sm" type="submit">
+                          Create Scene (Book Level)
                         </button>
                       </form>
                     </div>
@@ -249,23 +363,104 @@ export default function BookDetail({ data }: PageProps<Data>) {
 
               <div class="divider my-2" />
 
-              {scenes.length === 0
+              {chapters.length === 0 && bookLevelScenes.length === 0
                 ? (
                   <div class="alert">
-                    <span>No scenes yet. Create one.</span>
+                    <span>No chapters or scenes yet. Create one.</span>
                   </div>
                 )
                 : (
-                  <SceneList
-                    seriesId={series.id}
-                    bookId={book.id}
-                    scenes={scenes.map((s) => ({
-                      id: s.id,
-                      title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
-                      rank: s.rank,
-                    }))}
-                    selectedSceneId={selectedScene?.id ?? null}
-                  />
+                  <div class="space-y-3">
+                    {/* Book-level scenes */}
+                    {bookLevelScenes.length > 0 && (
+                      <div>
+                        <div class="font-semibold text-sm mb-2 opacity-70">
+                          Book-level Scenes
+                        </div>
+                        <SceneList
+                          seriesId={series.id}
+                          bookId={book.id}
+                          scenes={bookLevelScenes.map((s) => ({
+                            id: s.id,
+                            title: s.derived?.title ||
+                              `Scene ${s.id.slice(0, 6)}`,
+                            rank: s.rank,
+                          }))}
+                          selectedSceneId={selectedScene?.id ?? null}
+                        />
+                      </div>
+                    )}
+
+                    {/* Chapters and their scenes */}
+                    {chapters.map((chapter) => {
+                      const chapterScenes = scenesByChapter.get(chapter.id) ??
+                        [];
+                      const isSelected = selectedChapterId === chapter.id;
+                      return (
+                        <div key={chapter.id} class="collapse collapse-arrow border border-base-300">
+                          <input
+                            type="checkbox"
+                            aria-label={`Toggle ${chapter.title}`}
+                            defaultChecked={isSelected || chapterScenes.some((s) => s.id === selectedScene?.id)}
+                          />
+                          <div class="collapse-title font-medium">
+                            <div class="flex items-center justify-between">
+                              <span>{chapter.title}</span>
+                              <span class="badge badge-sm">{chapterScenes.length}</span>
+                            </div>
+                          </div>
+                          <div class="collapse-content">
+                            <div class="mt-2 space-y-2">
+                              {/* Add scene to chapter button */}
+                              <form method="POST">
+                                <input
+                                  type="hidden"
+                                  name="action"
+                                  value="createScene"
+                                />
+                                <input
+                                  type="hidden"
+                                  name="chapterId"
+                                  value={chapter.id}
+                                />
+                                <div class="flex gap-2">
+                                  <input
+                                    class="input input-bordered input-xs flex-1"
+                                    name="title"
+                                    placeholder="New scene"
+                                    required
+                                  />
+                                  <button class="btn btn-xs" type="submit">
+                                    +
+                                  </button>
+                                </div>
+                              </form>
+
+                              {chapterScenes.length === 0
+                                ? (
+                                  <div class="text-sm opacity-50">
+                                    No scenes in this chapter
+                                  </div>
+                                )
+                                : (
+                                  <SceneList
+                                    seriesId={series.id}
+                                    bookId={book.id}
+                                    scenes={chapterScenes.map((s) => ({
+                                      id: s.id,
+                                      title: s.derived?.title ||
+                                        `Scene ${s.id.slice(0, 6)}`,
+                                      rank: s.rank,
+                                    }))}
+                                    selectedSceneId={selectedScene?.id ?? null}
+                                  />
+                                )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
             </div>
           </div>

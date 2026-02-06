@@ -71,10 +71,27 @@ export const handler: Handlers = {
     const ok = await kv
       .atomic()
       .delete(
-        sceneOrderKey(user.id, seriesId, bookId, entry.value.rank, sceneId),
+        sceneOrderKey(
+          user.id,
+          seriesId,
+          bookId,
+          entry.value.rank,
+          sceneId,
+          entry.value.chapterId,
+        ),
       )
       .set(sceneKey(user.id, seriesId, bookId, sceneId), updated)
-      .set(sceneOrderKey(user.id, seriesId, bookId, newRank, sceneId), 1)
+      .set(
+        sceneOrderKey(
+          user.id,
+          seriesId,
+          bookId,
+          newRank,
+          sceneId,
+          entry.value.chapterId,
+        ),
+        1,
+      )
       .commit();
 
     if (!ok.ok) {
