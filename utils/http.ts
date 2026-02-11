@@ -31,6 +31,10 @@ export function forbidden(message: string) {
   return json({ error: message }, { status: 403 });
 }
 
+export function serverError(message = "Internal server error") {
+  return json({ error: message }, { status: 500 });
+}
+
 export async function requireUser(req: Request): Promise<User | Response> {
   const user = await getUser(req);
   if (!user) return unauthorized();

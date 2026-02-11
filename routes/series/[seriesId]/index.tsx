@@ -10,6 +10,7 @@ import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import ImageUploader from "@islands/ImageUploader.tsx";
 import BookCoverUploader from "@islands/BookCoverUploader.tsx";
+import { buildR2ObjectUrl } from "@utils/r2.ts";
 
 interface Data {
   user: User;
@@ -33,11 +34,9 @@ export const handler: Handlers<Data> = {
     }
 
     const bookIds: string[] = [];
-    for await (
-      const entry of kv.list({
-        prefix: ["yawt", "bookOrder", user.id, seriesId],
-      })
-    ) {
+    for await (const entry of kv.list({
+      prefix: ["yawt", "bookOrder", user.id, seriesId],
+    })) {
       const key = entry.key as unknown[];
       const bookId = key[key.length - 1];
       if (typeof bookId === "string") bookIds.push(bookId);
@@ -47,7 +46,19 @@ export const handler: Handlers<Data> = {
     if (bookIds.length) {
       const keys = bookIds.map((id) => bookKey(user.id, seriesId, id));
       const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Book>[];
-      for (const res of results) if (res.value) books.push(res.value);
+      for (const res of results) {
+        if (res.value) {
+          const book = res.value;
+          // Populate the cover image URL if available
+          if (book.coverImage?.objectKey) {
+            // Try public R2 URL first, fall back to image proxy endpoint
+            book.coverImage.url =
+              buildR2ObjectUrl(book.coverImage.objectKey) ??
+              `/api/image?key=${encodeURIComponent(book.coverImage.objectKey)}`;
+          }
+          books.push(book);
+        }
+      }
     }
 
     return ctx.render({ user, series: seriesRes.value, allSeries, books });
@@ -68,12 +79,10 @@ export const handler: Handlers<Data> = {
     }
 
     let lastRank: string | undefined;
-    for await (
-      const entry of kv.list(
-        { prefix: ["yawt", "bookOrder", user.id, seriesId] },
-        { reverse: true, limit: 1 },
-      )
-    ) {
+    for await (const entry of kv.list(
+      { prefix: ["yawt", "bookOrder", user.id, seriesId] },
+      { reverse: true, limit: 1 },
+    )) {
       const key = entry.key as unknown[];
       const maybeRank = key[key.length - 2];
       if (typeof maybeRank === "string") lastRank = maybeRank;
@@ -189,34 +198,32 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
 
             <div class="divider" />
 
-            {data.books.length === 0
-              ? (
-                <div class="alert">
-                  <span>No books yet. Add one above.</span>
-                </div>
-              )
-              : (
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                  {data.books.map((b) => (
-                    <div key={b.id}>
-                      <BookCoverUploader
-                        title={b.title}
-                        authorName={data.user.name}
-                        uploadPath={`/api/series/${series.id}/books/${b.id}/image/upload`}
-                        updatePath={`/api/series/${series.id}/books/${b.id}`}
-                        fieldName="coverImage"
-                        existingCoverImage={b.coverImage}
-                      />
-                      <a
-                        class="btn btn-sm btn-block mt-2"
-                        href={`/series/${series.id}/books/${b.id}`}
-                      >
-                        Open scenes
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              )}
+            {data.books.length === 0 ? (
+              <div class="alert">
+                <span>No books yet. Add one above.</span>
+              </div>
+            ) : (
+              <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {data.books.map((b) => (
+                  <div key={b.id}>
+                    <BookCoverUploader
+                      title={b.title}
+                      authorName={data.user.name}
+                      uploadPath={`/api/series/${series.id}/books/${b.id}/image/upload`}
+                      updatePath={`/api/series/${series.id}/books/${b.id}`}
+                      fieldName="coverImage"
+                      existingCoverImage={b.coverImage}
+                    />
+                    <a
+                      class="btn btn-sm btn-block mt-2"
+                      href={`/series/${series.id}/books/${b.id}`}
+                    >
+                      Open scenes
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

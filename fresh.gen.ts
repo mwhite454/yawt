@@ -5,6 +5,7 @@
 import * as $_app from "./routes/_app.tsx";
 import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_admin_users from "./routes/api/admin/users.ts";
+import * as $api_image from "./routes/api/image.ts";
 import * as $api_me from "./routes/api/me.ts";
 import * as $api_notes from "./routes/api/notes.ts";
 import * as $api_notes_id_ from "./routes/api/notes/[id].ts";
@@ -13,9 +14,14 @@ import * as $api_series_id_ from "./routes/api/series/[id].ts";
 import * as $api_series_id_image_upload from "./routes/api/series/[id]/image/upload.ts";
 import * as $api_series_seriesId_books from "./routes/api/series/[seriesId]/books.ts";
 import * as $api_series_seriesId_books_bookId_ from "./routes/api/series/[seriesId]/books/[bookId].ts";
+import * as $api_series_seriesId_books_bookId_chapters from "./routes/api/series/[seriesId]/books/[bookId]/chapters.ts";
+import * as $api_series_seriesId_books_bookId_chapters_chapterId_ from "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId].ts";
+import * as $api_series_seriesId_books_bookId_chapters_chapterId_reorder from "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/reorder.ts";
+import * as $api_series_seriesId_books_bookId_chapters_chapterId_scenes from "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/scenes.ts";
 import * as $api_series_seriesId_books_bookId_image_upload from "./routes/api/series/[seriesId]/books/[bookId]/image/upload.ts";
 import * as $api_series_seriesId_books_bookId_scenes from "./routes/api/series/[seriesId]/books/[bookId]/scenes.ts";
 import * as $api_series_seriesId_books_bookId_scenes_sceneId_ from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts";
+import * as $api_series_seriesId_books_bookId_scenes_sceneId_move from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/move.ts";
 import * as $api_series_seriesId_books_bookId_scenes_sceneId_reorder from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts";
 import * as $api_series_seriesId_character_types from "./routes/api/series/[seriesId]/character-types.ts";
 import * as $api_series_seriesId_character_types_typeId_ from "./routes/api/series/[seriesId]/character-types/[typeId].ts";
@@ -56,6 +62,7 @@ import * as $CharacterImageUploader from "./islands/CharacterImageUploader.tsx";
 import * as $CharacterTypeEditor from "./islands/CharacterTypeEditor.tsx";
 import * as $DraggableList from "./islands/DraggableList.tsx";
 import * as $EventForm from "./islands/EventForm.tsx";
+import * as $HierarchicalSceneList from "./islands/HierarchicalSceneList.tsx";
 import * as $ImageUploader from "./islands/ImageUploader.tsx";
 import * as $KeyValueEditor from "./islands/KeyValueEditor.tsx";
 import * as $SceneList from "./islands/SceneList.tsx";
@@ -76,6 +83,7 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/admin/index.tsx": $admin_index,
     "./routes/api/admin/users.ts": $api_admin_users,
+    "./routes/api/image.ts": $api_image,
     "./routes/api/me.ts": $api_me,
     "./routes/api/notes.ts": $api_notes,
     "./routes/api/notes/[id].ts": $api_notes_id_,
@@ -85,12 +93,22 @@ const manifest = {
     "./routes/api/series/[seriesId]/books.ts": $api_series_seriesId_books,
     "./routes/api/series/[seriesId]/books/[bookId].ts":
       $api_series_seriesId_books_bookId_,
+    "./routes/api/series/[seriesId]/books/[bookId]/chapters.ts":
+      $api_series_seriesId_books_bookId_chapters,
+    "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId].ts":
+      $api_series_seriesId_books_bookId_chapters_chapterId_,
+    "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/reorder.ts":
+      $api_series_seriesId_books_bookId_chapters_chapterId_reorder,
+    "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/scenes.ts":
+      $api_series_seriesId_books_bookId_chapters_chapterId_scenes,
     "./routes/api/series/[seriesId]/books/[bookId]/image/upload.ts":
       $api_series_seriesId_books_bookId_image_upload,
     "./routes/api/series/[seriesId]/books/[bookId]/scenes.ts":
       $api_series_seriesId_books_bookId_scenes,
     "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts":
       $api_series_seriesId_books_bookId_scenes_sceneId_,
+    "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/move.ts":
+      $api_series_seriesId_books_bookId_scenes_sceneId_move,
     "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts":
       $api_series_seriesId_books_bookId_scenes_sceneId_reorder,
     "./routes/api/series/[seriesId]/character-types.ts":
@@ -154,6 +172,7 @@ const manifest = {
     "./islands/CharacterTypeEditor.tsx": $CharacterTypeEditor,
     "./islands/DraggableList.tsx": $DraggableList,
     "./islands/EventForm.tsx": $EventForm,
+    "./islands/HierarchicalSceneList.tsx": $HierarchicalSceneList,
     "./islands/ImageUploader.tsx": $ImageUploader,
     "./islands/KeyValueEditor.tsx": $KeyValueEditor,
     "./islands/SceneList.tsx": $SceneList,
