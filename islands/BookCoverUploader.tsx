@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { BookCover } from "@components/BookCover.tsx";
 import type { AssetImage } from "@utils/story/types.ts";
 
 type UploadResponse = {
@@ -9,8 +8,6 @@ type UploadResponse = {
 };
 
 type Props = {
-  title: string;
-  authorName: string;
   uploadPath: string;
   updatePath: string;
   fieldName: string;
@@ -18,7 +15,6 @@ type Props = {
 };
 
 export default function BookCoverUploader(props: Props) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<number | null>(null);
   const [status, setStatus] = useState<
     "idle" | "uploading" | "saving" | "done" | "error"
@@ -28,7 +24,6 @@ export default function BookCoverUploader(props: Props) {
     AssetImage | undefined
   >(props.existingCoverImage);
 
-  // Clean up timeout on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current !== null) {
@@ -37,17 +32,11 @@ export default function BookCoverUploader(props: Props) {
     };
   }, []);
 
-  // Keep local cover image state in sync with prop changes
   useEffect(() => {
     setCurrentCoverImage(props.existingCoverImage);
   }, [props.existingCoverImage]);
 
-  function handleBookCoverClick() {
-    fileInputRef.current?.click();
-  }
-
   async function onPickFile(file: File | null) {
-    // Clear any existing timeout
     if (timeoutRef.current !== null) {
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -75,11 +64,12 @@ export default function BookCoverUploader(props: Props) {
         | { error?: string; detail?: string };
 
       if (!uploadRes.ok) {
-        const msg = ("error" in uploadJson && uploadJson.error) ||
-          uploadRes.statusText;
-        const detail = "detail" in uploadJson && uploadJson.detail
-          ? `: ${uploadJson.detail}`
-          : "";
+        const msg =
+          ("error" in uploadJson && uploadJson.error) || uploadRes.statusText;
+        const detail =
+          "detail" in uploadJson && uploadJson.detail
+            ? `: ${uploadJson.detail}`
+            : "";
         throw new Error(`${msg}${detail}`);
       }
 
@@ -108,15 +98,12 @@ export default function BookCoverUploader(props: Props) {
         throw new Error(body.detail ? `${msg}: ${body.detail}` : msg);
       }
 
-      // Update local state so UI reflects new image immediately
       setCurrentCoverImage({
         objectKey: uploaded.objectKey,
         contentType: uploaded.contentType,
       });
       setStatus("done");
 
-      // Clear the done status after 3 seconds
-      // Using window.setTimeout to get correct return type (number in browser)
       timeoutRef.current = window.setTimeout(() => {
         setStatus("idle");
         timeoutRef.current = null;
@@ -128,19 +115,20 @@ export default function BookCoverUploader(props: Props) {
   }
 
   return (
-    <div class="grid gap-2">
-      <BookCover
-        title={props.title}
-        authorName={props.authorName}
-        coverImage={currentCoverImage}
-        onClick={handleBookCoverClick}
-      />
+    <div class="flex flex-col gap-4">
+      {currentCoverImage && (
+        <img
+          src={`/api/image?key=${encodeURIComponent(currentCoverImage.objectKey)}`}
+          alt="Cover"
+          class="max-w-48 rounded-lg shadow"
+        />
+      )}
 
       <input
-        ref={fileInputRef}
-        class="hidden"
         type="file"
         accept="image/*"
+        class="file-input file-input-bordered w-full max-w-xs"
+        disabled={status === "uploading" || status === "saving"}
         onChange={(e) => {
           const input = e.currentTarget as HTMLInputElement;
           void onPickFile(input.files?.item(0) ?? null);

@@ -40,22 +40,18 @@ export const handler: Handlers<Data> = {
 
     // Count chapters
     let chapterCount = 0;
-    for await (
-      const _entry of kv.list({
-        prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
-      })
-    ) {
+    for await (const _entry of kv.list({
+      prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
+    })) {
       chapterCount++;
     }
 
     // Get all scenes and calculate stats
     const sceneIds: string[] = [];
     let lastUpdated = bookRes.value.updatedAt;
-    for await (
-      const entry of kv.list({
-        prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
-      })
-    ) {
+    for await (const entry of kv.list({
+      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
+    })) {
       const key = entry.key as unknown[];
       const sceneId = key[key.length - 1];
       if (typeof sceneId === "string") sceneIds.push(sceneId);
@@ -64,7 +60,7 @@ export const handler: Handlers<Data> = {
     const scenes: Scene[] = [];
     if (sceneIds.length) {
       const keys = sceneIds.map((id) =>
-        sceneKey(user.id, seriesId, bookId, id)
+        sceneKey(user.id, seriesId, bookId, id),
       );
       const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
       for (const res of results) {
@@ -97,7 +93,15 @@ export const handler: Handlers<Data> = {
 };
 
 export default function BookSettings({ data }: PageProps<Data>) {
-  const { series, allSeries, book, sceneCount, chapterCount, lastUpdated, totalWords } = data;
+  const {
+    series,
+    allSeries,
+    book,
+    sceneCount,
+    chapterCount,
+    lastUpdated,
+    totalWords,
+  } = data;
 
   const lastUpdatedDate = new Date(lastUpdated).toLocaleDateString();
 
@@ -114,12 +118,17 @@ export default function BookSettings({ data }: PageProps<Data>) {
           <div class="card-body">
             <div class="flex items-center justify-between">
               <h1 class="card-title">{book.title} - Settings</h1>
-              <a
-                href={`/series/${series.id}`}
-                class="btn btn-sm btn-ghost"
-              >
-                ← Back to Series
-              </a>
+              <div class="flex gap-2 flex-wrap">
+                <a
+                  href={`/series/${series.id}/books/${book.id}`}
+                  class="btn btn-sm btn-primary"
+                >
+                  Open Scenes
+                </a>
+                <a href={`/series/${series.id}`} class="btn btn-sm btn-ghost">
+                  ← Back to Series
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -130,10 +139,8 @@ export default function BookSettings({ data }: PageProps<Data>) {
             <div class="card-body">
               <h2 class="card-title">Cover Image</h2>
               <div class="divider my-2" />
-              
+
               <BookCoverUploader
-                title={book.title}
-                authorName={data.user.name}
                 uploadPath={`/api/series/${series.id}/books/${book.id}/image/upload`}
                 updatePath={`/api/series/${series.id}/books/${book.id}`}
                 fieldName="coverImage"
@@ -147,7 +154,8 @@ export default function BookSettings({ data }: PageProps<Data>) {
                 <div>
                   <div class="font-semibold">Previous Images</div>
                   <div class="text-sm">
-                    Feature coming soon: View and swap between previously uploaded cover images
+                    Feature coming soon: View and swap between previously
+                    uploaded cover images
                   </div>
                 </div>
               </div>
@@ -159,24 +167,26 @@ export default function BookSettings({ data }: PageProps<Data>) {
             <div class="card-body">
               <h2 class="card-title">Statistics</h2>
               <div class="divider my-2" />
-              
+
               <div class="stats stats-vertical shadow">
                 <div class="stat">
                   <div class="stat-title">Total Scenes</div>
                   <div class="stat-value text-primary">{sceneCount}</div>
                 </div>
-                
+
                 <div class="stat">
                   <div class="stat-title">Total Chapters</div>
                   <div class="stat-value text-secondary">{chapterCount}</div>
                 </div>
-                
+
                 <div class="stat">
                   <div class="stat-title">Rough Word Count</div>
-                  <div class="stat-value text-accent">{totalWords.toLocaleString()}</div>
+                  <div class="stat-value text-accent">
+                    {totalWords.toLocaleString()}
+                  </div>
                   <div class="stat-desc">Across all scenes</div>
                 </div>
-                
+
                 <div class="stat">
                   <div class="stat-title">Last Updated</div>
                   <div class="stat-value text-sm">{lastUpdatedDate}</div>
@@ -195,7 +205,8 @@ export default function BookSettings({ data }: PageProps<Data>) {
               <div>
                 <div class="font-semibold">Chapter Management</div>
                 <div class="text-sm">
-                  Feature coming soon: Add, reorder, and organize chapters from this page
+                  Feature coming soon: Add, reorder, and organize chapters from
+                  this page
                 </div>
               </div>
             </div>
@@ -211,31 +222,10 @@ export default function BookSettings({ data }: PageProps<Data>) {
               <div>
                 <div class="font-semibold">Scene Organization</div>
                 <div class="text-sm">
-                  Feature coming soon: Organize and reorder scenes from this page
+                  Feature coming soon: Organize and reorder scenes from this
+                  page
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div class="card bg-base-100 shadow-sm">
-          <div class="card-body">
-            <h2 class="card-title">Quick Actions</h2>
-            <div class="divider my-2" />
-            <div class="flex gap-2 flex-wrap">
-              <a
-                href={`/series/${series.id}/books/${book.id}`}
-                class="btn btn-primary"
-              >
-                Open Scenes
-              </a>
-              <a
-                href={`/series/${series.id}`}
-                class="btn btn-ghost"
-              >
-                Back to Series
-              </a>
             </div>
           </div>
         </div>
