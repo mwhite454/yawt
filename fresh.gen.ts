@@ -45,6 +45,7 @@ import * as $auth_signin from "./routes/auth/signin.ts";
 import * as $auth_signout from "./routes/auth/signout.ts";
 import * as $index from "./routes/index.tsx";
 import * as $series_seriesId_books_bookId_ from "./routes/series/[seriesId]/books/[bookId].tsx";
+import * as $series_seriesId_books_bookId_settings from "./routes/series/[seriesId]/books/[bookId]/settings.tsx";
 import * as $series_seriesId_character_types from "./routes/series/[seriesId]/character-types.tsx";
 import * as $series_seriesId_character_types_typeId_ from "./routes/series/[seriesId]/character-types/[typeId].tsx";
 import * as $series_seriesId_character_types_new from "./routes/series/[seriesId]/character-types/new.tsx";
@@ -149,6 +150,8 @@ const manifest = {
     "./routes/index.tsx": $index,
     "./routes/series/[seriesId]/books/[bookId].tsx":
       $series_seriesId_books_bookId_,
+    "./routes/series/[seriesId]/books/[bookId]/settings.tsx":
+      $series_seriesId_books_bookId_settings,
     "./routes/series/[seriesId]/character-types.tsx":
       $series_seriesId_character_types,
     "./routes/series/[seriesId]/character-types/[typeId].tsx":

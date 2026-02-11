@@ -73,7 +73,7 @@ export function updateFrontmatterTags(
   }
 
   // Use newTags as the canonical source (don't fall back to existing tags)
-  const updatedAttributes = {
+  const updatedAttributes: Record<string, unknown> & { tags?: string[] } = {
     ...attributes,
     tags: newTags,
   };

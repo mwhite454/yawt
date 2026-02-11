@@ -1,5 +1,6 @@
 import { getSessionId } from "./oauth.ts";
 import { kv } from "./kv.ts";
+import type { DaisyUITheme } from "./themes.ts";
 
 // Re-export themes from separate file (safe for client-side use)
 export { DAISYUI_THEMES, type DaisyUITheme } from "./themes.ts";

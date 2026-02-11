@@ -73,11 +73,13 @@ export default function HierarchicalSceneList({
   });
 
   const [draggedScene, setDraggedScene] = useState<SceneItem | null>(null);
-  const [dropTarget, setDropTarget] = useState<{
-    type: "chapter" | "book";
-    chapterId: string | null;
-    position: number;
-  } | null>(null);
+  const [dropTarget, setDropTarget] = useState<
+    {
+      type: "chapter" | "book";
+      chapterId: string | null;
+      position: number;
+    } | null
+  >(null);
 
   const handleDragStart = useCallback((scene: SceneItem) => {
     setDraggedScene(scene);
@@ -131,7 +133,7 @@ export default function HierarchicalSceneList({
       }
 
       // Determine before/after scene IDs for positioning
-      let body: {
+      const body: {
         targetChapterId?: string | null;
         beforeSceneId?: string;
         afterSceneId?: string;
@@ -191,8 +193,7 @@ export default function HierarchicalSceneList({
       isNested: boolean,
     ) => {
       const isBeingDragged = draggedScene?.id === scene.id;
-      const isDropTarget =
-        dropTarget?.type === "chapter" &&
+      const isDropTarget = dropTarget?.type === "chapter" &&
         dropTarget?.chapterId === chapterId &&
         dropTarget.position === index;
       const isActive = selectedSceneId === scene.id;
@@ -221,7 +222,7 @@ export default function HierarchicalSceneList({
             // Get the scenes for this chapter/book-level
             const scenes = chapterId
               ? (initialChapters.find((c) => c.chapter.id === chapterId)
-                  ?.scenes ?? [])
+                ?.scenes ?? [])
               : initialBookLevelScenes;
             handleDrop(chapterId, index, scenes);
           }}
@@ -294,8 +295,8 @@ export default function HierarchicalSceneList({
         {unifiedList.map((item) => {
           if (item.type === "scene") {
             // Book-level scene - use precomputed index map for O(1) lookup
-            const bookLevelIndex =
-              bookLevelSceneIndexMap.get(item.scene.id) ?? 0;
+            const bookLevelIndex = bookLevelSceneIndexMap.get(item.scene.id) ??
+              0;
             const isLastBookScene =
               bookLevelIndex === initialBookLevelScenes.length - 1;
             return (
@@ -305,7 +306,7 @@ export default function HierarchicalSceneList({
                   <li
                     class={`h-8 transition-all duration-150 rounded ${
                       dropTarget?.type === "book" &&
-                      dropTarget.position === initialBookLevelScenes.length
+                        dropTarget.position === initialBookLevelScenes.length
                         ? "border-2 border-dashed border-primary bg-primary/10"
                         : "border-2 border-dashed border-transparent"
                     }`}
@@ -329,18 +330,19 @@ export default function HierarchicalSceneList({
                   >
                     {dropTarget?.type === "book" &&
                       dropTarget.position === initialBookLevelScenes.length && (
-                        <div class="text-xs opacity-50 p-2 text-center">
-                          Drop scene here
-                        </div>
-                      )}
+                      <div class="text-xs opacity-50 p-2 text-center">
+                        Drop scene here
+                      </div>
+                    )}
                   </li>
                 )}
               </>
             );
           } else {
             // Chapter with its scenes
-            const isExpanded =
-              item.scenes.some((s) => s.id === selectedSceneId) ||
+            const _isExpanded = item.scenes.some((s) =>
+              s.id === selectedSceneId
+            ) ||
               selectedChapterId === item.chapter.id;
 
             return (
@@ -351,7 +353,7 @@ export default function HierarchicalSceneList({
                 >
                   <span class="flex items-center justify-between w-full">
                     <span class="text-sm">
-                      <span aria-hidden="true">📖 </span>
+                      <span aria-hidden="true">📖</span>
                       {item.chapter.title}
                     </span>
                     <span class="badge badge-sm badge-neutral">
@@ -361,14 +363,14 @@ export default function HierarchicalSceneList({
                 </summary>
                 <ul class="p-0 mt-1 space-y-1">
                   {item.scenes.map((scene, sceneIdx) =>
-                    renderSceneItem(scene, item.chapter.id, sceneIdx, true),
+                    renderSceneItem(scene, item.chapter.id, sceneIdx, true)
                   )}
                   {/* Drop zone at the end of chapter scenes */}
                   <li
                     class={`h-8 ml-4 transition-all duration-150 rounded ${
                       dropTarget?.type === "chapter" &&
-                      dropTarget?.chapterId === item.chapter.id &&
-                      dropTarget.position === item.scenes.length
+                        dropTarget?.chapterId === item.chapter.id &&
+                        dropTarget.position === item.scenes.length
                         ? "border-2 border-dashed border-primary bg-primary/10"
                         : "border-2 border-dashed border-transparent"
                     }`}
@@ -393,10 +395,10 @@ export default function HierarchicalSceneList({
                     {dropTarget?.type === "chapter" &&
                       dropTarget?.chapterId === item.chapter.id &&
                       dropTarget.position === item.scenes.length && (
-                        <div class="text-xs opacity-50 p-2 text-center">
-                          Drop scene here
-                        </div>
-                      )}
+                      <div class="text-xs opacity-50 p-2 text-center">
+                        Drop scene here
+                      </div>
+                    )}
                   </li>
                   {/* Add scene to chapter form */}
                   {item.scenes.length === 0 && (

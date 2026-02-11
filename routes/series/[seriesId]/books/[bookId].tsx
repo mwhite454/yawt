@@ -291,7 +291,15 @@ export const handler: Handlers<Data> = {
 };
 
 export default function BookDetail({ data }: PageProps<Data>) {
-  const { series, allSeries, book, chapters, scenes, selectedScene, selectedChapterId } = data;
+  const {
+    series,
+    allSeries,
+    book,
+    chapters,
+    scenes,
+    selectedScene,
+    selectedChapterId,
+  } = data;
 
   // Organize scenes by chapter
   const scenesByChapter = new Map<string | null, Scene[]>();
@@ -304,7 +312,7 @@ export default function BookDetail({ data }: PageProps<Data>) {
   });
 
   const bookLevelScenes = scenesByChapter.get(null) ?? [];
-  
+
   // Prepare data for HierarchicalSceneList
   const chaptersWithScenes = chapters.map((chapter) => ({
     chapter: { id: chapter.id, title: chapter.title, rank: chapter.rank },
