@@ -95,7 +95,7 @@ export function BookCover(
 
   return (
     <div
-      class="block w-full max-h-[250px] cursor-pointer"
+      class="w-full max-h-[250px] cursor-pointer"
       style="perspective: 1000px"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
