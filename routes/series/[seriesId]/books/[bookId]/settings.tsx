@@ -84,7 +84,7 @@ export const handler: Handlers<Data> = {
 
     // Calculate rough word count across all scenes
     const totalWords = scenes.reduce((sum, scene) => {
-      const words = scene.text.split(/\s+/).filter((w) => w.trim()).length;
+      const words = scene.text.split(/\s+/).filter((w) => w.length > 0).length;
       return sum + words;
     }, 0);
 

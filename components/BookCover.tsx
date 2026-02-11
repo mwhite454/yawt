@@ -14,16 +14,13 @@ export function BookCover(
   const hasImage = Boolean(coverImage?.objectKey);
 
   const handleKeyDown = (e: KeyboardEvent) => {
+    // Only handle keyboard events for non-anchor elements
+    if (href) return;
+
     if (e.key === "Enter" || e.key === " ") {
-      // Always prevent Space from scrolling the page
-      // Only prevent Enter if onClick or href is defined
-      if (e.key === " " || onClick || href) {
-        e.preventDefault();
-      }
+      e.preventDefault();
       if (onClick) {
         onClick();
-      } else if (href) {
-        window.location.href = href;
       }
     }
   };
@@ -31,8 +28,6 @@ export function BookCover(
   const handleClick = () => {
     if (onClick) {
       onClick();
-    } else if (href) {
-      window.location.href = href;
     }
   };
 
