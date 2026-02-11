@@ -32,11 +32,11 @@ export function BookCover(
   };
 
   const ariaLabel = href
-    ? "View book settings"
-    : "Upload or change cover image";
+    ? `View settings for ${title}`
+    : `Upload or change cover image for ${title}`;
   const titleText = href
-    ? "Click to view book settings"
-    : "Click to upload or change cover image";
+    ? `Click to view settings for ${title}`
+    : `Click to upload or change cover image for ${title}`;
 
   const content = (
     <div class="card bg-base-100 shadow-xl h-full max-h-[250px] overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
