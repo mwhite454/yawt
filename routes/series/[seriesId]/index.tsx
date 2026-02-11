@@ -9,7 +9,7 @@ import { bookKey, bookOrderKey, seriesKey } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import ImageUploader from "@islands/ImageUploader.tsx";
-import BookCoverUploader from "@islands/BookCoverUploader.tsx";
+import { BookCover } from "@components/BookCover.tsx";
 import { buildR2ObjectUrl } from "@utils/r2.ts";
 
 interface Data {
