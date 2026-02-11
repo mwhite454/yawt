@@ -1,12 +1,22 @@
 import type { AssetImage } from "@utils/story/types.ts";
 
-type BookCoverProps = {
+type BookCoverPropsBase = {
   title: string;
   authorName: string;
   coverImage?: AssetImage;
-  onClick?: () => void;
-  href?: string;
 };
+
+type BookCoverPropsNavigation = BookCoverPropsBase & {
+  href: string;
+  onClick?: never;
+};
+
+type BookCoverPropsUpload = BookCoverPropsBase & {
+  onClick: () => void;
+  href?: never;
+};
+
+type BookCoverProps = BookCoverPropsNavigation | BookCoverPropsUpload;
 
 export function BookCover(
   { title, authorName, coverImage, onClick, href }: BookCoverProps,

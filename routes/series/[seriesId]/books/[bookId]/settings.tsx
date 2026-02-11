@@ -5,7 +5,7 @@ import { Layout } from "@components/Layout.tsx";
 import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
 import type { Book, Scene, Series } from "@utils/story/types.ts";
-import { bookKey, seriesKey } from "@utils/story/keys.ts";
+import { bookKey, sceneKey, seriesKey } from "@utils/story/keys.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import BookCoverUploader from "@islands/BookCoverUploader.tsx";
 
@@ -63,14 +63,9 @@ export const handler: Handlers<Data> = {
 
     const scenes: Scene[] = [];
     if (sceneIds.length) {
-      const keys = sceneIds.map((id) => [
-        "yawt",
-        "scene",
-        user.id,
-        seriesId,
-        bookId,
-        id,
-      ]);
+      const keys = sceneIds.map((id) =>
+        sceneKey(user.id, seriesId, bookId, id)
+      );
       const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
       for (const res of results) {
         if (res.value) {
