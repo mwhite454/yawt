@@ -84,7 +84,6 @@ export function BookCover(
         href={href}
         class="block w-full max-h-[250px] cursor-pointer"
         style="perspective: 1000px"
-        onKeyDown={handleKeyDown}
         tabIndex={0}
         aria-label={ariaLabel}
         title={titleText}
