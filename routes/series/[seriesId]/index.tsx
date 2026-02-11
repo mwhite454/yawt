@@ -9,7 +9,7 @@ import { bookKey, bookOrderKey, seriesKey } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import ImageUploader from "@islands/ImageUploader.tsx";
-import BookCoverUploader from "@islands/BookCoverUploader.tsx";
+import { BookCover } from "@components/BookCover.tsx";
 
 interface Data {
   user: User;
@@ -199,13 +199,11 @@ export default function SeriesDetail({ data }: PageProps<Data>) {
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                   {data.books.map((b) => (
                     <div key={b.id}>
-                      <BookCoverUploader
+                      <BookCover
                         title={b.title}
                         authorName={data.user.name}
-                        uploadPath={`/api/series/${series.id}/books/${b.id}/image/upload`}
-                        updatePath={`/api/series/${series.id}/books/${b.id}`}
-                        fieldName="coverImage"
-                        existingCoverImage={b.coverImage}
+                        coverImage={b.coverImage}
+                        href={`/series/${series.id}/books/${b.id}/settings`}
                       />
                       <a
                         class="btn btn-sm btn-block mt-2"
