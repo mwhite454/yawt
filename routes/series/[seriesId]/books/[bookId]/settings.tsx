@@ -4,7 +4,7 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { Layout } from "@components/Layout.tsx";
 import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
-import type { Book, Chapter, Scene, Series } from "@utils/story/types.ts";
+import type { Book, Scene, Series } from "@utils/story/types.ts";
 import { bookKey, seriesKey } from "@utils/story/keys.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import BookCoverUploader from "@islands/BookCoverUploader.tsx";
