@@ -7,7 +7,7 @@
 ```tsx
 <main class="p-4">
   <div class="max-w-6xl mx-auto">{props.children}</div>
-</main>
+</main>;
 ```
 
 ### After (Progressive up to 1920px)
@@ -17,10 +17,11 @@
   <div class="max-w-full sm:max-w-full md:max-w-6xl lg:max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1920px] mx-auto">
     {props.children}
   </div>
-</main>
+</main>;
 ```
 
 **Key Changes:**
+
 - Responsive padding that scales with screen size
 - Progressive max-width constraints
 - Full utilization of available space on all screens
@@ -36,7 +37,7 @@
   <div class="navbar-start">...</div>
   <div class="navbar-center">...</div>
   <div class="navbar-end">...</div>
-</div>
+</div>;
 ```
 
 ### After (Matches content width)
@@ -48,10 +49,11 @@
     <div class="navbar-center">...</div>
     <div class="navbar-end">...</div>
   </div>
-</div>
+</div>;
 ```
 
 **Key Changes:**
+
 - Navbar content aligns perfectly with page content
 - Consistent max-width across all screen sizes
 - Responsive horizontal padding
@@ -64,23 +66,20 @@
 
 ```tsx
 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-  {data.books.map((b) => (
-    <div key={b.id}>...</div>
-  ))}
-</div>
+  {data.books.map((b) => <div key={b.id}>...</div>)}
+</div>;
 ```
 
 ### After (Up to 5 columns)
 
 ```tsx
 <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-  {data.books.map((b) => (
-    <div key={b.id}>...</div>
-  ))}
-</div>
+  {data.books.map((b) => <div key={b.id}>...</div>)}
+</div>;
 ```
 
 **Key Changes:**
+
 - 4 columns on XL screens (1280px+)
 - 5 columns on 2XL screens (1536px+)
 - 66% more books visible on ultra-wide displays
@@ -93,23 +92,20 @@
 
 ```tsx
 <div class="grid md:grid-cols-2 gap-3">
-  {data.characters.map((c) => (
-    <div key={c.id}>...</div>
-  ))}
-</div>
+  {data.characters.map((c) => <div key={c.id}>...</div>)}
+</div>;
 ```
 
 ### After (Up to 4 columns)
 
 ```tsx
 <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-  {data.characters.map((c) => (
-    <div key={c.id}>...</div>
-  ))}
-</div>
+  {data.characters.map((c) => <div key={c.id}>...</div>)}
+</div>;
 ```
 
 **Key Changes:**
+
 - 3 columns on LG screens (1024px+)
 - 4 columns on XL screens (1280px+)
 - 100% more characters visible on large displays
@@ -122,23 +118,20 @@
 
 ```tsx
 <div class="grid md:grid-cols-2 gap-3">
-  {data.locations.map((l) => (
-    <div key={l.id}>...</div>
-  ))}
-</div>
+  {data.locations.map((l) => <div key={l.id}>...</div>)}
+</div>;
 ```
 
 ### After (Up to 4 columns)
 
 ```tsx
 <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-  {data.locations.map((l) => (
-    <div key={l.id}>...</div>
-  ))}
-</div>
+  {data.locations.map((l) => <div key={l.id}>...</div>)}
+</div>;
 ```
 
 **Key Changes:**
+
 - Same pattern as characters
 - Consistent grid behavior across similar list pages
 
@@ -150,20 +143,16 @@
 
 ```tsx
 <div class="grid md:grid-cols-2 gap-3">
-  {data.timelines.map((t) => (
-    <div key={t.id}>...</div>
-  ))}
-</div>
+  {data.timelines.map((t) => <div key={t.id}>...</div>)}
+</div>;
 ```
 
 ### After (Up to 4 columns)
 
 ```tsx
 <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-  {data.timelines.map((t) => (
-    <div key={t.id}>...</div>
-  ))}
-</div>
+  {data.timelines.map((t) => <div key={t.id}>...</div>)}
+</div>;
 ```
 
 ---
@@ -174,20 +163,16 @@
 
 ```tsx
 <div class="grid md:grid-cols-2 gap-4">
-  {data.series.map((s) => (
-    <div key={s.id}>...</div>
-  ))}
-</div>
+  {data.series.map((s) => <div key={s.id}>...</div>)}
+</div>;
 ```
 
 ### After (Up to 4 columns)
 
 ```tsx
 <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-  {data.series.map((s) => (
-    <div key={s.id}>...</div>
-  ))}
-</div>
+  {data.series.map((s) => <div key={s.id}>...</div>)}
+</div>;
 ```
 
 ---
@@ -204,7 +189,7 @@
   <div class="lg:col-span-8">
     {/* Main content */}
   </div>
-</div>
+</div>;
 ```
 
 ### After (25% sidebar on XL screens)
@@ -217,10 +202,11 @@
   <div class="lg:col-span-8 xl:col-span-9">
     {/* Main content - 25% more space on XL */}
   </div>
-</div>
+</div>;
 ```
 
 **Key Changes:**
+
 - More efficient sidebar ratio on larger screens
 - 25% more space for scene editing and preview
 - Maintains good usability for navigation
@@ -230,6 +216,7 @@
 ## Summary of Changes
 
 ### Files Modified
+
 1. `components/Layout.tsx` - Core layout component
 2. `routes/series/index.tsx` - Series list page
 3. `routes/series/[seriesId]/index.tsx` - Books list page
@@ -239,14 +226,16 @@
 7. `routes/series/[seriesId]/books/[bookId].tsx` - Book detail page
 
 ### Total Impact
+
 - **7 files modified**
 - **44 insertions, 40 deletions**
 - **Zero breaking changes** - All changes are progressive enhancements
 - **Fully backward compatible** - Works on all screen sizes
 
 ### Tailwind Classes Added
+
 - `sm:` prefix: Small screen optimizations
-- `lg:` prefix: Large screen optimizations  
+- `lg:` prefix: Large screen optimizations
 - `xl:` prefix: Extra large screen optimizations
 - `2xl:` prefix: Ultra-wide screen optimizations
 - `max-w-7xl`: 1280px maximum width
@@ -254,7 +243,9 @@
 - `max-w-[1920px]`: Custom 1920px maximum width
 
 ### Progressive Enhancement Philosophy
+
 Every change follows the mobile-first, progressive enhancement approach:
+
 1. **Mobile**: Full width, minimal padding, single column
 2. **Tablet**: Constrained width, standard padding, 2 columns
 3. **Laptop**: Wider constraint, more padding, 3 columns

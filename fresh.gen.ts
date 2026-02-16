@@ -16,13 +16,12 @@ import * as $api_series_seriesId_books from "./routes/api/series/[seriesId]/book
 import * as $api_series_seriesId_books_bookId_ from "./routes/api/series/[seriesId]/books/[bookId].ts";
 import * as $api_series_seriesId_books_bookId_chapters from "./routes/api/series/[seriesId]/books/[bookId]/chapters.ts";
 import * as $api_series_seriesId_books_bookId_chapters_chapterId_ from "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId].ts";
-import * as $api_series_seriesId_books_bookId_chapters_chapterId_reorder from "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/reorder.ts";
 import * as $api_series_seriesId_books_bookId_chapters_chapterId_scenes from "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/scenes.ts";
 import * as $api_series_seriesId_books_bookId_image_upload from "./routes/api/series/[seriesId]/books/[bookId]/image/upload.ts";
+import * as $api_series_seriesId_books_bookId_items_reorder from "./routes/api/series/[seriesId]/books/[bookId]/items/reorder.ts";
 import * as $api_series_seriesId_books_bookId_scenes from "./routes/api/series/[seriesId]/books/[bookId]/scenes.ts";
 import * as $api_series_seriesId_books_bookId_scenes_sceneId_ from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts";
 import * as $api_series_seriesId_books_bookId_scenes_sceneId_move from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/move.ts";
-import * as $api_series_seriesId_books_bookId_scenes_sceneId_reorder from "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts";
 import * as $api_series_seriesId_character_types from "./routes/api/series/[seriesId]/character-types.ts";
 import * as $api_series_seriesId_character_types_typeId_ from "./routes/api/series/[seriesId]/character-types/[typeId].ts";
 import * as $api_series_seriesId_characters from "./routes/api/series/[seriesId]/characters.ts";
@@ -98,20 +97,18 @@ const manifest = {
       $api_series_seriesId_books_bookId_chapters,
     "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId].ts":
       $api_series_seriesId_books_bookId_chapters_chapterId_,
-    "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/reorder.ts":
-      $api_series_seriesId_books_bookId_chapters_chapterId_reorder,
     "./routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/scenes.ts":
       $api_series_seriesId_books_bookId_chapters_chapterId_scenes,
     "./routes/api/series/[seriesId]/books/[bookId]/image/upload.ts":
       $api_series_seriesId_books_bookId_image_upload,
+    "./routes/api/series/[seriesId]/books/[bookId]/items/reorder.ts":
+      $api_series_seriesId_books_bookId_items_reorder,
     "./routes/api/series/[seriesId]/books/[bookId]/scenes.ts":
       $api_series_seriesId_books_bookId_scenes,
     "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts":
       $api_series_seriesId_books_bookId_scenes_sceneId_,
     "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/move.ts":
       $api_series_seriesId_books_bookId_scenes_sceneId_move,
-    "./routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts":
-      $api_series_seriesId_books_bookId_scenes_sceneId_reorder,
     "./routes/api/series/[seriesId]/character-types.ts":
       $api_series_seriesId_character_types,
     "./routes/api/series/[seriesId]/character-types/[typeId].ts":

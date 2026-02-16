@@ -2,16 +2,20 @@
 
 ## Overview
 
-This feature allows users to drag and drop scenes between chapters and between chapter-level and book-level locations within a book.
+This feature allows users to drag and drop scenes between chapters and between
+chapter-level and book-level locations within a book.
 
 ## User Experience
 
 ### What Users Can Do
 
 1. **Drag scenes within the same chapter** - Reorder scenes within a chapter
-2. **Drag scenes from one chapter to another** - Move scenes between different chapters
-3. **Drag scenes from book-level to a chapter** - Organize book-level scenes into chapters
-4. **Drag scenes from a chapter to book-level** - Remove scenes from chapters and place them at book level
+2. **Drag scenes from one chapter to another** - Move scenes between different
+   chapters
+3. **Drag scenes from book-level to a chapter** - Organize book-level scenes
+   into chapters
+4. **Drag scenes from a chapter to book-level** - Remove scenes from chapters
+   and place them at book level
 5. **Visual feedback** - See drop targets highlighted during drag operations
 
 ### How to Use
@@ -34,6 +38,7 @@ This feature allows users to drag and drop scenes between chapters and between c
 **POST** `/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/move`
 
 **Request Body:**
+
 ```json
 {
   "targetChapterId": "chapter-uuid",
@@ -43,6 +48,7 @@ This feature allows users to drag and drop scenes between chapters and between c
 ```
 
 Or for book-level:
+
 ```json
 {
   "targetChapterId": null,
@@ -51,13 +57,16 @@ Or for book-level:
 }
 ```
 
-- `targetChapterId`: The chapter to move the scene to (string), or `null` for book-level (required)
+- `targetChapterId`: The chapter to move the scene to (string), or `null` for
+  book-level (required)
 - `beforeSceneId`: Position the scene before this scene (optional)
 - `afterSceneId`: Position the scene after this scene (optional)
 
-If neither `beforeSceneId` nor `afterSceneId` is provided, the scene is appended to the end of the target location.
+If neither `beforeSceneId` nor `afterSceneId` is provided, the scene is appended
+to the end of the target location.
 
 **Response:**
+
 ```json
 {
   "scene": {
@@ -69,6 +78,7 @@ If neither `beforeSceneId` nor `afterSceneId` is provided, the scene is appended
 ```
 
 Or for book-level scenes:
+
 ```json
 {
   "scene": {
@@ -81,6 +91,7 @@ Or for book-level scenes:
 ### Component Architecture
 
 **HierarchicalSceneList** (`islands/HierarchicalSceneList.tsx`)
+
 - Main island component handling drag and drop functionality
 - Manages drag state (dragged scene, drop target)
 - Provides visual feedback during drag operations
@@ -90,16 +101,20 @@ Or for book-level scenes:
 ### Data Structure
 
 Scenes have a `chapterId` field that determines their location:
+
 - `chapterId: undefined` - Book-level scene (7-part KV order key)
 - `chapterId: "uuid"` - Chapter scene (8-part KV order key)
 
 The order keys are structured as:
+
 - Book-level: `["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId]`
-- Chapter-level: `["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]`
+- Chapter-level:
+  `["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]`
 
 ### Atomic Operations
 
 When moving a scene, the API uses atomic KV operations to ensure consistency:
+
 1. Delete the old order key (at the original location)
 2. Update the scene record (with new `chapterId` and `rank`)
 3. Create the new order key (at the target location)
@@ -108,17 +123,25 @@ All three operations are executed atomically, so if any fail, none are applied.
 
 ### Ranking System
 
-Scenes use fractional indexing for their `rank` field, allowing efficient insertion between any two scenes without renumbering. The `rankBetween(a, b)` function from `utils/story/rank.ts` calculates a lexicographically-sortable rank between two bounds.
+Scenes use fractional indexing for their `rank` field, allowing efficient
+insertion between any two scenes without renumbering. The `rankBetween(a, b)`
+function from `utils/story/rank.ts` calculates a lexicographically-sortable rank
+between two bounds.
 
 ## Known Limitations
 
-1. **Page Reload**: After each move, the page reloads to ensure data consistency. This could be optimized in the future to update the UI locally.
-2. **No Undo**: There's no built-in undo functionality. Users would need to manually drag scenes back to their original positions.
-3. **Desktop-focused**: Drag and drop is primarily designed and tested for desktop browsers with mouse/trackpad input; touch devices may have limited or unreliable support.
+1. **Page Reload**: After each move, the page reloads to ensure data
+   consistency. This could be optimized in the future to update the UI locally.
+2. **No Undo**: There's no built-in undo functionality. Users would need to
+   manually drag scenes back to their original positions.
+3. **Desktop-focused**: Drag and drop is primarily designed and tested for
+   desktop browsers with mouse/trackpad input; touch devices may have limited or
+   unreliable support.
 
 ## Future Enhancements
 
 Potential improvements:
+
 - Optimistic UI updates (update state locally before reload)
 - Bulk move operations (move multiple scenes at once)
 - Keyboard shortcuts for moving scenes

@@ -8,7 +8,11 @@ import {
   requireUser,
 } from "@utils/http.ts";
 import type { Scene } from "@utils/story/types.ts";
-import { sceneKey, sceneOrderKey } from "@utils/story/keys.ts";
+import {
+  bookItemOrderKey,
+  chapterSceneOrderKey,
+  sceneKey,
+} from "@utils/story/keys.ts";
 import { deriveSceneFields } from "@utils/story/frontmatter.ts";
 
 export const handler: Handlers = {
@@ -63,20 +67,32 @@ export const handler: Handlers = {
     );
     if (!entry.value) return notFound("Scene not found");
 
-    const ok = await kv
-      .atomic()
-      .delete(sceneKey(user.id, seriesId, bookId, sceneId))
-      .delete(
-        sceneOrderKey(
+    const atomic = kv.atomic();
+
+    // Delete scene entity
+    atomic.delete(sceneKey(user.id, seriesId, bookId, sceneId));
+
+    // Delete order key based on whether scene is in a chapter or book-level
+    if (entry.value.chapterId) {
+      // Scene is in a chapter
+      atomic.delete(
+        chapterSceneOrderKey(
           user.id,
           seriesId,
           bookId,
+          entry.value.chapterId,
           entry.value.rank,
           sceneId,
-          entry.value.chapterId,
         ),
-      )
-      .commit();
+      );
+    } else {
+      // Scene is at book level
+      atomic.delete(
+        bookItemOrderKey(user.id, seriesId, bookId, entry.value.rank),
+      );
+    }
+
+    const ok = await atomic.commit();
 
     if (!ok.ok) {
       return json({ error: "Failed to delete scene" }, { status: 500 });

@@ -4,13 +4,19 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { Layout } from "@components/Layout.tsx";
 import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
-import type { Book, Chapter, Scene, Series } from "@utils/story/types.ts";
+import type {
+  Book,
+  BookItem,
+  Chapter,
+  Scene,
+  Series,
+} from "@utils/story/types.ts";
 import {
+  bookItemOrderKey,
   bookKey,
   chapterKey,
-  chapterOrderKey,
+  chapterSceneOrderKey,
   sceneKey,
-  sceneOrderKey,
   seriesKey,
 } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
@@ -29,6 +35,8 @@ interface Data {
   book: Book;
   chapters: Chapter[];
   scenes: Scene[];
+  bookLevelScenes: Scene[];
+  chapterScenes: Map<string, Scene[]>;
   selectedScene: Scene | null;
   selectedSceneId: string | null;
   selectedChapterId: string | null;
@@ -56,18 +64,33 @@ export const handler: Handlers<Data> = {
     }
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
-    // Get chapters
-    const chapterIds: string[] = [];
+    // Get book items (chapters and book-level scenes) from unified order
+    const bookItems: Array<{
+      type: "chapter" | "scene";
+      id: string;
+      rank: string;
+    }> = [];
     for await (
-      const entry of kv.list({
-        prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
+      const entry of kv.list<BookItem>({
+        prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId],
       })
     ) {
-      const key = entry.key as unknown[];
-      const chapterId = key[key.length - 1];
-      if (typeof chapterId === "string") chapterIds.push(chapterId);
+      if (entry.value) {
+        const key = entry.key as unknown[];
+        const rank = key[key.length - 1] as string;
+        bookItems.push({ ...entry.value, rank });
+      }
     }
 
+    // Separate chapters and book-level scene IDs
+    const chapterIds = bookItems
+      .filter((i) => i.type === "chapter")
+      .map((i) => i.id);
+    const bookLevelSceneIds = bookItems
+      .filter((i) => i.type === "scene")
+      .map((i) => i.id);
+
+    // Fetch chapters
     const chapters: Chapter[] = [];
     if (chapterIds.length) {
       const keys = chapterIds.map((id) =>
@@ -77,33 +100,62 @@ export const handler: Handlers<Data> = {
       for (const res of results) if (res.value) chapters.push(res.value);
     }
 
-    // Get all scenes (both in chapters and at book level)
-    const sceneIds: string[] = [];
-    for await (
-      const entry of kv.list({
-        prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
-      })
-    ) {
-      const key = entry.key as unknown[];
-      const sceneId = key[key.length - 1];
-      if (typeof sceneId === "string") sceneIds.push(sceneId);
-    }
-
-    const scenes: Scene[] = [];
-    if (sceneIds.length) {
-      const keys = sceneIds.map((id) =>
+    // Fetch book-level scenes
+    const bookLevelScenes: Scene[] = [];
+    if (bookLevelSceneIds.length) {
+      const keys = bookLevelSceneIds.map((id) =>
         sceneKey(user.id, seriesId, bookId, id)
       );
       const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
-      for (const res of results) if (res.value) scenes.push(res.value);
+      for (const res of results) if (res.value) bookLevelScenes.push(res.value);
     }
+
+    // Fetch scenes for each chapter using chapterSceneOrder
+    const chapterScenes = new Map<string, Scene[]>();
+    for (const chapter of chapters) {
+      const sceneIds: string[] = [];
+      for await (
+        const entry of kv.list({
+          prefix: [
+            "yawt",
+            "chapterSceneOrder",
+            user.id,
+            seriesId,
+            bookId,
+            chapter.id,
+          ],
+        })
+      ) {
+        const key = entry.key as unknown[];
+        const sceneId = key[key.length - 1];
+        if (typeof sceneId === "string") sceneIds.push(sceneId);
+      }
+
+      if (sceneIds.length) {
+        const keys = sceneIds.map((id) =>
+          sceneKey(user.id, seriesId, bookId, id)
+        );
+        const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
+        const scenes: Scene[] = [];
+        for (const res of results) if (res.value) scenes.push(res.value);
+        chapterScenes.set(chapter.id, scenes);
+      } else {
+        chapterScenes.set(chapter.id, []);
+      }
+    }
+
+    // Combine all scenes for selection purposes
+    const allScenes: Scene[] = [
+      ...bookLevelScenes,
+      ...Array.from(chapterScenes.values()).flat(),
+    ];
 
     const url = new URL(req.url);
     const selectedChapterId = url.searchParams.get("chapter") ?? null;
-    const selectedSceneId = url.searchParams.get("scene") ?? scenes[0]?.id ??
+    const selectedSceneId = url.searchParams.get("scene") ?? allScenes[0]?.id ??
       null;
     const selectedScene = selectedSceneId
-      ? (scenes.find((s) => s.id === selectedSceneId) ?? null)
+      ? (allScenes.find((s) => s.id === selectedSceneId) ?? null)
       : null;
 
     return ctx.render({
@@ -112,7 +164,9 @@ export const handler: Handlers<Data> = {
       allSeries,
       book: bookRes.value,
       chapters,
-      scenes,
+      scenes: allScenes,
+      bookLevelScenes,
+      chapterScenes,
       selectedScene,
       selectedSceneId,
       selectedChapterId,
@@ -135,15 +189,16 @@ export const handler: Handlers<Data> = {
       const title = String(form.get("title") ?? "").trim() ||
         "Untitled chapter";
 
+      // Find last rank in unified book item order
       let lastRank: string | undefined;
       for await (
-        const entry of kv.list(
-          { prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId] },
+        const entry of kv.list<BookItem>(
+          { prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId] },
           { reverse: true, limit: 1 },
         )
       ) {
         const key = entry.key as unknown[];
-        const maybeRank = key[key.length - 2];
+        const maybeRank = key[key.length - 1];
         if (typeof maybeRank === "string") lastRank = maybeRank;
       }
 
@@ -162,10 +217,12 @@ export const handler: Handlers<Data> = {
         updatedAt: now,
       };
 
+      const bookItem: BookItem = { type: "chapter", id };
+
       const ok = await kv
         .atomic()
         .set(chapterKey(user.id, seriesId, bookId, id), chapter)
-        .set(chapterOrderKey(user.id, seriesId, bookId, rank, id), 1)
+        .set(bookItemOrderKey(user.id, seriesId, bookId, rank), bookItem)
         .commit();
 
       if (!ok.ok) {
@@ -173,10 +230,7 @@ export const handler: Handlers<Data> = {
       }
 
       return Response.redirect(
-        new URL(
-          `/series/${seriesId}/books/${bookId}?chapter=${id}`,
-          req.url,
-        ),
+        new URL(`/series/${seriesId}/books/${bookId}?chapter=${id}`, req.url),
         303,
       );
     }
@@ -186,19 +240,40 @@ export const handler: Handlers<Data> = {
       const chapterId = String(form.get("chapterId") ?? "").trim() || undefined;
 
       let lastRank: string | undefined;
-      const prefix = chapterId
-        ? ["yawt", "sceneOrder", user.id, seriesId, bookId, chapterId]
-        : ["yawt", "sceneOrder", user.id, seriesId, bookId];
 
-      for await (
-        const entry of kv.list(
-          { prefix },
-          { reverse: true, limit: 1 },
-        )
-      ) {
-        const key = entry.key as unknown[];
-        const maybeRank = key[key.length - 2];
-        if (typeof maybeRank === "string") lastRank = maybeRank;
+      if (chapterId) {
+        // Scene in a chapter - find last rank in that chapter
+        for await (
+          const entry of kv.list(
+            {
+              prefix: [
+                "yawt",
+                "chapterSceneOrder",
+                user.id,
+                seriesId,
+                bookId,
+                chapterId,
+              ],
+            },
+            { reverse: true, limit: 1 },
+          )
+        ) {
+          const key = entry.key as unknown[];
+          const maybeRank = key[key.length - 2];
+          if (typeof maybeRank === "string") lastRank = maybeRank;
+        }
+      } else {
+        // Book-level scene - find last rank in unified book item order
+        for await (
+          const entry of kv.list<BookItem>(
+            { prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId] },
+            { reverse: true, limit: 1 },
+          )
+        ) {
+          const key = entry.key as unknown[];
+          const maybeRank = key[key.length - 1];
+          if (typeof maybeRank === "string") lastRank = maybeRank;
+        }
       }
 
       const rank = lastRank ? rankAfter(lastRank) : rankInitial();
@@ -220,11 +295,23 @@ export const handler: Handlers<Data> = {
         updatedAt: now,
       };
 
-      const ok = await kv
+      const atomic = kv
         .atomic()
-        .set(sceneKey(user.id, seriesId, bookId, id), scene)
-        .set(sceneOrderKey(user.id, seriesId, bookId, rank, id, chapterId), 1)
-        .commit();
+        .set(sceneKey(user.id, seriesId, bookId, id), scene);
+
+      if (chapterId) {
+        // Scene in a chapter - add to chapter scene order
+        atomic.set(
+          chapterSceneOrderKey(user.id, seriesId, bookId, chapterId, rank, id),
+          1,
+        );
+      } else {
+        // Book-level scene - add to unified book item order
+        const bookItem: BookItem = { type: "scene", id };
+        atomic.set(bookItemOrderKey(user.id, seriesId, bookId, rank), bookItem);
+      }
+
+      const ok = await atomic.commit();
 
       if (!ok.ok) {
         return new Response("Failed to create scene", { status: 500 });
@@ -255,9 +342,10 @@ export const handler: Handlers<Data> = {
       }
 
       // Get tags from form
-      const formTags = form.getAll("tags").map((t) => String(t)).filter((t) =>
-        t.trim()
-      );
+      const formTags = form
+        .getAll("tags")
+        .map((t) => String(t))
+        .filter((t) => t.trim());
 
       // Update frontmatter with tags if provided
       if (formTags.length > 0) {
@@ -296,35 +384,36 @@ export default function BookDetail({ data }: PageProps<Data>) {
     allSeries,
     book,
     chapters,
-    scenes,
+    bookLevelScenes,
+    chapterScenes,
     selectedScene,
     selectedChapterId,
   } = data;
 
-  // Organize scenes by chapter
-  const scenesByChapter = new Map<string | null, Scene[]>();
-  scenes.forEach((scene) => {
-    const chId = scene.chapterId ?? null;
-    if (!scenesByChapter.has(chId)) {
-      scenesByChapter.set(chId, []);
-    }
-    scenesByChapter.get(chId)!.push(scene);
+  // Prepare data for HierarchicalSceneList
+  // Sort book-level scenes by rank
+  const sortedBookLevelScenes = [...bookLevelScenes].sort((a, b) =>
+    a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0
+  );
+
+  const chaptersWithScenes = chapters.map((chapter) => {
+    const scenes = chapterScenes.get(chapter.id) ?? [];
+    // Sort scenes by rank
+    const sortedScenes = [...scenes].sort((a, b) =>
+      a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0
+    );
+    return {
+      chapter: { id: chapter.id, title: chapter.title, rank: chapter.rank },
+      scenes: sortedScenes.map((s) => ({
+        id: s.id,
+        title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
+        rank: s.rank,
+        chapterId: s.chapterId,
+      })),
+    };
   });
 
-  const bookLevelScenes = scenesByChapter.get(null) ?? [];
-
-  // Prepare data for HierarchicalSceneList
-  const chaptersWithScenes = chapters.map((chapter) => ({
-    chapter: { id: chapter.id, title: chapter.title, rank: chapter.rank },
-    scenes: (scenesByChapter.get(chapter.id) ?? []).map((s) => ({
-      id: s.id,
-      title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
-      rank: s.rank,
-      chapterId: s.chapterId,
-    })),
-  }));
-
-  const bookLevelSceneItems = bookLevelScenes.map((s) => ({
+  const bookLevelSceneItems = sortedBookLevelScenes.map((s) => ({
     id: s.id,
     title: s.derived?.title || `Scene ${s.id.slice(0, 6)}`,
     rank: s.rank,

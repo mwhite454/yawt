@@ -40,18 +40,22 @@ export const handler: Handlers<Data> = {
 
     // Count chapters
     let chapterCount = 0;
-    for await (const _entry of kv.list({
-      prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
-    })) {
+    for await (
+      const _entry of kv.list({
+        prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
+      })
+    ) {
       chapterCount++;
     }
 
     // Get all scenes and calculate stats
     const sceneIds: string[] = [];
     let lastUpdated = bookRes.value.updatedAt;
-    for await (const entry of kv.list({
-      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
-    })) {
+    for await (
+      const entry of kv.list({
+        prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
+      })
+    ) {
       const key = entry.key as unknown[];
       const sceneId = key[key.length - 1];
       if (typeof sceneId === "string") sceneIds.push(sceneId);
@@ -60,7 +64,7 @@ export const handler: Handlers<Data> = {
     const scenes: Scene[] = [];
     if (sceneIds.length) {
       const keys = sceneIds.map((id) =>
-        sceneKey(user.id, seriesId, bookId, id),
+        sceneKey(user.id, seriesId, bookId, id)
       );
       const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
       for (const res of results) {

@@ -47,7 +47,10 @@ export function Layout(props: {
       <div class="navbar bg-base-100 shadow-sm">
         <div class="max-w-full sm:max-w-full md:max-w-6xl lg:max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1920px] mx-auto w-full px-2 sm:px-4">
           <div class="navbar-start">
-            <a class="btn btn-ghost text-xl" href={props.user ? "/series" : "/"}>
+            <a
+              class="btn btn-ghost text-xl"
+              href={props.user ? "/series" : "/"}
+            >
               {title}
             </a>
           </div>
@@ -64,7 +67,9 @@ export function Layout(props: {
                       <li key={item.href}>
                         <a
                           href={item.href}
-                          class={props.currentPage === item.page ? "active" : ""}
+                          class={props.currentPage === item.page
+                            ? "active"
+                            : ""}
                         >
                           {item.label}
                         </a>

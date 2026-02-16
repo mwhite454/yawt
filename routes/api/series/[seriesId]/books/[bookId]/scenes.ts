@@ -7,8 +7,8 @@ import {
   readJson,
   requireUser,
 } from "@utils/http.ts";
-import type { Scene } from "@utils/story/types.ts";
-import { bookKey, sceneKey, sceneOrderKey } from "@utils/story/keys.ts";
+import type { BookItem, Scene } from "@utils/story/types.ts";
+import { bookItemOrderKey, bookKey, sceneKey } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { deriveSceneFields } from "@utils/story/frontmatter.ts";
 
@@ -22,27 +22,16 @@ export const handler: Handlers = {
     const book = await kv.get(bookKey(user.id, seriesId, bookId));
     if (!book.value) return notFound("Book not found");
 
-    // Get scenes that are NOT in any chapter (book-level scenes)
-    const orderEntries = kv.list({
-      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
-    });
-
+    // Get book-level scenes from the unified book item order
     const sceneIds: string[] = [];
-    // Book-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId]
-    // Chapter-level scene keys: ["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]
-    // Derive the expected length of book-level scene keys from the key helper
-    const BOOK_LEVEL_SCENE_KEY_LENGTH = sceneOrderKey(
-      user.id,
-      seriesId,
-      bookId,
-      "rank",
-      "sceneId",
-    ).length;
-    for await (const entry of orderEntries) {
-      const key = entry.key as unknown[];
-      if (key.length === BOOK_LEVEL_SCENE_KEY_LENGTH) {
-        const sceneId = key[key.length - 1];
-        if (typeof sceneId === "string") sceneIds.push(sceneId);
+    for await (
+      const entry of kv.list<BookItem>({
+        prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId],
+      })
+    ) {
+      const item = entry.value;
+      if (item && item.type === "scene") {
+        sceneIds.push(item.id);
       }
     }
 
@@ -75,15 +64,16 @@ export const handler: Handlers = {
     const text = typeof body.text === "string" ? body.text : "";
     if (!text.trim()) return badRequest("text is required");
 
+    // Find the last rank in the unified book item order
     let lastRank: string | undefined;
     for await (
-      const entry of kv.list(
-        { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId] },
+      const entry of kv.list<BookItem>(
+        { prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId] },
         { reverse: true, limit: 1 },
       )
     ) {
       const key = entry.key as unknown[];
-      const maybeRank = key[key.length - 2];
+      const maybeRank = key[key.length - 1];
       if (typeof maybeRank === "string") lastRank = maybeRank;
     }
 
@@ -103,10 +93,12 @@ export const handler: Handlers = {
       updatedAt: now,
     };
 
+    const bookItem: BookItem = { type: "scene", id };
+
     const ok = await kv
       .atomic()
       .set(sceneKey(user.id, seriesId, bookId, id), scene)
-      .set(sceneOrderKey(user.id, seriesId, bookId, rank, id), 1)
+      .set(bookItemOrderKey(user.id, seriesId, bookId, rank), bookItem)
       .commit();
     if (!ok.ok) {
       return json({ error: "Failed to create scene" }, { status: 500 });
