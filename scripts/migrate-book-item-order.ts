@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --unstable-kv --allow-net
+#!/usr/bin/env -S deno run --unstable-kv --allow-net --allow-read --allow-write
 
 /**
  * Migration script for converting from old chapter/scene order indexes

@@ -58,16 +58,24 @@ Series → Book → Chapter (optional) → Scene
 **Chapters:**
 
 - Data: `["yawt", "chapter", userId, seriesId, bookId, chapterId]`
-- Order: `["yawt", "chapterOrder", userId, seriesId, bookId, rank, chapterId]`
+
+**Unified Book Item Order:**
+
+- Order: `["yawt", "bookItemOrder", userId, seriesId, bookId, rank]`
+- Value: `{ type: "chapter" | "scene", id: string }`
+- This index stores both chapters and book-level scenes in a unified reading order
 
 **Scenes:**
 
 - Data: `["yawt", "scene", userId, seriesId, bookId, sceneId]` (unchanged)
-- Order (book-level):
-  `["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId]` (7 parts)
 - Order (in chapter):
-  `["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]`
-  (8 parts)
+  `["yawt", "chapterSceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]`
+  - Value: `1` (simple marker)
+  - Used only for scenes that belong to a chapter
+
+**Note:** Book-level scenes (scenes without a chapter) are stored in the unified
+`bookItemOrder` index alongside chapters. Scenes within chapters are stored
+separately in the `chapterSceneOrder` index.
 
 ## 🔌 API Endpoints
 
@@ -79,8 +87,36 @@ POST   /api/series/{seriesId}/books/{bookId}/chapters
 GET    /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}
 PUT    /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}
 DELETE /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}
-POST   /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}/reorder
 ```
+
+### Book Item Ordering
+
+```
+POST   /api/series/{seriesId}/books/{bookId}/items/reorder
+```
+
+Reorders chapters and book-level scenes in the unified book reading order.
+
+**Request body:**
+
+- `itemType`: "chapter" | "scene"
+- `itemId`: string (ID of chapter or scene to reorder)
+- `afterRank`: string | null (rank to place after, null for start)
+- `beforeRank`: string | null (rank to place before, null for end)
+
+### Scene Management
+
+```
+POST   /api/series/{seriesId}/books/{bookId}/scenes/{sceneId}/move
+```
+
+Moves a scene between chapters or to/from book level.
+
+**Request body:**
+
+- `targetChapterId`: string | null (null for book-level)
+- `beforeSceneId`: string (optional - scene to place before)
+- `afterSceneId`: string (optional - scene to place after)
 
 ### Chapter Scenes
 

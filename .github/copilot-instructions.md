@@ -212,8 +212,9 @@ User
 **Files to Edit Only When Adding/Changing Env Vars:**
 
 - `.env.example` - Template for environment variables; update when introducing
-  or changing env vars so others can configure them **Breaking Changes to
-  Avoid:**
+  or changing env vars so others can configure them
+
+**Breaking Changes to Avoid:**
 
 - Do not change the Deno KV key structure without migration strategy
 - Do not modify OAuth flow without thorough testing
