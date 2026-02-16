@@ -8,7 +8,7 @@ import {
   requireUser,
 } from "@utils/http.ts";
 import type { Chapter } from "@utils/story/types.ts";
-import { chapterKey, chapterOrderKey } from "@utils/story/keys.ts";
+import { bookItemOrderKey, chapterKey } from "@utils/story/keys.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -77,10 +77,19 @@ export const handler: Handlers = {
     );
     if (!entry.value) return notFound("Chapter not found");
 
-    // Check if chapter has any scenes
+    // Check if chapter has any scenes (using new chapterSceneOrder key)
     const anyScenes = await kv
       .list(
-        { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId, chapterId] },
+        {
+          prefix: [
+            "yawt",
+            "chapterSceneOrder",
+            user.id,
+            seriesId,
+            bookId,
+            chapterId,
+          ],
+        },
         { limit: 1 },
       )
       .next();
@@ -94,9 +103,7 @@ export const handler: Handlers = {
     const ok = await kv
       .atomic()
       .delete(chapterKey(user.id, seriesId, bookId, chapterId))
-      .delete(
-        chapterOrderKey(user.id, seriesId, bookId, entry.value.rank, chapterId),
-      )
+      .delete(bookItemOrderKey(user.id, seriesId, bookId, entry.value.rank))
       .commit();
 
     if (!ok.ok) {

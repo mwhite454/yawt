@@ -211,13 +211,16 @@ User
 
 **Files to Edit Only When Adding/Changing Env Vars:**
 
-- `.env.example` - Template for environment variables; update when introducing or changing env vars so others can configure them
+- `.env.example` - Template for environment variables; update when introducing
+  or changing env vars so others can configure them
+
 **Breaking Changes to Avoid:**
 
 - Do not change the Deno KV key structure without migration strategy
 - Do not modify OAuth flow without thorough testing
 - Do not change API endpoint URLs or response formats without versioning
-- Do not modify the rank ordering system for books/scenes without careful consideration
+- Do not modify the rank ordering system for books/scenes without careful
+  consideration
 
 ## Common Tasks
 
@@ -263,7 +266,8 @@ User
    - Verify OAuth flow if authentication code was modified
    - Test API endpoints with curl or browser dev tools
 
-3. **Build Verification**: Run `deno task build` to ensure CSS builds successfully
+3. **Build Verification**: Run `deno task build` to ensure CSS builds
+   successfully
 
 ### Testing API Changes
 
@@ -290,9 +294,11 @@ curl -X POST http://localhost:8000/api/series \
 
 ### Most Common Tasks
 
-1. **Add new API endpoint**: Create file in `routes/api/`, use `requireUser()`, return with `json()`
+1. **Add new API endpoint**: Create file in `routes/api/`, use `requireUser()`,
+   return with `json()`
 2. **Add interactive UI**: Create island in `islands/`, export Preact component
-3. **Add new data type**: Update `@utils/story/types.ts` and `@utils/story/keys.ts`
+3. **Add new data type**: Update `@utils/story/types.ts` and
+   `@utils/story/keys.ts`
 4. **Fix styling**: Edit component's Tailwind classes or `styles/tailwind.css`
 5. **Update dependencies**: Modify `imports` in `deno.json`
 

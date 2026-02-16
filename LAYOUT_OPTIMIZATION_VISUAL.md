@@ -61,6 +61,7 @@ Extra Large (1280px - 1535px):
 ### Books Grid (Series Detail Page)
 
 #### Medium Screens (768px+)
+
 ```
 ┌─────────┐ ┌─────────┐
 │ Book 1  │ │ Book 2  │
@@ -69,9 +70,11 @@ Extra Large (1280px - 1535px):
 │ Book 3  │ │ Book 4  │
 └─────────┘ └─────────┘
 ```
+
 **2 columns** - Classic grid layout
 
 #### Large Screens (1024px+)
+
 ```
 ┌─────────┐ ┌─────────┐ ┌─────────┐
 │ Book 1  │ │ Book 2  │ │ Book 3  │
@@ -80,9 +83,11 @@ Extra Large (1280px - 1535px):
 │ Book 4  │ │ Book 5  │ │ Book 6  │
 └─────────┘ └─────────┘ └─────────┘
 ```
+
 **3 columns** - Better space utilization
 
 #### Extra Large Screens (1280px+)
+
 ```
 ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
 │ Book 1  │ │ Book 2  │ │ Book 3  │ │ Book 4  │
@@ -91,9 +96,11 @@ Extra Large (1280px - 1535px):
 │ Book 5  │ │ Book 6  │ │ Book 7  │ │ Book 8  │
 └─────────┘ └─────────┘ └─────────┘ └─────────┘
 ```
+
 **4 columns** - Optimal for desktop monitors
 
 #### 2XL Screens (1536px+)
+
 ```
 ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
 │ Book 1  │ │ Book 2  │ │ Book 3  │ │ Book 4  │ │ Book 5  │
@@ -102,40 +109,48 @@ Extra Large (1280px - 1535px):
 │ Book 6  │ │ Book 7  │ │ Book 8  │ │ Book 9  │ │ Book 10 │
 └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘
 ```
+
 **5 columns** - Maximum utilization for ultra-wide displays
 
 ### Characters, Locations, Timelines Grids
 
 #### Medium Screens (768px+)
+
 ```
 ┌───────────────┐ ┌───────────────┐
 │  Character 1  │ │  Character 2  │
 │               │ │               │
 └───────────────┘ └───────────────┘
 ```
+
 **2 columns**
 
 #### Large Screens (1024px+)
+
 ```
 ┌───────────────┐ ┌───────────────┐ ┌───────────────┐
 │  Character 1  │ │  Character 2  │ │  Character 3  │
 │               │ │               │ │               │
 └───────────────┘ └───────────────┘ └───────────────┘
 ```
+
 **3 columns**
 
 #### Extra Large Screens (1280px+)
+
 ```
 ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐
 │  Character 1  │ │  Character 2  │ │  Character 3  │ │  Character 4  │
 │               │ │               │ │               │ │               │
 └───────────────┘ └───────────────┘ └───────────────┘ └───────────────┘
 ```
+
 **4 columns**
 
 ## Book Detail Page - Sidebar Layout
 
 ### Large Screens (1024px+)
+
 ```
 ┌──────────────────────────────────────────────────────┐
 │  ┌──────────────┐  ┌──────────────────────────────┐ │
@@ -152,6 +167,7 @@ Extra Large (1280px - 1535px):
 ```
 
 ### Extra Large Screens (1280px+)
+
 ```
 ┌────────────────────────────────────────────────────────────┐
 │ ┌──────────┐  ┌───────────────────────────────────────┐  │
@@ -170,12 +186,14 @@ Extra Large (1280px - 1535px):
 ## Information Density Comparison
 
 ### Before Optimization (Fixed at 1152px max)
+
 - **1920px screen**: ~768px of unused space (40% wasted)
 - **1440px screen**: ~288px of unused space (20% wasted)
 - **Books visible**: 3 per row maximum
 - **Characters visible**: 2 per row maximum
 
 ### After Optimization
+
 - **1920px screen**: Content uses up to 1920px (0% wasted)
 - **1440px screen**: Content uses up to 1440px (0% wasted)
 - **Books visible**: Up to 5 per row on 2xl screens

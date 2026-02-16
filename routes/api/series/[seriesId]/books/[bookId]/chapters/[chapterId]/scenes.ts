@@ -10,8 +10,8 @@ import {
 import type { Scene } from "@utils/story/types.ts";
 import {
   chapterKey,
+  chapterSceneOrderKey,
   sceneKey,
-  sceneOrderKey,
 } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { deriveSceneFields } from "@utils/story/frontmatter.ts";
@@ -28,12 +28,20 @@ export const handler: Handlers = {
     );
     if (!chapter.value) return notFound("Chapter not found");
 
-    const orderEntries = kv.list({
-      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId, chapterId],
-    });
-
+    // Get scenes in this chapter using chapterSceneOrderKey
     const sceneIds: string[] = [];
-    for await (const entry of orderEntries) {
+    for await (
+      const entry of kv.list({
+        prefix: [
+          "yawt",
+          "chapterSceneOrder",
+          user.id,
+          seriesId,
+          bookId,
+          chapterId,
+        ],
+      })
+    ) {
       const key = entry.key as unknown[];
       const sceneId = key[key.length - 1];
       if (typeof sceneId === "string") sceneIds.push(sceneId);
@@ -70,10 +78,20 @@ export const handler: Handlers = {
     const text = typeof body.text === "string" ? body.text : "";
     if (!text.trim()) return badRequest("text is required");
 
+    // Find last rank in this chapter
     let lastRank: string | undefined;
     for await (
       const entry of kv.list(
-        { prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId, chapterId] },
+        {
+          prefix: [
+            "yawt",
+            "chapterSceneOrder",
+            user.id,
+            seriesId,
+            bookId,
+            chapterId,
+          ],
+        },
         { reverse: true, limit: 1 },
       )
     ) {
@@ -102,7 +120,10 @@ export const handler: Handlers = {
     const ok = await kv
       .atomic()
       .set(sceneKey(user.id, seriesId, bookId, id), scene)
-      .set(sceneOrderKey(user.id, seriesId, bookId, rank, id, chapterId), 1)
+      .set(
+        chapterSceneOrderKey(user.id, seriesId, bookId, chapterId, rank, id),
+        1,
+      )
       .commit();
     if (!ok.ok) {
       return json({ error: "Failed to create scene" }, { status: 500 });

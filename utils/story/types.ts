@@ -145,6 +145,12 @@ export interface Event {
   updatedAt: number;
 }
 
+// Unified book item order entry - represents either a chapter or book-level scene
+export interface BookItem {
+  type: "chapter" | "scene";
+  id: string;
+}
+
 export interface TimelineEvent {
   id: string;
   userId: UserId;

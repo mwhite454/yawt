@@ -32,14 +32,15 @@ export function chapterKey(
   return ["yawt", "chapter", userId, seriesId, bookId, chapterId];
 }
 
-export function chapterOrderKey(
+// Unified book item order - stores both chapters and book-level scenes in one index
+// Value is { type: "chapter" | "scene", id: string }
+export function bookItemOrderKey(
   userId: UserId,
   seriesId: string,
   bookId: string,
   rank: string,
-  chapterId: string,
 ): Deno.KvKey {
-  return ["yawt", "chapterOrder", userId, seriesId, bookId, rank, chapterId];
+  return ["yawt", "bookItemOrder", userId, seriesId, bookId, rank];
 }
 
 export function sceneKey(
@@ -51,18 +52,25 @@ export function sceneKey(
   return ["yawt", "scene", userId, seriesId, bookId, sceneId];
 }
 
-export function sceneOrderKey(
+// Scene order within a chapter - only used for scenes that belong to a chapter
+export function chapterSceneOrderKey(
   userId: UserId,
   seriesId: string,
   bookId: string,
+  chapterId: string,
   rank: string,
   sceneId: string,
-  chapterId?: string,
 ): Deno.KvKey {
-  if (chapterId) {
-    return ["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId];
-  }
-  return ["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId];
+  return [
+    "yawt",
+    "chapterSceneOrder",
+    userId,
+    seriesId,
+    bookId,
+    chapterId,
+    rank,
+    sceneId,
+  ];
 }
 
 export function characterTypeKey(

@@ -4,7 +4,7 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { Layout } from "@components/Layout.tsx";
 import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
-import type { Book, Scene, Series } from "@utils/story/types.ts";
+import type { Book, BookItem, Scene, Series } from "@utils/story/types.ts";
 import { bookKey, sceneKey, seriesKey } from "@utils/story/keys.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import BookCoverUploader from "@islands/BookCoverUploader.tsx";
@@ -38,20 +38,26 @@ export const handler: Handlers<Data> = {
     }
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
-    // Count chapters
+    // Count chapters from the unified book item order
     let chapterCount = 0;
-    for await (const _entry of kv.list({
-      prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
-    })) {
-      chapterCount++;
+    for await (
+      const entry of kv.list<BookItem>({
+        prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId],
+      })
+    ) {
+      if (entry.value?.type === "chapter") {
+        chapterCount++;
+      }
     }
 
     // Get all scenes and calculate stats
     const sceneIds: string[] = [];
     let lastUpdated = bookRes.value.updatedAt;
-    for await (const entry of kv.list({
-      prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
-    })) {
+    for await (
+      const entry of kv.list({
+        prefix: ["yawt", "sceneOrder", user.id, seriesId, bookId],
+      })
+    ) {
       const key = entry.key as unknown[];
       const sceneId = key[key.length - 1];
       if (typeof sceneId === "string") sceneIds.push(sceneId);
@@ -60,7 +66,7 @@ export const handler: Handlers<Data> = {
     const scenes: Scene[] = [];
     if (sceneIds.length) {
       const keys = sceneIds.map((id) =>
-        sceneKey(user.id, seriesId, bookId, id),
+        sceneKey(user.id, seriesId, bookId, id)
       );
       const results = (await kv.getMany(keys)) as Deno.KvEntryMaybe<Scene>[];
       for (const res of results) {

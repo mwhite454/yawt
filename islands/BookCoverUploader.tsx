@@ -64,12 +64,11 @@ export default function BookCoverUploader(props: Props) {
         | { error?: string; detail?: string };
 
       if (!uploadRes.ok) {
-        const msg =
-          ("error" in uploadJson && uploadJson.error) || uploadRes.statusText;
-        const detail =
-          "detail" in uploadJson && uploadJson.detail
-            ? `: ${uploadJson.detail}`
-            : "";
+        const msg = ("error" in uploadJson && uploadJson.error) ||
+          uploadRes.statusText;
+        const detail = "detail" in uploadJson && uploadJson.detail
+          ? `: ${uploadJson.detail}`
+          : "";
         throw new Error(`${msg}${detail}`);
       }
 
@@ -118,7 +117,9 @@ export default function BookCoverUploader(props: Props) {
     <div class="flex flex-col gap-4">
       {currentCoverImage && (
         <img
-          src={`/api/image?key=${encodeURIComponent(currentCoverImage.objectKey)}`}
+          src={`/api/image?key=${
+            encodeURIComponent(currentCoverImage.objectKey)
+          }`}
           alt="Cover"
           class="max-w-48 rounded-lg shadow"
         />

@@ -3,14 +3,14 @@ import { useCallback, useState } from "preact/hooks";
 interface SceneItem {
   id: string;
   title: string;
-  rank: string; // Fractional indexing rank (e.g., "a", "b", "c", "aV", etc.)
+  rank: string;
   chapterId?: string;
 }
 
 interface ChapterItem {
   id: string;
   title: string;
-  rank: string; // Fractional indexing rank (e.g., "a", "b", "c", "aV", etc.)
+  rank: string;
 }
 
 interface Props {
@@ -25,10 +25,10 @@ interface Props {
   selectedChapterId: string | null;
 }
 
-// Union type for items in the unified list
-type ListItem =
-  | { type: "scene"; scene: SceneItem }
-  | { type: "chapter"; chapter: ChapterItem; scenes: SceneItem[] };
+// Union type for items in the unified list (book-level items only)
+type BookLevelItem =
+  | { type: "scene"; item: SceneItem }
+  | { type: "chapter"; item: ChapterItem; scenes: SceneItem[] };
 
 export default function HierarchicalSceneList({
   seriesId,
@@ -38,129 +38,142 @@ export default function HierarchicalSceneList({
   selectedSceneId,
   selectedChapterId,
 }: Props) {
-  // Create unified list combining chapters and book-level scenes, sorted by rank
-  const unifiedList: ListItem[] = [];
+  // Create unified list of book-level items (chapters and book-level scenes)
+  const bookLevelItems: BookLevelItem[] = [];
 
-  // Add all book-level scenes
   initialBookLevelScenes.forEach((scene) => {
-    unifiedList.push({ type: "scene", scene });
+    bookLevelItems.push({ type: "scene", item: scene });
   });
 
-  // Add all chapters
   initialChapters.forEach(({ chapter, scenes }) => {
-    unifiedList.push({ type: "chapter", chapter, scenes });
+    bookLevelItems.push({ type: "chapter", item: chapter, scenes });
   });
 
-  // Sort by rank to get the correct reading order
-  // Ranks use fractional indexing (lexicographically sortable strings)
-  // Use direct string comparison (not localeCompare) for code-point ordering
-  unifiedList.sort((a, b) => {
-    const rankA = a.type === "scene" ? a.scene.rank : a.chapter.rank;
-    const rankB = b.type === "scene" ? b.scene.rank : b.chapter.rank;
-
-    // Primary sort by rank
+  // Sort by rank
+  bookLevelItems.sort((a, b) => {
+    const rankA = a.item.rank;
+    const rankB = b.item.rank;
     if (rankA < rankB) return -1;
     if (rankA > rankB) return 1;
-
-    // Tie-breaker: if ranks are equal, sort by type then id
-    if (a.type !== b.type) {
-      return a.type < b.type ? -1 : 1;
-    }
-
-    const idA = a.type === "scene" ? a.scene.id : a.chapter.id;
-    const idB = b.type === "scene" ? b.scene.id : b.chapter.id;
-    return idA < idB ? -1 : idA > idB ? 1 : 0;
+    return 0;
   });
 
-  const [draggedScene, setDraggedScene] = useState<SceneItem | null>(null);
-  const [dropTarget, setDropTarget] = useState<
+  // Drag state
+  const [draggedItem, setDraggedItem] = useState<BookLevelItem | null>(null);
+  const [draggedChapterScene, setDraggedChapterScene] = useState<
     {
-      type: "chapter" | "book";
+      scene: SceneItem;
+      chapterId: string;
+    } | null
+  >(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+  const [sceneDropTarget, setSceneDropTarget] = useState<
+    {
       chapterId: string | null;
       position: number;
     } | null
   >(null);
 
-  const handleDragStart = useCallback((scene: SceneItem) => {
-    setDraggedScene(scene);
-  }, []);
-
   const handleDragEnd = useCallback(() => {
-    setDraggedScene(null);
-    setDropTarget(null);
+    setDraggedItem(null);
+    setDraggedChapterScene(null);
+    setDropTargetIndex(null);
+    setSceneDropTarget(null);
   }, []);
 
-  const handleDrop = useCallback(
+  // Handle reordering book-level items (chapters and book-level scenes)
+  const handleBookLevelReorder = useCallback(
+    async (targetIndex: number) => {
+      if (!draggedItem) return;
+
+      const itemsBefore = bookLevelItems
+        .slice(0, targetIndex)
+        .filter((i) => i.item.id !== draggedItem.item.id);
+      const itemsAfter = bookLevelItems
+        .slice(targetIndex)
+        .filter((i) => i.item.id !== draggedItem.item.id);
+
+      const afterRank = itemsBefore.length > 0
+        ? itemsBefore[itemsBefore.length - 1].item.rank
+        : null;
+      const beforeRank = itemsAfter.length > 0 ? itemsAfter[0].item.rank : null;
+
+      // Don't reorder if we're not actually moving
+      const currentIndex = bookLevelItems.findIndex(
+        (i) => i.item.id === draggedItem.item.id,
+      );
+      if (currentIndex === targetIndex || currentIndex + 1 === targetIndex) {
+        handleDragEnd();
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/series/${seriesId}/books/${bookId}/items/reorder`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              itemType: draggedItem.type,
+              itemId: draggedItem.item.id,
+              afterRank,
+              beforeRank,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Reorder failed:", errorText);
+          throw new Error(`Reorder failed: ${errorText}`);
+        }
+
+        globalThis.location.reload();
+      } catch (error) {
+        console.error("Reorder error:", error);
+        handleDragEnd();
+      }
+    },
+    [draggedItem, bookLevelItems, seriesId, bookId, handleDragEnd],
+  );
+
+  // Handle moving scenes between chapters or to/from book level
+  const handleSceneMove = useCallback(
     async (
       targetChapterId: string | null,
       targetPosition: number,
       targetScenes: SceneItem[],
     ) => {
-      if (!draggedScene) return;
+      const scene = draggedChapterScene?.scene ||
+        (draggedItem?.type === "scene" ? draggedItem.item : null);
 
-      // Determine the new chapterId
-      const newChapterId = targetChapterId ?? undefined;
+      if (!scene) return;
 
-      // Filter out the dragged scene from the target scenes to avoid self-references
-      const filteredScenes = targetScenes.filter(
-        (s) => s.id !== draggedScene.id,
-      );
+      const filteredScenes = targetScenes.filter((s) => s.id !== scene.id);
 
-      // If dropping in the same chapter
-      if (draggedScene.chapterId === newChapterId) {
-        // Find the current position of the dragged scene in the original list
-        const currentIndex = targetScenes.findIndex(
-          (s) => s.id === draggedScene.id,
-        );
-
-        // If dropping at the same position or immediately after current position, do nothing
-        if (
-          currentIndex === targetPosition ||
-          currentIndex + 1 === targetPosition
-        ) {
-          handleDragEnd();
-          return;
-        }
-
-        // If dropping at the end and already the last item, do nothing
-        if (
-          targetPosition >= filteredScenes.length &&
-          currentIndex === targetScenes.length - 1
-        ) {
-          handleDragEnd();
-          return;
-        }
-      }
-
-      // Determine before/after scene IDs for positioning
       const body: {
-        targetChapterId?: string | null;
+        targetChapterId: string | null;
         beforeSceneId?: string;
         afterSceneId?: string;
       } = {
-        targetChapterId: targetChapterId,
+        targetChapterId,
       };
 
-      if (filteredScenes.length === 0) {
-        // Dropping into an empty list (or list with only the dragged scene)
-        // No positioning needed - will append to end
-      } else if (targetPosition === 0) {
-        // Dropping at the beginning
-        body.beforeSceneId = filteredScenes[0]?.id;
-      } else if (targetPosition >= filteredScenes.length) {
-        // Dropping at the end
-        body.afterSceneId = filteredScenes[filteredScenes.length - 1]?.id;
-      } else {
-        // Dropping in the middle - send both before and after for precise positioning
-        const afterScene = filteredScenes[targetPosition - 1];
-        const beforeScene = filteredScenes[targetPosition];
-        if (afterScene) body.afterSceneId = afterScene.id;
-        if (beforeScene) body.beforeSceneId = beforeScene.id;
+      if (filteredScenes.length > 0) {
+        if (targetPosition === 0) {
+          body.beforeSceneId = filteredScenes[0]?.id;
+        } else if (targetPosition >= filteredScenes.length) {
+          body.afterSceneId = filteredScenes[filteredScenes.length - 1]?.id;
+        } else {
+          body.afterSceneId = filteredScenes[targetPosition - 1]?.id;
+          body.beforeSceneId = filteredScenes[targetPosition]?.id;
+        }
       }
 
       try {
         const response = await fetch(
-          `/api/series/${seriesId}/books/${bookId}/scenes/${draggedScene.id}/move`,
+          `/api/series/${seriesId}/books/${bookId}/scenes/${scene.id}/move`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -175,265 +188,343 @@ export default function HierarchicalSceneList({
           throw new Error(`Move failed: ${errorText}`);
         }
 
-        // Reload the page to reflect changes
         globalThis.location.reload();
       } catch (error) {
         console.error("Scene move error:", error);
         handleDragEnd();
       }
     },
-    [draggedScene, seriesId, bookId, handleDragEnd],
+    [draggedChapterScene, draggedItem, seriesId, bookId, handleDragEnd],
   );
 
-  const renderSceneItem = useCallback(
-    (
-      scene: SceneItem,
-      chapterId: string | null,
-      index: number,
-      isNested: boolean,
-    ) => {
-      const isBeingDragged = draggedScene?.id === scene.id;
-      const isDropTarget = dropTarget?.type === "chapter" &&
-        dropTarget?.chapterId === chapterId &&
-        dropTarget.position === index;
-      const isActive = selectedSceneId === scene.id;
+  const renderBookLevelItem = (item: BookLevelItem, index: number) => {
+    const isBeingDragged = draggedItem?.item.id === item.item.id;
+    const isDropTarget = dropTargetIndex === index;
 
+    if (item.type === "scene") {
+      const isActive = selectedSceneId === item.item.id;
       return (
         <li
-          key={scene.id}
+          key={item.item.id}
           class={`relative transition-all duration-150 ${
             isBeingDragged ? "opacity-50" : ""
-          } ${isDropTarget ? "border-t-2 border-primary" : ""} ${
-            isNested ? "ml-4" : ""
-          }`}
+          } ${isDropTarget ? "border-t-2 border-primary" : ""}`}
           draggable
           onDragStart={(e) => {
             e.dataTransfer!.effectAllowed = "move";
-            handleDragStart(scene);
+            setDraggedItem(item);
           }}
           onDragEnd={handleDragEnd}
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer!.dropEffect = "move";
-            setDropTarget({ type: "chapter", chapterId, position: index });
+            setDropTargetIndex(index);
           }}
           onDrop={(e) => {
             e.preventDefault();
-            // Get the scenes for this chapter/book-level
-            const scenes = chapterId
-              ? (initialChapters.find((c) => c.chapter.id === chapterId)
-                ?.scenes ?? [])
-              : initialBookLevelScenes;
-            handleDrop(chapterId, index, scenes);
+            if (draggedItem) {
+              // Reordering existing book-level scenes/chapters
+              handleBookLevelReorder(index);
+            } else if (draggedChapterScene) {
+              // Moving a chapter scene to book level at a specific index
+              // Calculate the scenes that would be at book level after the drop
+              const bookLevelScenesForMove = bookLevelItems
+                .filter((i) => i.type === "scene")
+                .map((i) => i.item);
+              handleSceneMove(null, index, bookLevelScenesForMove);
+            }
           }}
         >
           <a
-            href={`/series/${seriesId}/books/${bookId}?scene=${scene.id}${
-              chapterId ? `&chapter=${chapterId}` : ""
-            }`}
+            href={`/series/${seriesId}/books/${bookId}?scene=${item.item.id}`}
             class={`flex items-center gap-2 w-full px-3 py-2 hover:bg-base-200 rounded transition-colors ${
               isActive ? "bg-primary text-primary-content font-semibold" : ""
             }`}
             aria-current={isActive ? "page" : undefined}
           >
-            <span class="opacity-40 text-xs" aria-hidden="true">
+            <span class="opacity-40 text-xs cursor-grab" aria-hidden="true">
               ⋮⋮
             </span>
-            <span class="flex-1 text-sm">{scene.title}</span>
+            <span class="flex-1 text-sm">{item.item.title}</span>
           </a>
         </li>
       );
-    },
-    [
-      draggedScene,
-      dropTarget,
-      selectedSceneId,
-      seriesId,
-      bookId,
-      initialChapters,
-      initialBookLevelScenes,
-      handleDragStart,
-      handleDragEnd,
-      handleDrop,
-    ],
-  );
+    } else {
+      // Chapter
+      const chapterScenes = item.scenes;
+      const isActive = selectedChapterId === item.item.id;
 
-  // Precompute id-to-index map for O(1) lookup instead of O(n) findIndex
-  const bookLevelSceneIndexMap = new Map<string, number>();
-  initialBookLevelScenes.forEach((scene, index) => {
-    bookLevelSceneIndexMap.set(scene.id, index);
-  });
+      return (
+        <li
+          key={item.item.id}
+          class={`border-l-2 border-base-300 pl-2 transition-all duration-150 ${
+            isBeingDragged ? "opacity-50" : ""
+          } ${isDropTarget ? "border-t-2 border-primary" : ""}`}
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer!.effectAllowed = "move";
+            setDraggedItem(item);
+          }}
+          onDragEnd={handleDragEnd}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer!.dropEffect = "move";
+            setDropTargetIndex(index);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (draggedItem) {
+              // Reordering existing book-level scenes/chapters
+              handleBookLevelReorder(index);
+            } else if (draggedChapterScene) {
+              // Moving a chapter scene to book level at a specific index
+              // Calculate the scenes that would be at book level after the drop
+              const bookLevelScenesForMove = bookLevelItems
+                .filter((i) => i.type === "scene")
+                .map((i) => i.item);
+              handleSceneMove(null, index, bookLevelScenesForMove);
+            }
+          }}
+        >
+          <div
+            class={`font-bold hover:bg-base-300 cursor-grab px-3 py-2 rounded ${
+              isActive ? "bg-base-300" : "bg-base-200"
+            }`}
+          >
+            <span class="flex items-center justify-between w-full">
+              <span class="flex items-center gap-2 text-sm">
+                <span class="opacity-40 text-xs" aria-hidden="true">
+                  ⋮⋮
+                </span>
+                {item.item.title}
+              </span>
+              <span class="badge badge-sm badge-neutral">
+                {chapterScenes.length}
+              </span>
+            </span>
+          </div>
+          <ul class="p-0 mt-1 space-y-1">
+            {chapterScenes.map((scene, sceneIdx) =>
+              renderChapterScene(scene, item.item.id, sceneIdx, chapterScenes)
+            )}
+            {/* Drop zone at end of chapter */}
+            {(draggedChapterScene || draggedItem?.type === "scene") && (
+              <li
+                class={`h-8 ml-4 transition-all duration-150 rounded ${
+                  sceneDropTarget?.chapterId === item.item.id &&
+                    sceneDropTarget.position === chapterScenes.length
+                    ? "border-2 border-dashed border-primary bg-primary/10"
+                    : "border-2 border-dashed border-transparent"
+                }`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer!.dropEffect = "move";
+                  setSceneDropTarget({
+                    chapterId: item.item.id,
+                    position: chapterScenes.length,
+                  });
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleSceneMove(
+                    item.item.id,
+                    chapterScenes.length,
+                    chapterScenes,
+                  );
+                }}
+              >
+                {sceneDropTarget?.chapterId === item.item.id &&
+                  sceneDropTarget.position === chapterScenes.length && (
+                  <div class="text-xs opacity-50 p-2 text-center">
+                    Drop scene here
+                  </div>
+                )}
+              </li>
+            )}
+            {chapterScenes.length === 0 && (
+              <li class="ml-4">
+                <div class="text-xs opacity-50 p-2 italic">
+                  No scenes yet. Drag scenes here or create new.
+                </div>
+              </li>
+            )}
+            <li class="ml-4">
+              <form method="POST" class="p-2 bg-base-100 rounded">
+                <input type="hidden" name="action" value="createScene" />
+                <input type="hidden" name="chapterId" value={item.item.id} />
+                <div class="flex gap-2">
+                  <input
+                    class="input input-bordered input-xs flex-1"
+                    name="title"
+                    placeholder="Add new scene..."
+                    required
+                  />
+                  <button class="btn btn-xs btn-primary" type="submit">
+                    +
+                  </button>
+                </div>
+              </form>
+            </li>
+          </ul>
+        </li>
+      );
+    }
+  };
+
+  const renderChapterScene = (
+    scene: SceneItem,
+    chapterId: string,
+    index: number,
+    allScenes: SceneItem[],
+  ) => {
+    const isBeingDragged = draggedChapterScene?.scene.id === scene.id;
+    const isDropTarget = sceneDropTarget?.chapterId === chapterId &&
+      sceneDropTarget.position === index;
+    const isActive = selectedSceneId === scene.id;
+
+    return (
+      <li
+        key={scene.id}
+        class={`relative ml-4 transition-all duration-150 ${
+          isBeingDragged ? "opacity-50" : ""
+        } ${isDropTarget ? "border-t-2 border-primary" : ""}`}
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer!.effectAllowed = "move";
+          setDraggedChapterScene({ scene, chapterId });
+        }}
+        onDragEnd={handleDragEnd}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer!.dropEffect = "move";
+          setSceneDropTarget({ chapterId, position: index });
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          handleSceneMove(chapterId, index, allScenes);
+        }}
+      >
+        <a
+          href={`/series/${seriesId}/books/${bookId}?scene=${scene.id}&chapter=${chapterId}`}
+          class={`flex items-center gap-2 w-full px-3 py-2 hover:bg-base-200 rounded transition-colors ${
+            isActive ? "bg-primary text-primary-content font-semibold" : ""
+          }`}
+          aria-current={isActive ? "page" : undefined}
+        >
+          <span class="opacity-40 text-xs cursor-grab" aria-hidden="true">
+            ⋮⋮
+          </span>
+          <span class="flex-1 text-sm">{scene.title}</span>
+        </a>
+      </li>
+    );
+  };
 
   return (
     <div class="space-y-1">
       <ul class="menu p-0 space-y-1">
-        {/* Book-level end/empty drop zone when there are no book-level scenes */}
-        {initialBookLevelScenes.length === 0 && (
+        {/* Drop zone at the very beginning */}
+        {bookLevelItems.length > 0 && draggedItem && (
           <li
             class={`h-8 transition-all duration-150 rounded ${
-              dropTarget?.type === "book" && dropTarget.position === 0
+              dropTargetIndex === 0
                 ? "border-2 border-dashed border-primary bg-primary/10"
                 : "border-2 border-dashed border-transparent"
             }`}
             onDragOver={(e) => {
               e.preventDefault();
               e.dataTransfer!.dropEffect = "move";
-              setDropTarget({ type: "book", chapterId: null, position: 0 });
+              setDropTargetIndex(0);
             }}
             onDrop={(e) => {
               e.preventDefault();
-              handleDrop(null, 0, initialBookLevelScenes);
+              handleBookLevelReorder(0);
             }}
           >
-            {dropTarget?.type === "book" && dropTarget.position === 0 && (
-              <div class="text-xs opacity-50 p-2 text-center">
-                Drop scene here
-              </div>
+            {dropTargetIndex === 0 && (
+              <div class="text-xs opacity-50 p-2 text-center">Drop here</div>
             )}
           </li>
         )}
-        {unifiedList.map((item) => {
-          if (item.type === "scene") {
-            // Book-level scene - use precomputed index map for O(1) lookup
-            const bookLevelIndex = bookLevelSceneIndexMap.get(item.scene.id) ??
-              0;
-            const isLastBookScene =
-              bookLevelIndex === initialBookLevelScenes.length - 1;
-            return (
-              <>
-                {renderSceneItem(item.scene, null, bookLevelIndex, false)}
-                {isLastBookScene && (
-                  <li
-                    class={`h-8 transition-all duration-150 rounded ${
-                      dropTarget?.type === "book" &&
-                        dropTarget.position === initialBookLevelScenes.length
-                        ? "border-2 border-dashed border-primary bg-primary/10"
-                        : "border-2 border-dashed border-transparent"
-                    }`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.dataTransfer!.dropEffect = "move";
-                      setDropTarget({
-                        type: "book",
-                        chapterId: null,
-                        position: initialBookLevelScenes.length,
-                      });
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      handleDrop(
-                        null,
-                        initialBookLevelScenes.length,
-                        initialBookLevelScenes,
-                      );
-                    }}
-                  >
-                    {dropTarget?.type === "book" &&
-                      dropTarget.position === initialBookLevelScenes.length && (
-                      <div class="text-xs opacity-50 p-2 text-center">
-                        Drop scene here
-                      </div>
-                    )}
-                  </li>
-                )}
-              </>
-            );
-          } else {
-            // Chapter with its scenes
-            const _isExpanded = item.scenes.some((s) =>
-              s.id === selectedSceneId
-            ) ||
-              selectedChapterId === item.chapter.id;
 
-            return (
-              <li key={item.chapter.id} class="border-l-2 border-base-300 pl-2">
-                <summary
-                  class="font-bold bg-base-200 hover:bg-base-300 cursor-pointer"
-                  aria-label={`${item.chapter.title} chapter with ${item.scenes.length} scenes`}
-                >
-                  <span class="flex items-center justify-between w-full">
-                    <span class="text-sm">
-                      <span aria-hidden="true">📖</span>
-                      {item.chapter.title}
-                    </span>
-                    <span class="badge badge-sm badge-neutral">
-                      {item.scenes.length}
-                    </span>
-                  </span>
-                </summary>
-                <ul class="p-0 mt-1 space-y-1">
-                  {item.scenes.map((scene, sceneIdx) =>
-                    renderSceneItem(scene, item.chapter.id, sceneIdx, true)
-                  )}
-                  {/* Drop zone at the end of chapter scenes */}
-                  <li
-                    class={`h-8 ml-4 transition-all duration-150 rounded ${
-                      dropTarget?.type === "chapter" &&
-                        dropTarget?.chapterId === item.chapter.id &&
-                        dropTarget.position === item.scenes.length
-                        ? "border-2 border-dashed border-primary bg-primary/10"
-                        : "border-2 border-dashed border-transparent"
-                    }`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.dataTransfer!.dropEffect = "move";
-                      setDropTarget({
-                        type: "chapter",
-                        chapterId: item.chapter.id,
-                        position: item.scenes.length,
-                      });
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      handleDrop(
-                        item.chapter.id,
-                        item.scenes.length,
-                        item.scenes,
-                      );
-                    }}
-                  >
-                    {dropTarget?.type === "chapter" &&
-                      dropTarget?.chapterId === item.chapter.id &&
-                      dropTarget.position === item.scenes.length && (
-                      <div class="text-xs opacity-50 p-2 text-center">
-                        Drop scene here
-                      </div>
-                    )}
-                  </li>
-                  {/* Add scene to chapter form */}
-                  {item.scenes.length === 0 && (
-                    <li class="ml-4">
-                      <div class="text-xs opacity-50 p-2 italic">
-                        No scenes yet. Drag scenes here or create new.
-                      </div>
-                    </li>
-                  )}
-                  <li class="ml-4">
-                    <form method="POST" class="p-2 bg-base-100 rounded">
-                      <input type="hidden" name="action" value="createScene" />
-                      <input
-                        type="hidden"
-                        name="chapterId"
-                        value={item.chapter.id}
-                      />
-                      <div class="flex gap-2">
-                        <input
-                          class="input input-bordered input-xs flex-1"
-                          name="title"
-                          placeholder="Add new scene..."
-                          required
-                        />
-                        <button class="btn btn-xs btn-primary" type="submit">
-                          +
-                        </button>
-                      </div>
-                    </form>
-                  </li>
-                </ul>
-              </li>
-            );
-          }
-        })}
+        {/* Empty state drop zone for scenes being moved to book level */}
+        {bookLevelItems.length === 0 &&
+          (draggedChapterScene || draggedItem?.type === "scene") && (
+          <li
+            class={`h-12 transition-all duration-150 rounded ${
+              sceneDropTarget?.chapterId === null
+                ? "border-2 border-dashed border-primary bg-primary/10"
+                : "border-2 border-dashed border-base-300"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer!.dropEffect = "move";
+              setSceneDropTarget({ chapterId: null, position: 0 });
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              handleSceneMove(null, 0, []);
+            }}
+          >
+            <div class="text-xs opacity-50 p-2 text-center">
+              Drop scene at book level
+            </div>
+          </li>
+        )}
+
+        {bookLevelItems.map((item, index) => renderBookLevelItem(item, index))}
+
+        {/* Drop zone at the very end */}
+        {bookLevelItems.length > 0 && draggedItem && (
+          <li
+            class={`h-8 transition-all duration-150 rounded ${
+              dropTargetIndex === bookLevelItems.length
+                ? "border-2 border-dashed border-primary bg-primary/10"
+                : "border-2 border-dashed border-transparent"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer!.dropEffect = "move";
+              setDropTargetIndex(bookLevelItems.length);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              handleBookLevelReorder(bookLevelItems.length);
+            }}
+          >
+            {dropTargetIndex === bookLevelItems.length && (
+              <div class="text-xs opacity-50 p-2 text-center">Drop here</div>
+            )}
+          </li>
+        )}
+
+        {/* Drop zone for moving chapter scenes to book level */}
+        {bookLevelItems.length > 0 && draggedChapterScene && (
+          <li
+            class={`h-8 transition-all duration-150 rounded ${
+              sceneDropTarget?.chapterId === null
+                ? "border-2 border-dashed border-primary bg-primary/10"
+                : "border-2 border-dashed border-secondary"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer!.dropEffect = "move";
+              setSceneDropTarget({
+                chapterId: null,
+                position: initialBookLevelScenes.length,
+              });
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const bookScenes = initialBookLevelScenes;
+              handleSceneMove(null, bookScenes.length, bookScenes);
+            }}
+          >
+            <div class="text-xs opacity-50 p-2 text-center">
+              Move to book level
+            </div>
+          </li>
+        )}
       </ul>
     </div>
   );

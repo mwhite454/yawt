@@ -7,12 +7,8 @@ import {
   readJson,
   requireUser,
 } from "@utils/http.ts";
-import type { Chapter } from "@utils/story/types.ts";
-import {
-  bookKey,
-  chapterKey,
-  chapterOrderKey,
-} from "@utils/story/keys.ts";
+import type { BookItem, Chapter } from "@utils/story/types.ts";
+import { bookItemOrderKey, bookKey, chapterKey } from "@utils/story/keys.ts";
 import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 
 export const handler: Handlers = {
@@ -25,15 +21,17 @@ export const handler: Handlers = {
     const book = await kv.get(bookKey(user.id, seriesId, bookId));
     if (!book.value) return notFound("Book not found");
 
-    const orderEntries = kv.list({
-      prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
-    });
-
+    // Get chapters from the unified book item order
     const chapterIds: string[] = [];
-    for await (const entry of orderEntries) {
-      const key = entry.key as unknown[];
-      const chapterId = key[key.length - 1];
-      if (typeof chapterId === "string") chapterIds.push(chapterId);
+    for await (
+      const entry of kv.list<BookItem>({
+        prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId],
+      })
+    ) {
+      const item = entry.value;
+      if (item && item.type === "chapter") {
+        chapterIds.push(item.id);
+      }
     }
 
     const chapters: Chapter[] = [];
@@ -69,15 +67,16 @@ export const handler: Handlers = {
       ? body.description.trim()
       : undefined;
 
+    // Find the last rank in the unified book item order
     let lastRank: string | undefined;
     for await (
-      const entry of kv.list(
-        { prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId] },
+      const entry of kv.list<BookItem>(
+        { prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId] },
         { reverse: true, limit: 1 },
       )
     ) {
       const key = entry.key as unknown[];
-      const maybeRank = key[key.length - 2];
+      const maybeRank = key[key.length - 1];
       if (typeof maybeRank === "string") lastRank = maybeRank;
     }
 
@@ -96,10 +95,12 @@ export const handler: Handlers = {
       updatedAt: now,
     };
 
+    const bookItem: BookItem = { type: "chapter", id };
+
     const ok = await kv
       .atomic()
       .set(chapterKey(user.id, seriesId, bookId, id), chapter)
-      .set(chapterOrderKey(user.id, seriesId, bookId, rank, id), 1)
+      .set(bookItemOrderKey(user.id, seriesId, bookId, rank), bookItem)
       .commit();
     if (!ok.ok) {
       return json({ error: "Failed to create chapter" }, { status: 500 });

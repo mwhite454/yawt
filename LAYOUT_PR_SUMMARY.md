@@ -2,11 +2,15 @@
 
 ## Overview
 
-This PR implements comprehensive responsive layout improvements to optimize screen real estate usage across all device sizes, with a particular focus on wide-screen displays.
+This PR implements comprehensive responsive layout improvements to optimize
+screen real estate usage across all device sizes, with a particular focus on
+wide-screen displays.
 
 ## Problem
 
-The YAWT application previously used a fixed maximum width of 1152px (`max-w-6xl`) for all content, resulting in:
+The YAWT application previously used a fixed maximum width of 1152px
+(`max-w-6xl`) for all content, resulting in:
+
 - **40% wasted screen space** on 1920px displays
 - **20% wasted screen space** on 1440px displays
 - Limited grid columns (maximum 2-3 items per row)
@@ -15,9 +19,11 @@ The YAWT application previously used a fixed maximum width of 1152px (`max-w-6xl
 
 ## Solution
 
-Implemented a progressive responsive design system with multiple rational breakpoints that scale from mobile to ultra-wide displays:
+Implemented a progressive responsive design system with multiple rational
+breakpoints that scale from mobile to ultra-wide displays:
 
 ### Responsive Breakpoints
+
 - **sm** (640px): Small tablets
 - **md** (768px): Tablets and small laptops
 - **lg** (1024px): Laptops
@@ -25,6 +31,7 @@ Implemented a progressive responsive design system with multiple rational breakp
 - **2xl** (1536px): Large monitors
 
 ### Progressive Scaling
+
 - **Max-width**: Full width → 1152px → 1280px → 1600px → 1920px
 - **Padding**: 0.5rem → 1rem → 1.5rem → 2rem
 - **Grid columns**: 1 → 2 → 3 → 4 → 5 (books only)
@@ -80,45 +87,49 @@ Implemented a progressive responsive design system with multiple rational breakp
 
 ### Information Density Improvements
 
-| Element | Before | After (LG) | After (XL) | After (2XL) | Improvement |
-|---------|--------|------------|------------|-------------|-------------|
-| Books per row | 3 | 3 | 4 | 5 | +66% |
-| Characters per row | 2 | 3 | 4 | 4 | +100% |
-| Locations per row | 2 | 3 | 4 | 4 | +100% |
-| Timelines per row | 2 | 3 | 4 | 4 | +100% |
-| Series per row | 2 | 3 | 4 | 4 | +100% |
-| Editing space | 67% | 67% | 75% | 75% | +12% |
+| Element            | Before | After (LG) | After (XL) | After (2XL) | Improvement |
+| ------------------ | ------ | ---------- | ---------- | ----------- | ----------- |
+| Books per row      | 3      | 3          | 4          | 5           | +66%        |
+| Characters per row | 2      | 3          | 4          | 4           | +100%       |
+| Locations per row  | 2      | 3          | 4          | 4           | +100%       |
+| Timelines per row  | 2      | 3          | 4          | 4           | +100%       |
+| Series per row     | 2      | 3          | 4          | 4           | +100%       |
+| Editing space      | 67%    | 67%        | 75%        | 75%         | +12%        |
 
 ### Screen Utilization
 
 | Screen Width | Before (wasted) | After (wasted) | Improvement |
-|--------------|----------------|----------------|-------------|
-| 1920px | 768px (40%) | 0px (0%) | 100% |
-| 1600px | 448px (28%) | 0px (0%) | 100% |
-| 1440px | 288px (20%) | 0px (0%) | 100% |
-| 1280px | 128px (10%) | 0px (0%) | 100% |
+| ------------ | --------------- | -------------- | ----------- |
+| 1920px       | 768px (40%)     | 0px (0%)       | 100%        |
+| 1600px       | 448px (28%)     | 0px (0%)       | 100%        |
+| 1440px       | 288px (20%)     | 0px (0%)       | 100%        |
+| 1280px       | 128px (10%)     | 0px (0%)       | 100%        |
 
 ## Technical Details
 
 ### Diff Stats
+
 ```
 9 files changed, 714 insertions(+), 40 deletions(-)
 ```
 
 ### Key Tailwind Classes Added
+
 - `sm:max-w-full` - Full width on small screens
 - `md:max-w-6xl` - 1152px on medium screens
 - `lg:max-w-7xl` - 1280px on large screens
 - `xl:max-w-[1600px]` - 1600px on extra large screens
 - `2xl:max-w-[1920px]` - 1920px on ultra-wide screens
 - Progressive padding: `p-2 sm:p-4 md:p-6 lg:p-8`
-- Progressive grids: `md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`
+- Progressive grids:
+  `md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`
 
 ## Testing
 
 ### Manual Testing Checklist
 
 Test at these viewport widths:
+
 - [ ] 375px (iPhone SE)
 - [ ] 414px (iPhone Pro Max)
 - [ ] 768px (iPad Portrait)
@@ -129,6 +140,7 @@ Test at these viewport widths:
 - [ ] 2560px (Ultra-wide)
 
 Test these pages:
+
 - [ ] Series list (`/series`)
 - [ ] Series detail / Books list (`/series/[id]`)
 - [ ] Characters page (`/series/[id]/characters`)
@@ -137,6 +149,7 @@ Test these pages:
 - [ ] Book detail (`/series/[id]/books/[id]`)
 
 Expected behaviors:
+
 - Content scales progressively without jumps
 - Navbar aligns with content area
 - Grid columns increase at appropriate breakpoints
@@ -147,19 +160,18 @@ Expected behaviors:
 ## Compatibility
 
 ### Browser Support
-✅ All modern browsers (Chrome, Firefox, Safari, Edge)
-✅ Tailwind CSS breakpoints are widely supported
+
+✅ All modern browsers (Chrome, Firefox, Safari, Edge) ✅ Tailwind CSS
+breakpoints are widely supported
 
 ### Backward Compatibility
-✅ Zero breaking changes
-✅ Progressive enhancement approach
-✅ Graceful degradation to mobile layout
-✅ Works on all screen sizes
+
+✅ Zero breaking changes ✅ Progressive enhancement approach ✅ Graceful
+degradation to mobile layout ✅ Works on all screen sizes
 
 ### Performance
-✅ No runtime JavaScript required
-✅ CSS-only changes
-✅ No bundle size increase
+
+✅ No runtime JavaScript required ✅ CSS-only changes ✅ No bundle size increase
 ✅ Better perceived performance (less scrolling)
 
 ## Design Principles
@@ -174,6 +186,7 @@ Expected behaviors:
 ## Future Enhancements
 
 Potential improvements for future PRs:
+
 - User preference for compact/comfortable density
 - Dynamic column calculation based on card content
 - Container queries for component-level responsiveness
@@ -215,6 +228,7 @@ When creating new pages:
 ### For Reviewers
 
 Check that:
+
 - [ ] New pages use the Layout component
 - [ ] Grid layouts use progressive columns
 - [ ] No custom max-width constraints
@@ -223,11 +237,13 @@ Check that:
 
 ## Related Issues
 
-Fixes: "Make better use of screen real estate with multiple rational breakpoints"
+Fixes: "Make better use of screen real estate with multiple rational
+breakpoints"
 
 ## Screenshots
 
 Manual testing recommended to view actual results. Key areas to screenshot:
+
 1. Series list on ultra-wide (should show 4 columns)
 2. Books grid on 2xl screen (should show 5 columns)
 3. Characters on xl screen (should show 4 columns)
@@ -236,6 +252,10 @@ Manual testing recommended to view actual results. Key areas to screenshot:
 
 ## Conclusion
 
-This PR significantly improves the user experience for wide-screen users while maintaining excellent mobile and tablet experiences. The progressive responsive design ensures that no screen space is wasted, and users can view more content at a glance.
+This PR significantly improves the user experience for wide-screen users while
+maintaining excellent mobile and tablet experiences. The progressive responsive
+design ensures that no screen space is wasted, and users can view more content
+at a glance.
 
-**Impact**: 0-100% more content visible depending on screen size and page type, with zero breaking changes and full backward compatibility.
+**Impact**: 0-100% more content visible depending on screen size and page type,
+with zero breaking changes and full backward compatibility.

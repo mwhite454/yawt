@@ -2,7 +2,9 @@
 
 ## 🎯 Overview
 
-This implementation adds a **Chapter** layer between Books and Scenes in YAWT, allowing authors to organize their scenes into logical groups while maintaining the flexibility to have standalone scenes at the book level.
+This implementation adds a **Chapter** layer between Books and Scenes in YAWT,
+allowing authors to organize their scenes into logical groups while maintaining
+the flexibility to have standalone scenes at the book level.
 
 ## ✅ Requirements Met
 
@@ -17,25 +19,27 @@ All requirements from the problem statement have been successfully addressed:
 ## 📊 Data Model
 
 ### New: Chapter Entity
+
 ```typescript
 interface Chapter {
   id: string;
   userId: UserId;
   seriesId: string;
   bookId: string;
-  rank: string;           // For ordering chapters
+  rank: string; // For ordering chapters
   title: string;
-  description?: string;   // Optional metadata
+  description?: string; // Optional metadata
   createdAt: number;
   updatedAt: number;
 }
 ```
 
 ### Updated: Scene Entity
+
 ```typescript
 interface Scene {
   // ... existing fields ...
-  chapterId?: string;     // NEW: Optional chapter association
+  chapterId?: string; // NEW: Optional chapter association
   // ... rest of fields ...
 }
 ```
@@ -43,6 +47,7 @@ interface Scene {
 ## 🏗️ Architecture
 
 ### Hierarchy
+
 ```
 Series → Book → Chapter (optional) → Scene
                    └─→ Scene (book-level, no chapter)
@@ -51,34 +56,79 @@ Series → Book → Chapter (optional) → Scene
 ### Storage Keys
 
 **Chapters:**
+
 - Data: `["yawt", "chapter", userId, seriesId, bookId, chapterId]`
-- Order: `["yawt", "chapterOrder", userId, seriesId, bookId, rank, chapterId]`
+
+**Unified Book Item Order:**
+
+- Order: `["yawt", "bookItemOrder", userId, seriesId, bookId, rank]`
+- Value: `{ type: "chapter" | "scene", id: string }`
+- This index stores both chapters and book-level scenes in a unified reading order
 
 **Scenes:**
+
 - Data: `["yawt", "scene", userId, seriesId, bookId, sceneId]` (unchanged)
-- Order (book-level): `["yawt", "sceneOrder", userId, seriesId, bookId, rank, sceneId]` (7 parts)
-- Order (in chapter): `["yawt", "sceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]` (8 parts)
+- Order (in chapter):
+  `["yawt", "chapterSceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]`
+  - Value: `1` (simple marker)
+  - Used only for scenes that belong to a chapter
+
+**Note:** Book-level scenes (scenes without a chapter) are stored in the unified
+`bookItemOrder` index alongside chapters. Scenes within chapters are stored
+separately in the `chapterSceneOrder` index.
 
 ## 🔌 API Endpoints
 
 ### Chapter Management
+
 ```
 GET    /api/series/{seriesId}/books/{bookId}/chapters
 POST   /api/series/{seriesId}/books/{bookId}/chapters
 GET    /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}
 PUT    /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}
 DELETE /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}
-POST   /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}/reorder
 ```
 
+### Book Item Ordering
+
+```
+POST   /api/series/{seriesId}/books/{bookId}/items/reorder
+```
+
+Reorders chapters and book-level scenes in the unified book reading order.
+
+**Request body:**
+
+- `itemType`: "chapter" | "scene"
+- `itemId`: string (ID of chapter or scene to reorder)
+- `afterRank`: string | null (rank to place after, null for start)
+- `beforeRank`: string | null (rank to place before, null for end)
+
+### Scene Management
+
+```
+POST   /api/series/{seriesId}/books/{bookId}/scenes/{sceneId}/move
+```
+
+Moves a scene between chapters or to/from book level.
+
+**Request body:**
+
+- `targetChapterId`: string | null (null for book-level)
+- `beforeSceneId`: string (optional - scene to place before)
+- `afterSceneId`: string (optional - scene to place after)
+
 ### Chapter Scenes
+
 ```
 GET    /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}/scenes
 POST   /api/series/{seriesId}/books/{bookId}/chapters/{chapterId}/scenes
 ```
 
 ### Updated Scene Endpoints
+
 All existing scene endpoints now properly handle the optional `chapterId`:
+
 - GET/POST on `/scenes` works with book-level scenes
 - Individual scene operations maintain chapter context
 - Deletion and reordering respect chapter boundaries
@@ -106,15 +156,16 @@ The book detail page now includes:
 
 The implementation maintains excellent performance:
 
-| Operation | Complexity | Notes |
-|-----------|-----------|-------|
-| List chapters | O(n) | KV prefix scan, n = chapters |
-| List chapter scenes | O(n) | KV prefix scan, n = scenes in chapter |
-| Create chapter | O(1) | Single atomic write |
-| Reorder chapter | O(1) | Atomic delete + set |
-| Delete chapter | O(1) | Only if empty |
+| Operation           | Complexity | Notes                                 |
+| ------------------- | ---------- | ------------------------------------- |
+| List chapters       | O(n)       | KV prefix scan, n = chapters          |
+| List chapter scenes | O(n)       | KV prefix scan, n = scenes in chapter |
+| Create chapter      | O(1)       | Single atomic write                   |
+| Reorder chapter     | O(1)       | Atomic delete + set                   |
+| Delete chapter      | O(1)       | Only if empty                         |
 
-All operations use the same efficient fractional ranking system as books and scenes.
+All operations use the same efficient fractional ranking system as books and
+scenes.
 
 ## 🔄 Backward Compatibility
 
@@ -177,22 +228,27 @@ Possible improvements for future iterations:
 ## 📁 Files Changed
 
 **Data Layer:**
+
 - `utils/story/types.ts` - Chapter type, Scene.chapterId
 - `utils/story/keys.ts` - Chapter key functions
 
 **API Layer:**
+
 - `routes/api/series/[seriesId]/books/[bookId]/chapters.ts`
 - `routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId].ts`
 - `routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/scenes.ts`
 - `routes/api/series/[seriesId]/books/[bookId]/chapters/[chapterId]/reorder.ts`
 - `routes/api/series/[seriesId]/books/[bookId]/scenes.ts` (updated)
 - `routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId].ts` (updated)
-- `routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts` (updated)
+- `routes/api/series/[seriesId]/books/[bookId]/scenes/[sceneId]/reorder.ts`
+  (updated)
 
 **UI Layer:**
+
 - `routes/series/[seriesId]/books/[bookId].tsx` (redesigned)
 
 **Documentation:**
+
 - `docs/CHAPTER_IMPLEMENTATION.md`
 - `docs/CHAPTER_SUMMARY.md`
 - `docs/CHAPTER_VISUAL_GUIDE.md`
@@ -201,6 +257,7 @@ Possible improvements for future iterations:
 ## ✨ Summary
 
 This implementation successfully adds Chapters to YAWT with:
+
 - **Minimal changes** to the existing codebase
 - **Zero storage overhead** for existing data
 - **No performance degradation**
@@ -208,4 +265,5 @@ This implementation successfully adds Chapters to YAWT with:
 - **Comprehensive documentation**
 - **Clean, maintainable code**
 
-The feature provides the requested structure while maintaining the flexibility and performance of the original system.
+The feature provides the requested structure while maintaining the flexibility
+and performance of the original system.

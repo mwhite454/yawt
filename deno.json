@@ -2,10 +2,11 @@
   "lock": false,
   "nodeModulesDir": "auto",
   "tasks": {
-    "check": "deno fmt --check && deno lint && (find routes islands components utils -type f \\( -name '*.ts' -o -name '*.tsx' \\) -print0 | /usr/bin/xargs -0 -n 50 deno check) && deno check dev.ts fresh.config.ts fresh.gen.ts main.ts",
+    "check": "deno fmt --check && deno lint && (find routes islands components utils -type f \\( -name '*.ts' -o -name '*.tsx' \\) -print0 | /usr/bin/xargs -0 -n 50 deno check --unstable-kv) && deno check --unstable-kv dev.ts fresh.config.ts fresh.gen.ts main.ts",
     "tailwind:build": "deno run -A npm:tailwindcss@3.4.17 -c tailwind.config.cjs -i styles/tailwind.css -o static/styles.css --minify",
     "tailwind:watch": "deno run -A npm:tailwindcss@3.4.17 -c tailwind.config.cjs -i styles/tailwind.css -o static/styles.css --watch",
-    "build": "deno task tailwind:build",
+    "fresh:build": "deno run -A --unstable-kv dev.ts build",
+    "build": "deno task tailwind:build && deno task fresh:build",
     "start": "deno run -A npm:concurrently@9.1.2 -k -n tailwind,fresh \"deno task tailwind:watch\" \"deno run -A --unstable-kv --watch=static/,routes/,islands/,components/,styles/ dev.ts\"",
     "preview": "deno task build && deno run -A --unstable-kv main.ts"
   },
