@@ -1,9 +1,8 @@
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "npm:@aws-sdk/client-s3@3.540.0";
+// AWS SDK is dynamically imported to reduce bundle size
+// Only loaded when R2 operations are actually used
+type S3ClientType = InstanceType<
+  typeof import("npm:@aws-sdk/client-s3@3.540.0").S3Client
+>;
 
 function env(name: string): string | undefined {
   const v = Deno.env.get(name);
@@ -31,23 +30,26 @@ export function buildR2ObjectUrl(objectKey: string): string | undefined {
   return `${cleanBase}/${cleanKey}`;
 }
 
-let client: S3Client | null = null;
+let client: S3ClientType | null = null;
 
 export function getR2Bucket(): string | undefined {
   return (
     env("CLOUDFLARE_R2_BUCKET") ??
-      env("CLOUDFLARE_S3_BUCKET") ??
-      env("R2_BUCKET")
+    env("CLOUDFLARE_S3_BUCKET") ??
+    env("R2_BUCKET")
   );
 }
 
-function getClient(): S3Client {
+async function getClient(): Promise<S3ClientType> {
   if (client) return client;
 
+  const { S3Client } = await import("npm:@aws-sdk/client-s3@3.540.0");
+
   const endpoint = env("CLOUDFLARE_S3_ENDPOINT") ?? env("R2_ENDPOINT");
-  const accessKeyId = env("CLOUDFLARE_S3_ACCESS_KEY_ID") ??
-    env("R2_ACCESS_KEY_ID");
-  const secretAccessKey = env("CLOUDFLARE_S3_SECRET") ??
+  const accessKeyId =
+    env("CLOUDFLARE_S3_ACCESS_KEY_ID") ?? env("R2_ACCESS_KEY_ID");
+  const secretAccessKey =
+    env("CLOUDFLARE_S3_SECRET") ??
     env("CLOUDFLARE_S3_SECRET_ACCESS_KEY") ??
     env("R2_SECRET_ACCESS_KEY");
 
@@ -74,8 +76,10 @@ export async function putObject(args: {
   body: Uint8Array | ArrayBuffer | string | ReadableStream<Uint8Array> | Blob;
 }): Promise<void> {
   const { bucket, key, contentType, body } = args;
+  const { PutObjectCommand } = await import("npm:@aws-sdk/client-s3@3.540.0");
 
-  await getClient().send(
+  const s3Client = await getClient();
+  await s3Client.send(
     new PutObjectCommand({
       Bucket: bucket,
       Key: key,
@@ -90,8 +94,11 @@ export async function deleteObject(args: {
   key: string;
 }): Promise<void> {
   const { bucket, key } = args;
+  const { DeleteObjectCommand } =
+    await import("npm:@aws-sdk/client-s3@3.540.0");
 
-  await getClient().send(
+  const s3Client = await getClient();
+  await s3Client.send(
     new DeleteObjectCommand({
       Bucket: bucket,
       Key: key,
@@ -110,9 +117,11 @@ export async function getObject(args: {
   key: string;
 }): Promise<R2ObjectResult | null> {
   const { bucket, key } = args;
+  const { GetObjectCommand } = await import("npm:@aws-sdk/client-s3@3.540.0");
 
   try {
-    const response = await getClient().send(
+    const s3Client = await getClient();
+    const response = await s3Client.send(
       new GetObjectCommand({
         Bucket: bucket,
         Key: key,

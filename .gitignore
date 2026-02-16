@@ -150,3 +150,6 @@ _fresh/
 
 # Fresh build output
 _fresh/*
+
+# Playwright MCP test artifacts
+.playwright-mcp/
