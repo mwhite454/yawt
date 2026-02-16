@@ -22,14 +22,13 @@ export const oauthConfig: OAuth2ClientConfig = {
   clientSecret,
   authorizationEndpointUri: "https://github.com/login/oauth/authorize",
   tokenUri: "https://github.com/login/oauth/access_token",
-  redirectUri: Deno.env.get("OAUTH_REDIRECT_URI") ||
-    "http://localhost:8000/auth/callback",
+  redirectUri:
+    Deno.env.get("OAUTH_REDIRECT_URI") || "http://localhost:8000/auth/callback",
   defaults: {
     scope: "user:email",
   },
 };
 
 // Create OAuth helpers
-export const { signIn, signOut, handleCallback, getSessionId } = createHelpers(
-  oauthConfig,
-);
+export const { signIn, signOut, handleCallback, getSessionId } =
+  createHelpers(oauthConfig);
