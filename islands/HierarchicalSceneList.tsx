@@ -222,7 +222,17 @@ export default function HierarchicalSceneList({
           }}
           onDrop={(e) => {
             e.preventDefault();
-            handleBookLevelReorder(index);
+            if (draggedItem) {
+              // Reordering existing book-level scenes/chapters
+              handleBookLevelReorder(index);
+            } else if (draggedChapterScene) {
+              // Moving a chapter scene to book level at a specific index
+              // Calculate the scenes that would be at book level after the drop
+              const bookLevelScenesForMove = bookLevelItems
+                .filter((i) => i.type === "scene")
+                .map((i) => i.item);
+              handleSceneMove(null, index, bookLevelScenesForMove);
+            }
           }}
         >
           <a
@@ -263,7 +273,17 @@ export default function HierarchicalSceneList({
           }}
           onDrop={(e) => {
             e.preventDefault();
-            handleBookLevelReorder(index);
+            if (draggedItem) {
+              // Reordering existing book-level scenes/chapters
+              handleBookLevelReorder(index);
+            } else if (draggedChapterScene) {
+              // Moving a chapter scene to book level at a specific index
+              // Calculate the scenes that would be at book level after the drop
+              const bookLevelScenesForMove = bookLevelItems
+                .filter((i) => i.type === "scene")
+                .map((i) => i.item);
+              handleSceneMove(null, index, bookLevelScenesForMove);
+            }
           }}
         >
           <div

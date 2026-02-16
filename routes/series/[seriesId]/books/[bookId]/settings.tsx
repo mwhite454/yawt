@@ -4,7 +4,7 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { Layout } from "@components/Layout.tsx";
 import { kv } from "@utils/kv.ts";
 import { getUser, type User } from "@utils/session.ts";
-import type { Book, Scene, Series } from "@utils/story/types.ts";
+import type { Book, BookItem, Scene, Series } from "@utils/story/types.ts";
 import { bookKey, sceneKey, seriesKey } from "@utils/story/keys.ts";
 import { getAllSeriesForUser } from "@utils/story/series.ts";
 import BookCoverUploader from "@islands/BookCoverUploader.tsx";
@@ -38,14 +38,16 @@ export const handler: Handlers<Data> = {
     }
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
-    // Count chapters
+    // Count chapters from the unified book item order
     let chapterCount = 0;
     for await (
-      const _entry of kv.list({
-        prefix: ["yawt", "chapterOrder", user.id, seriesId, bookId],
+      const entry of kv.list<BookItem>({
+        prefix: ["yawt", "bookItemOrder", user.id, seriesId, bookId],
       })
     ) {
-      chapterCount++;
+      if (entry.value?.type === "chapter") {
+        chapterCount++;
+      }
     }
 
     // Get all scenes and calculate stats

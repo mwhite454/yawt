@@ -150,9 +150,27 @@ export const handler: Handlers<Data> = {
       ...Array.from(chapterScenes.values()).flat(),
     ];
 
+    // Determine the default selected scene from the unified book order
     const url = new URL(req.url);
     const selectedChapterId = url.searchParams.get("chapter") ?? null;
-    const selectedSceneId = url.searchParams.get("scene") ?? allScenes[0]?.id ??
+    let defaultSceneId: string | null = null;
+
+    // Find the first scene in the unified book order
+    for (const item of bookItems) {
+      if (item.type === "scene") {
+        defaultSceneId = item.id;
+        break;
+      } else if (item.type === "chapter") {
+        // Get the first scene in this chapter
+        const chapScenes = chapterScenes.get(item.id);
+        if (chapScenes && chapScenes.length > 0) {
+          defaultSceneId = chapScenes[0].id;
+          break;
+        }
+      }
+    }
+
+    const selectedSceneId = url.searchParams.get("scene") ?? defaultSceneId ??
       null;
     const selectedScene = selectedSceneId
       ? (allScenes.find((s) => s.id === selectedSceneId) ?? null)
