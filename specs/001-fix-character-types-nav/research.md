@@ -1,4 +1,3 @@
-```markdown
 # Research: Fix Character Types Navigation
 
 Decision: Character Types will be Series-scoped for this change; the editor will be surfaced from `series/{seriesId}/characters` and accept `seriesId` via route params. The editor will expose an explicit `Back to Characters` link that navigates to `series/{seriesId}/characters`.
@@ -16,7 +15,7 @@ Alternatives Considered:
 
 Implementation Notes / Next Technical Steps:
 
-- Add route or nested editor page under `routes/series/[seriesId]/characters/` that renders the editor in server context and hydates an island for interactive editing.
+- Add route or nested editor page under `routes/series/[seriesId]/characters/` that renders the editor in server context and hydrates an island for interactive editing.
 - Editor header: show breadcrumb `Series Name → Characters → Edit Type` and a `Back to Characters` link that points to `/series/{seriesId}/characters` (preserve any query filters if present).
 - If the editor is opened from another context (global list), show `Back to My Character Types` and list referencing Series; deep-links to `/characters/{typeId}` should include UI to surface referencing Series and a default sensible return target.
 - Add integration tests covering: open editor from series, save, and click `Back to Characters` and verify view and updates.
@@ -26,4 +25,3 @@ Security / Data Notes:
 - No data-model changes required for this navigation fix. If later we support copying/linking across Series, ensure `CharacterType` records include `usageReferences: string[]` (series ids) as already specified.
 
 Decision Owner: Product + Dev (assumption aligned with existing spec). If Product changes scope to global, revert to alternative and plan migration.
-```

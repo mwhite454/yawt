@@ -9,13 +9,16 @@ Auto-generated from all feature plans. Last updated: 2026-02-17
 ## Project Structure
 
 ```text
-src/
-tests/
+routes/
+islands/
+components/
+utils/
+static/
 ```
 
 ## Commands
 
-npm test && npm run lint
+deno task check && deno task start
 
 ## Code Style
 

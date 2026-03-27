@@ -31,7 +31,8 @@ function getCanonicalOrigin(): URL | null {
   if (!redirectUri) return null;
 
   try {
-    return new URL(redirectUri).origin ? new URL(redirectUri) : null;
+    const url = new URL(redirectUri);
+    return url.origin ? url : null;
   } catch {
     console.error(
       "Invalid OAUTH_REDIRECT_URI. Skipping host canonicalization.",

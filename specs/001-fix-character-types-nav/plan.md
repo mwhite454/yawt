@@ -16,7 +16,7 @@
 **Styling**: Tailwind CSS + daisyUI (yawt theme)  
 **Storage**: Deno KV (key-value database), optional R2 (images)  
 **Authentication**: GitHub OAuth2 via @deno/kv-oauth  
-**Testing**: Manual (browser + curl) - no automated tests currently  
+**Testing**: Manual (browser + curl) for exploratory verification; automated integration tests required per FR-007 (open editor from Series → edit → save → return to Characters list)
 **Target Platform**: Web (mobile-first responsive), Deno Deploy  
 **Performance Goals**: SSR <200ms, FCP <1s on 3G, island hydration <100ms  
 **Constraints**: Deno Deploy size limits, mobile-first UX, SSR-first architecture  

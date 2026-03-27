@@ -237,10 +237,17 @@ format_technology_stack() {
 get_project_structure() {
     local project_type="$1"
     
-    if [[ "$project_type" == *"web"* ]]; then
-        echo "backend/\\nfrontend/\\ntests/"
+    # Detect Deno Fresh-style projects based on repo layout
+    if [[ -n "${REPO_ROOT:-}" ]] && [[ -f "$REPO_ROOT/deno.json" ]] && [[ -d "$REPO_ROOT/routes" ]] && [[ -d "$REPO_ROOT/islands" ]]; then
+        # Fresh app structure
+        echo "routes/\\nislands/\\ncomponents/\\nutils/\\nstatic/"
     else
-        echo "src/\\ntests/"
+        # Fallback to generic web/non-web structures
+        if [[ "$project_type" == *"web"* ]]; then
+            echo "backend/\\nfrontend/\\ntests/"
+        else
+            echo "src/\\ntests/"
+        fi
     fi
 }
 
@@ -255,7 +262,12 @@ get_commands_for_language() {
             echo "cargo test && cargo clippy"
             ;;
         *"JavaScript"*|*"TypeScript"*)
-            echo "npm test \\&\\& npm run lint"
+            # Prefer Deno tasks when the language string or repo layout indicates a Deno project
+            if [[ "$lang" == *"Deno"* ]] || [[ -f "${REPO_ROOT:-}/deno.json" ]] || [[ -f "${REPO_ROOT:-}/deno.jsonc" ]]; then
+                echo "deno task check \\&\\& deno task start"
+            else
+                echo "npm test \\&\\& npm run lint"
+            fi
             ;;
         *)
             echo "# Add commands for $lang"

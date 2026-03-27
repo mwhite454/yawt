@@ -1,11 +1,10 @@
-```markdown
 # Feature Specification: Fix Character Types Navigation
 
 **Feature Branch**: `001-fix-character-types-nav`
 **Created**: 2026-02-17
 **Status**: Draft
 
-**Input**: User description: "as a user, when editing Character Types I can create several character types easily; however I cannot return to the series/[seriesid]/characters without clicking back. either the character type editor is incorrectly located in the file system and the Layout is not correctly allowing you to navigate in the series, or character types are edited at a User level? The heirarchy is unclear as a user and the navigation is frustrating."
+**Input**: User description: "as a user, when editing Character Types I can create several character types easily; however I cannot return to the series/[seriesid]/characters without clicking back. either the character type editor is incorrectly located in the file system and the Layout is not correctly allowing you to navigate in the series, or character types are edited at a User level? The hierarchy is unclear as a user and the navigation is frustrating."
 
 ## Clarifications
 
@@ -114,7 +113,7 @@ The popover must allow multi-select and show a preview of what will be imported 
 ### New Functional Requirements (import)
 
 - **FR-009**: The editor MUST include an `Import From Other Series` button that opens a popover containing an accordion list of Series and their Character Types.
-- **FR-010**: The import popover MUST allow the user to choose `Symlink`, `Link`, or `Copy` for each selected Character Type and confirm the operation.
+- **FR-010**: The import popover MUST allow the user to choose `Link (read-only)` or `Copy` for each selected Character Type and confirm the operation.
 - **FR-011**: The import flow MUST support multi-select, preview, and conflict resolution (rename/skip) before applying changes to the current Series.
 - **FR-012**: The import flow MUST support `Link (read-only)` and `Copy` behaviors. For `Link (read-only)`, the system MUST create a reference to the origin Character Type that cannot be edited from the referencing Series (no propagation from referencing Series to origin). For `Copy`, the system MUST create a new `CharacterType` id scoped to the current Series.
 - **FR-013**: The import UI MUST show the origin Series for each type and who created it (at least series title and created-by), to help authors identify templates.
@@ -142,4 +141,3 @@ The popover must allow multi-select and show a preview of what will be imported 
 2. Update the editor UI to include parent-context link and scope label.
 3. Add/adjust routes or layout to pass `seriesId` where appropriate.
 4. Add integration tests and QA the flows.
-```
