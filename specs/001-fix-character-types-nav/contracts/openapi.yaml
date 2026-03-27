@@ -13,7 +13,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: OK
     post:
       summary: Create Character Type in Series
@@ -28,9 +28,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CharacterTypeCreate'
+              $ref: "#/components/schemas/CharacterTypeCreate"
       responses:
-        '201':
+        "201":
           description: Created
 
   /api/series/{seriesId}/characters/{typeId}:
@@ -48,7 +48,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: OK
     put:
       summary: Update Character Type
@@ -57,14 +57,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CharacterTypeUpdate'
+              $ref: "#/components/schemas/CharacterTypeUpdate"
       responses:
-        '200':
+        "200":
           description: Updated
     delete:
       summary: Delete Character Type
       responses:
-        '204':
+        "204":
           description: Deleted
 
   /api/series/{seriesId}/characters/{typeId}/import:
@@ -85,7 +85,7 @@ paths:
                 sourceTypeId:
                   type: string
       responses:
-        '200':
+        "200":
           description: Import applied
 
 components:

@@ -42,5 +42,4 @@ KV Key Patterns (Deno KV)
 Notes
 
 - For this feature we assume Series-scoped types by default (`seriesId` non-null). Import/Copy operations create new CharacterType records under the target `seriesId` and update `usageReferences` accordingly.
-
 ```

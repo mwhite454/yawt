@@ -26,8 +26,8 @@
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle                         | Check                                                                                                            | Status                       |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Principle                         | Check                                                                                                            | Status  |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------- |
 | **I. Agent-Assisted Development** | Feature leverages AI agents for implementation? Agent instructions updated in `.github/copilot-instructions.md`? | ✅ PASS |
 | **II. SSR-First Architecture**    | New routes use server-side rendering? Interactive components go in `islands/`? No SPA patterns?                  | ✅ PASS |
 | **III. Minimal Dependencies**     | New dependencies justified? Deno built-ins checked first? Large npm packages use dynamic imports?                | ✅ PASS |

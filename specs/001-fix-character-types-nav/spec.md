@@ -142,5 +142,4 @@ The popover must allow multi-select and show a preview of what will be imported 
 2. Update the editor UI to include parent-context link and scope label.
 3. Add/adjust routes or layout to pass `seriesId` where appropriate.
 4. Add integration tests and QA the flows.
-
 ```

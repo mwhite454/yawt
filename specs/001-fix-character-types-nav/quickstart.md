@@ -1,4 +1,4 @@
-```markdown
+````markdown
 # Quickstart: Test Character Types Navigation Fix (local)
 
 1. Start dev server (Tailwind watch + Fresh):
@@ -6,6 +6,7 @@
 ```bash
 deno task start
 ```
+````
 
 2. Open app in browser: http://localhost:8000
 
@@ -28,5 +29,7 @@ curl -X POST http://localhost:8000/api/series/123/characters \
 ```
 
 6. Tests: add integration tests that open the editor page, perform edits, save, then confirm the `series/{seriesId}/characters` list shows updates.
+
+```
 
 ```
