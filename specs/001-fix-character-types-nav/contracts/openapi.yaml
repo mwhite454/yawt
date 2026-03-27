@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: YAWT - Character Types (Series scoped)
+  version: 1.0.0
+paths:
+  /api/series/{seriesId}/characters:
+    get:
+      summary: List Character Types for a Series
+      parameters:
+        - name: seriesId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+    post:
+      summary: Create Character Type in Series
+      parameters:
+        - name: seriesId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterTypeCreate"
+      responses:
+        "201":
+          description: Created
+
+  /api/series/{seriesId}/characters/{typeId}:
+    get:
+      summary: Get Character Type
+      parameters:
+        - name: seriesId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: typeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+    put:
+      summary: Update Character Type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterTypeUpdate"
+      responses:
+        "200":
+          description: Updated
+    delete:
+      summary: Delete Character Type
+      responses:
+        "204":
+          description: Deleted
+
+  /api/series/{seriesId}/characters/{typeId}/import:
+    post:
+      summary: Import or link a Character Type into a Series
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode:
+                  type: string
+                  enum: [copy, link]
+                sourceSeriesId:
+                  type: string
+                sourceTypeId:
+                  type: string
+      responses:
+        "200":
+          description: Import applied
+
+components:
+  schemas:
+    CharacterTypeCreate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        fields:
+          type: array
+          items:
+            type: object
+    CharacterTypeUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        fields:
+          type: array
+          items:
+            type: object
