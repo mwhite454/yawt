@@ -18,6 +18,7 @@ if (!clientId || !clientSecret) {
 /**
  * Derive the OAuth redirect URI from the request URL.
  * This allows the app to work on both localhost and production domains.
+ * Handles reverse proxy scenarios (like Deno Deploy) by checking forwarded headers.
  */
 function getRedirectUri(req: Request): string {
   // Allow explicit override via environment variable
@@ -26,9 +27,20 @@ function getRedirectUri(req: Request): string {
     return envRedirect;
   }
 
-  // Derive from request URL
   const url = new URL(req.url);
-  return `${url.protocol}//${url.host}/auth/callback`;
+
+  // Check for forwarded host (from reverse proxy like Deno Deploy)
+  const forwardedHost =
+    req.headers.get("x-forwarded-host") || req.headers.get("host");
+
+  // Check for forwarded protocol
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+
+  // Use forwarded values if available, otherwise fall back to URL
+  const host = forwardedHost || url.host;
+  const protocol = forwardedProto ? `${forwardedProto}:` : url.protocol;
+
+  return `${protocol}//${host}/auth/callback`;
 }
 
 /**
