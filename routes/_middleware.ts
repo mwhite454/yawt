@@ -41,19 +41,50 @@ function getCanonicalOrigin(): URL | null {
   }
 }
 
+function getReactClientRedirect(requestUrl: URL): URL | null {
+  const { pathname } = requestUrl;
+
+  if (pathname === "/") {
+    const redirectUrl = new URL(requestUrl);
+    redirectUrl.pathname = "/client/series";
+    return redirectUrl;
+  }
+
+  if (pathname === "/series" || pathname.startsWith("/series/")) {
+    const redirectUrl = new URL(requestUrl);
+    redirectUrl.pathname = `/client${pathname}`;
+    return redirectUrl;
+  }
+
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const redirectUrl = new URL(requestUrl);
+    redirectUrl.pathname = `/client${pathname}`;
+    return redirectUrl;
+  }
+
+  return null;
+}
+
 export async function handler(
   req: Request,
   ctx: FreshContext,
 ): Promise<Response> {
+  const requestUrl = new URL(req.url);
+  const clientRedirect = getReactClientRedirect(requestUrl);
+
   const canonicalUrl = getCanonicalOrigin();
   if (!canonicalUrl) {
+    if (clientRedirect) {
+      return Response.redirect(clientRedirect, 307);
+    }
     return await ctx.next();
   }
 
-  const requestUrl = new URL(req.url);
-
   // Never redirect local development traffic.
   if (isLocalHostname(requestUrl.hostname)) {
+    if (clientRedirect) {
+      return Response.redirect(clientRedirect, 307);
+    }
     return await ctx.next();
   }
 
@@ -72,6 +103,9 @@ export async function handler(
   const canonicalOrigin = canonicalUrl.origin.toLowerCase();
 
   if (requestOrigin === canonicalOrigin) {
+    if (clientRedirect) {
+      return Response.redirect(clientRedirect, 307);
+    }
     return await ctx.next();
   }
 
