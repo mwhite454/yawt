@@ -35,7 +35,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"p">) {
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("px-2.5 pb-2.5 pt-0", className)} {...props} />;
+  return <div className={cn("px-2.5 py-2.5", className)} {...props} />;
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {

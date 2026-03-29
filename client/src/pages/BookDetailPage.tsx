@@ -20,6 +20,7 @@ import {
 } from "@/hooks/use-book-content";
 import { HierarchicalSceneList } from "@/components/HierarchicalSceneList";
 import type { Scene, Chapter } from "@/types/story";
+import { ApiError } from "@/lib/api";
 
 type EditingScene = Scene & { _isNew?: boolean };
 
@@ -43,9 +44,18 @@ export function BookDetailPage() {
 
   const [editingScene, setEditingScene] = useState<EditingScene | null>(null);
   const [sceneText, setSceneText] = useState("");
+  const [sceneTitle, setSceneTitle] = useState("");
+  const [focusMode, setFocusMode] = useState(false);
+  const [activeSceneId, setActiveSceneId] = useState<string | undefined>();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
   const [chapterTitle, setChapterTitle] = useState("");
+
+  function showError(msg: string) {
+    setErrorMessage(msg);
+    setTimeout(() => setErrorMessage(null), 4000);
+  }
 
   function openNewScene(chapterId?: string) {
     setEditingScene({
@@ -62,28 +72,41 @@ export function BookDetailPage() {
       _isNew: true,
     } as EditingScene);
     setSceneText("");
+    setSceneTitle("");
   }
 
   async function handleSaveScene(e: React.FormEvent) {
     e.preventDefault();
     if (!editingScene) return;
-    if (editingScene._isNew) {
-      await createScene.mutateAsync({
-        text: sceneText,
-        chapterId: editingScene.chapterId,
-      });
-    } else {
-      await updateScene.mutateAsync({
-        sceneId: editingScene.id,
-        data: { text: sceneText },
-      });
+    try {
+      if (editingScene._isNew) {
+        const text = sceneTitle.trim()
+          ? `---\ntitle: ${sceneTitle.trim()}\n---\n\n${sceneText}`
+          : sceneText;
+        await createScene.mutateAsync({
+          text,
+          chapterId: editingScene.chapterId,
+        });
+      } else {
+        await updateScene.mutateAsync({
+          sceneId: editingScene.id,
+          data: { text: sceneText },
+        });
+      }
+      setEditingScene(null);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        showError("Book-level scenes are disabled. Add scenes inside a chapter.");
+      } else {
+        throw err;
+      }
     }
-    setEditingScene(null);
   }
 
   function openEditScene(scene: Scene) {
     setEditingScene(scene as EditingScene);
     setSceneText(scene.text);
+    setActiveSceneId(scene.id);
   }
 
   function openEditChapter(chapter: Chapter) {
@@ -103,7 +126,7 @@ export function BookDetailPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end justify-between border-b border-white/10 px-1 pb-2">
+      <div className={`flex items-end justify-between border-b border-white/10 px-1 pb-2 transition-opacity duration-200 ${focusMode ? "opacity-20" : "opacity-100"}`}>
         <div className="space-y-1">
           <Link
             to={`/series/${seriesId}`}
@@ -137,10 +160,21 @@ export function BookDetailPage() {
           bookId={bookId}
           chapters={chapters}
           scenes={scenes}
+          hasChapters={book?.hasChapters !== false}
+          focusMode={focusMode}
+          activeSceneId={activeSceneId}
           onReorder={(items) => reorder.mutate(items)}
-          onCreateChapter={(title) => createChapter.mutate({ title })}
+          onCreateChapter={(title) =>
+            createChapter.mutate({ title }, {
+              onError: (err) => {
+                if (err instanceof ApiError && err.status === 409) {
+                  showError("Chapters are disabled for this book. Enable chapters in book settings.");
+                }
+              },
+            })
+          }
           onCreateScene={openNewScene}
-          onEditScene={openEditScene}
+          onSelectScene={openEditScene}
           onDeleteScene={(id) => {
             if (confirm("Delete this scene?")) deleteScene.mutate(id);
           }}
@@ -162,10 +196,20 @@ export function BookDetailPage() {
             </CardHeader>
             <CardContent className="pt-2.5">
               <form onSubmit={handleSaveScene} className="space-y-3">
+                {editingScene._isNew && (
+                  <Input
+                    autoFocus
+                    placeholder="Scene title (optional)"
+                    value={sceneTitle}
+                    onChange={(e) => setSceneTitle(e.target.value)}
+                  />
+                )}
                 <Textarea
-                  autoFocus
+                  autoFocus={!editingScene._isNew}
                   value={sceneText}
                   onChange={(e) => setSceneText(e.target.value)}
+                  onFocus={() => setFocusMode(true)}
+                  onBlur={() => setFocusMode(false)}
                   placeholder="Write your scene here... YAML frontmatter supported"
                   className="h-80 font-mono text-[11px]"
                 />
@@ -182,6 +226,13 @@ export function BookDetailPage() {
               </form>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Error toast */}
+      {errorMessage && (
+        <div className="fixed bottom-4 right-4 z-50 rounded border border-red-500/60 bg-red-600/15 px-3 py-2 text-xs text-red-300 shadow-lg">
+          {errorMessage}
         </div>
       )}
 

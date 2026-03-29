@@ -22,7 +22,7 @@ export const handler: Handlers = {
     const book = await kv.get(bookKey(user.id, seriesId, bookId));
     if (!book.value) return notFound("Book not found");
 
-    // Get book-level scenes from the unified book item order
+    // Collect all scene IDs: book-level scenes from bookItemOrder
     const sceneIds: string[] = [];
     for await (
       const entry of kv.list<BookItem>({
@@ -33,6 +33,18 @@ export const handler: Handlers = {
       if (item && item.type === "scene") {
         sceneIds.push(item.id);
       }
+    }
+
+    // Also collect chapter scenes from chapterSceneOrder
+    for await (
+      const entry of kv.list({
+        prefix: ["yawt", "chapterSceneOrder", user.id, seriesId, bookId],
+      })
+    ) {
+      const key = entry.key as unknown[];
+      // key shape: ["yawt", "chapterSceneOrder", userId, seriesId, bookId, chapterId, rank, sceneId]
+      const sceneId = key[key.length - 1];
+      if (typeof sceneId === "string") sceneIds.push(sceneId);
     }
 
     const scenes: Scene[] = [];
@@ -57,6 +69,14 @@ export const handler: Handlers = {
 
     const book = await kv.get(bookKey(user.id, seriesId, bookId));
     if (!book.value) return notFound("Book not found");
+
+    const bookData = book.value as import("@utils/story/types.ts").Book;
+    if (bookData.hasChapters !== false) {
+      return json(
+        { error: "This book uses chapters. Add scenes within a chapter instead." },
+        { status: 409 },
+      );
+    }
 
     const bodyOrRes = await readJson(req);
     if (bodyOrRes instanceof Response) return bodyOrRes;

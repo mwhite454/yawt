@@ -26,6 +26,7 @@ export interface Book {
   publishDate?: string;
   isbn?: string;
   coverImage?: AssetImage;
+  hasChapters: boolean;
   createdAt: number;
   updatedAt: number;
 }

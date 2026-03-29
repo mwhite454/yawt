@@ -153,3 +153,6 @@ _fresh/*
 
 # Playwright MCP test artifacts
 .playwright-mcp/
+
+# Git worktrees
+.worktrees/

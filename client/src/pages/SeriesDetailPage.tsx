@@ -32,15 +32,17 @@ export function SeriesDetailPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
+  const [hasChapters, setHasChapters] = useState(true);
 
   const isFreeTier = !user?.role || user.role === "free";
   const atLimit = isFreeTier && books.length >= 3;
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    await createMutation.mutateAsync({ title, author: author || undefined });
+    await createMutation.mutateAsync({ title, author: author || undefined, hasChapters });
     setTitle("");
     setAuthor("");
+    setHasChapters(true);
     setShowCreate(false);
   }
 
@@ -101,6 +103,30 @@ export function SeriesDetailPage() {
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
               />
+              <div className="flex items-start gap-3 rounded-md border border-white/10 p-3">
+                <button
+                  type="button"
+                  onClick={() => setHasChapters((v) => !v)}
+                  className={`relative mt-0.5 inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                    hasChapters ? "bg-indigo-500" : "bg-gray-600"
+                  }`}
+                  aria-checked={hasChapters}
+                  role="switch"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${
+                      hasChapters ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+                <div>
+                  <div className="panel-title mb-0.5">Organize scenes into chapters</div>
+                  <p className="text-[11px] text-gray-400">
+                    Chapters group scenes, add descriptions, and control page breaks when exporting.
+                    You can change this later in book settings.
+                  </p>
+                </div>
+              </div>
               <div className="flex flex-wrap gap-3">
                 <Button type="submit" disabled={createMutation.isPending}>
                   {createMutation.isPending ? <Spinner /> : null}
