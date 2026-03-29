@@ -57,6 +57,14 @@ export const handler: Handlers = {
     const book = await kv.get(bookKey(user.id, seriesId, bookId));
     if (!book.value) return notFound("Book not found");
 
+    const bookData = book.value as import("@utils/story/types.ts").Book;
+    if (bookData.hasChapters === false) {
+      return json(
+        { error: "This book does not use chapters. Enable chapters in book settings first." },
+        { status: 409 },
+      );
+    }
+
     const bodyOrRes = await readJson(req);
     if (bodyOrRes instanceof Response) return bodyOrRes;
     const body = bodyOrRes as Record<string, unknown>;
