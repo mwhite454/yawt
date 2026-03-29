@@ -156,3 +156,4 @@ _fresh/*
 
 # Git worktrees
 .worktrees/
+.superpowers/
