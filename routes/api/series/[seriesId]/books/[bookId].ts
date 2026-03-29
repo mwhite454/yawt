@@ -7,7 +7,7 @@ import {
   readJson,
   requireUser,
 } from "@utils/http.ts";
-import type { Book, BookItem, Chapter, Scene } from "@utils/story/types.ts";
+import type { Book, BookItem, Scene } from "@utils/story/types.ts";
 import {
   bookItemOrderKey,
   bookKey,
@@ -55,7 +55,7 @@ async function flattenChapters(
     if (typeof rank === "string") lastBookRank = rank;
   }
 
-  for (const { id: chapterId } of chapterItems) {
+  for (const { rank: chapterRank, id: chapterId } of chapterItems) {
     // Collect scenes in this chapter
     const chapterScenes: Array<{ rank: string; sceneId: string }> = [];
     for await (
@@ -69,7 +69,7 @@ async function flattenChapters(
       chapterScenes.push({ rank, sceneId });
     }
 
-    for (const { sceneId } of chapterScenes) {
+    for (const { rank: sceneRank, sceneId } of chapterScenes) {
       const newRank = lastBookRank ? rankAfter(lastBookRank) : rankInitial();
       lastBookRank = newRank;
 
@@ -84,51 +84,24 @@ async function flattenChapters(
         updatedAt: Date.now(),
       };
 
-      // Find the chapterSceneOrder entry key for this scene
-      let chapterSceneOrderEntryKey: Deno.KvKey | null = null;
-      for await (
-        const entry of kv.list({
-          prefix: ["yawt", "chapterSceneOrder", userId, seriesId, bookId, chapterId],
-        })
-      ) {
-        const entrySceneId = entry.key[entry.key.length - 1] as string;
-        if (entrySceneId === sceneId) {
-          chapterSceneOrderEntryKey = entry.key;
-          break;
-        }
-      }
+      const chapterSceneOrderEntryKey = chapterSceneOrderKey(userId, seriesId, bookId, chapterId, sceneRank, sceneId);
 
-      const op = kv.atomic()
+      await kv.atomic()
         .set(sceneEntityKey, updatedScene)
         .set(bookItemOrderKey(userId, seriesId, bookId, newRank), {
           type: "scene" as const,
           id: sceneId,
-        });
-
-      if (chapterSceneOrderEntryKey) {
-        op.delete(chapterSceneOrderEntryKey);
-      }
-
-      await op.commit();
+        })
+        .delete(chapterSceneOrderEntryKey)
+        .commit();
       scenesFlattened++;
     }
 
     // Delete the chapter entity and its bookItemOrder entry
-    let chapterOrderKey: Deno.KvKey | null = null;
-    for await (
-      const entry of kv.list<BookItem>({
-        prefix: ["yawt", "bookItemOrder", userId, seriesId, bookId],
-      })
-    ) {
-      if (entry.value?.type === "chapter" && entry.value.id === chapterId) {
-        chapterOrderKey = entry.key;
-        break;
-      }
-    }
-
-    const deleteOp = kv.atomic().delete(chapterKey(userId, seriesId, bookId, chapterId));
-    if (chapterOrderKey) deleteOp.delete(chapterOrderKey);
-    await deleteOp.commit();
+    await kv.atomic()
+      .delete(chapterKey(userId, seriesId, bookId, chapterId))
+      .delete(bookItemOrderKey(userId, seriesId, bookId, chapterRank))
+      .commit();
   }
 
   // Update the book entity
@@ -286,6 +259,7 @@ export const handler: Handlers = {
       return badRequest("hasChapters must be a boolean");
     }
 
+    // Treat undefined as true: legacy books created before hasChapters field existed
     const currentHasChapters = entry.value.hasChapters !== false;
     const nextHasChapters = body.hasChapters as boolean;
 
