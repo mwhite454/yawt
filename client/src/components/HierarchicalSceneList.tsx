@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
@@ -18,14 +18,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { Chapter, Scene } from "@/types/story";
+import type { BookItem, Chapter, Scene } from "@/types/story";
 import { rankBetween } from "@/lib/rank";
-
-interface BookItem {
-  type: "chapter" | "scene";
-  id: string;
-  rank: string;
-}
 
 interface HierarchicalSceneListProps {
   seriesId: string;
@@ -48,7 +42,6 @@ interface HierarchicalSceneListProps {
 
 function ChapterRow({
   chapter,
-  index,
   scenes,
   activeSceneId,
   onSelect,
@@ -58,7 +51,6 @@ function ChapterRow({
   onDeleteScene,
 }: {
   chapter: Chapter;
-  index: number;
   scenes: Scene[];
   activeSceneId?: string;
   onSelect: (s: Scene) => void;
@@ -109,6 +101,9 @@ function ChapterRow({
 
       {open && (
         <div className="ml-5 border-l border-white/5 pl-2">
+          {/* NOTE: Scene dragging within chapters is visually wired here, but
+              handleDragEnd in the parent only processes top-level items (chapters or
+              book-level scenes). Intra-chapter scene reordering is NOT yet functional. */}
           <SortableContext
             items={scenes.map((s) => `scene:${s.id}`)}
             strategy={verticalListSortingStrategy}
@@ -178,6 +173,14 @@ function SceneRow({
         }`}
       >
         {title}
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        className="hidden group-hover:flex items-center justify-center h-4 w-4 rounded text-[10px] text-gray-600 hover:text-gray-400 hover:bg-white/10 transition-colors flex-shrink-0"
+        aria-label="Delete scene"
+      >
+        ×
       </button>
     </div>
   );
@@ -320,6 +323,10 @@ export function HierarchicalSceneList({
   const [showNewChapter, setShowNewChapter] = useState(false);
   const [forcedExpanded, setForcedExpanded] = useState(false);
 
+  useEffect(() => {
+    if (!focusMode) setForcedExpanded(false);
+  }, [focusMode]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -398,7 +405,7 @@ export function HierarchicalSceneList({
               items={chapters.map((ch) => `chapter:${ch.id}`)}
               strategy={verticalListSortingStrategy}
             >
-              {chapters.map((chapter, index) => {
+              {chapters.map((chapter) => {
                 const chapterScenes = scenes
                   .filter((s) => s.chapterId === chapter.id)
                   .sort((a, b) => (a.rank < b.rank ? -1 : 1));
@@ -406,7 +413,6 @@ export function HierarchicalSceneList({
                   <ChapterRow
                     key={chapter.id}
                     chapter={chapter}
-                    index={index}
                     scenes={chapterScenes}
                     activeSceneId={activeSceneId}
                     onSelect={onSelectScene}
