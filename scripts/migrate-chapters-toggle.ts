@@ -65,9 +65,30 @@ interface Chapter {
   updatedAt: number;
 }
 
-function rankInitial(): string { return "m"; }
-function rankBefore(rank: string): string { return rank + "0"; }
-function rankAfter(rank: string): string { return rank + "z"; }
+const RANK_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+function rankBetween(a: string | null, b: string | null): string {
+  let prefix = "";
+  let i = 0;
+  while (true) {
+    const aIndex = a != null && i < a.length ? RANK_ALPHABET.indexOf(a[i]) : 0;
+    const bIndex = b == null
+      ? RANK_ALPHABET.length - 1
+      : i < b.length
+      ? RANK_ALPHABET.indexOf(b[i])
+      : RANK_ALPHABET.length - 1;
+    if (bIndex - aIndex > 1) {
+      const mid = Math.floor((aIndex + bIndex) / 2);
+      return prefix + RANK_ALPHABET[mid];
+    }
+    prefix += RANK_ALPHABET[aIndex];
+    i++;
+  }
+}
+
+function rankInitial(): string { return rankBetween(null, null); }
+function rankBefore(rank: string): string { return rankBetween(null, rank); }
+function rankAfter(rank: string): string { return rankBetween(rank, null); }
 
 const stats = {
   booksScanned: 0,

@@ -12,7 +12,7 @@ import {
   useDeleteBookMutation,
   useToggleChaptersMutation,
 } from "@/hooks/use-books";
-import { useChaptersQuery, useScenesQuery } from "@/hooks/use-book-content";
+import { useChaptersQuery } from "@/hooks/use-book-content";
 
 export function BookSettingsPage() {
   const { seriesId = "", bookId = "" } = useParams<{
@@ -23,7 +23,6 @@ export function BookSettingsPage() {
 
   const { data: book, isLoading } = useBookQuery(seriesId, bookId);
   const { data: chapters = [] } = useChaptersQuery(seriesId, bookId);
-  const { data: scenes = [] } = useScenesQuery(seriesId, bookId);
   const updateBook = useUpdateBookMutation(seriesId, bookId);
   const deleteBook = useDeleteBookMutation(seriesId);
   const toggleChapters = useToggleChaptersMutation(seriesId, bookId);
@@ -66,8 +65,12 @@ export function BookSettingsPage() {
   }
 
   async function handleConfirmFlatten() {
-    await toggleChapters.mutateAsync(false);
-    setShowFlattenModal(false);
+    try {
+      await toggleChapters.mutateAsync(false);
+      setShowFlattenModal(false);
+    } catch {
+      // Keep modal open; TanStack Query's isError state reflects the failure
+    }
   }
 
   if (isLoading) {
@@ -82,7 +85,6 @@ export function BookSettingsPage() {
   if (!book) return <p className="p-6 text-red-400">Book not found.</p>;
 
   const hasChapters = book.hasChapters !== false;
-  const chapterSceneCount = scenes.filter((s) => s.chapterId).length;
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -186,8 +188,7 @@ export function BookSettingsPage() {
               Remove chapters from this book?
             </h2>
             <p className="mb-4 text-[11px] text-gray-400 leading-relaxed">
-              This will remove <strong className="text-white">{chapters.length} chapter{chapters.length !== 1 ? "s" : ""}</strong> and
-              move <strong className="text-white">{chapterSceneCount} scene{chapterSceneCount !== 1 ? "s" : ""}</strong> to a flat list.
+              This will remove <strong className="text-white">{chapters.length} chapter{chapters.length !== 1 ? "s" : ""}</strong> and move all contained scenes to a flat list.
             </p>
             <ul className="mb-4 space-y-1 text-[11px] text-gray-400">
               <li>✓ All scene text and frontmatter is preserved</li>

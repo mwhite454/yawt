@@ -86,7 +86,7 @@ async function flattenChapters(
 
       const chapterSceneOrderEntryKey = chapterSceneOrderKey(userId, seriesId, bookId, chapterId, sceneRank, sceneId);
 
-      await kv.atomic()
+      const sceneCommit = await kv.atomic()
         .set(sceneEntityKey, updatedScene)
         .set(bookItemOrderKey(userId, seriesId, bookId, newRank), {
           type: "scene" as const,
@@ -94,17 +94,24 @@ async function flattenChapters(
         })
         .delete(chapterSceneOrderEntryKey)
         .commit();
+      if (!sceneCommit.ok) {
+        throw new Error(`Failed to move scene ${sceneId} during flatten`);
+      }
       scenesFlattened++;
     }
 
     // Delete the chapter entity and its bookItemOrder entry
-    await kv.atomic()
+    const chapterCommit = await kv.atomic()
       .delete(chapterKey(userId, seriesId, bookId, chapterId))
       .delete(bookItemOrderKey(userId, seriesId, bookId, chapterRank))
       .commit();
+    if (!chapterCommit.ok) {
+      throw new Error(`Failed to delete chapter ${chapterId} during flatten`);
+    }
   }
 
-  // Update the book entity
+  // Update the book entity — write hasChapters: false last, only after all
+  // scene moves and chapter deletes have committed successfully.
   const updatedBook: Book = {
     ...book,
     hasChapters: false,

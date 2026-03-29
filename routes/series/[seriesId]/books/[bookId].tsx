@@ -204,6 +204,10 @@ export const handler: Handlers<Data> = {
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
     if (action === "createChapter") {
+      if (bookRes.value.hasChapters === false) {
+        return new Response("Chapters are disabled for this book", { status: 409 });
+      }
+
       const title = String(form.get("title") ?? "").trim() ||
         "Untitled chapter";
 
@@ -256,6 +260,11 @@ export const handler: Handlers<Data> = {
     if (action === "createScene") {
       const title = String(form.get("title") ?? "").trim() || "Untitled scene";
       const chapterId = String(form.get("chapterId") ?? "").trim() || undefined;
+
+      // Guard: book-level scenes are only allowed when hasChapters is false
+      if (!chapterId && bookRes.value.hasChapters !== false) {
+        return new Response("Book-level scenes are not allowed when chapters are enabled", { status: 409 });
+      }
 
       let lastRank: string | undefined;
 

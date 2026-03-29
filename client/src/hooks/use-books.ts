@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { booksApi } from "@/api/books";
 import type { Book } from "@/types/story";
+import { chaptersKeys, scenesKeys } from "@/hooks/use-book-content";
 
 export const booksKeys = {
   all: (seriesId: string) => ["series", seriesId, "books"] as const,
@@ -66,6 +67,8 @@ export function useToggleChaptersMutation(seriesId: string, bookId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: booksKeys.detail(seriesId, bookId) });
       qc.invalidateQueries({ queryKey: booksKeys.all(seriesId) });
+      qc.invalidateQueries({ queryKey: chaptersKeys.all(seriesId, bookId) });
+      qc.invalidateQueries({ queryKey: scenesKeys.all(seriesId, bookId) });
     },
   });
 }
