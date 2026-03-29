@@ -10,7 +10,16 @@ export const scenesApi = {
     seriesId: string,
     bookId: string,
     data: { text?: string; chapterId?: string },
-  ) => api.post<Scene>(`/api/series/${seriesId}/books/${bookId}/scenes`, data),
+  ) => {
+    const { chapterId, ...rest } = data;
+    if (chapterId) {
+      return api.post<Scene>(
+        `/api/series/${seriesId}/books/${bookId}/chapters/${chapterId}/scenes`,
+        rest,
+      );
+    }
+    return api.post<Scene>(`/api/series/${seriesId}/books/${bookId}/scenes`, rest);
+  },
   update: (
     seriesId: string,
     bookId: string,

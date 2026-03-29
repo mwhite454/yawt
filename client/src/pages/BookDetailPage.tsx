@@ -44,6 +44,7 @@ export function BookDetailPage() {
 
   const [editingScene, setEditingScene] = useState<EditingScene | null>(null);
   const [sceneText, setSceneText] = useState("");
+  const [sceneTitle, setSceneTitle] = useState("");
   const [focusMode, setFocusMode] = useState(false);
   const [activeSceneId, setActiveSceneId] = useState<string | undefined>();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -71,6 +72,7 @@ export function BookDetailPage() {
       _isNew: true,
     } as EditingScene);
     setSceneText("");
+    setSceneTitle("");
   }
 
   async function handleSaveScene(e: React.FormEvent) {
@@ -78,8 +80,11 @@ export function BookDetailPage() {
     if (!editingScene) return;
     try {
       if (editingScene._isNew) {
+        const text = sceneTitle.trim()
+          ? `---\ntitle: ${sceneTitle.trim()}\n---\n\n${sceneText}`
+          : sceneText;
         await createScene.mutateAsync({
-          text: sceneText,
+          text,
           chapterId: editingScene.chapterId,
         });
       } else {
@@ -191,8 +196,16 @@ export function BookDetailPage() {
             </CardHeader>
             <CardContent className="pt-2.5">
               <form onSubmit={handleSaveScene} className="space-y-3">
+                {editingScene._isNew && (
+                  <Input
+                    autoFocus
+                    placeholder="Scene title (optional)"
+                    value={sceneTitle}
+                    onChange={(e) => setSceneTitle(e.target.value)}
+                  />
+                )}
                 <Textarea
-                  autoFocus
+                  autoFocus={!editingScene._isNew}
                   value={sceneText}
                   onChange={(e) => setSceneText(e.target.value)}
                   onFocus={() => setFocusMode(true)}
