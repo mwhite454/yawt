@@ -8,13 +8,22 @@ export const booksApi = {
   create: (
     seriesId: string,
     data: Pick<Book, "title"> &
-      Partial<Pick<Book, "author" | "publishDate" | "isbn">>,
+      Partial<Pick<Book, "author" | "publishDate" | "isbn" | "hasChapters">>,
   ) => api.post<Book>(`/api/series/${seriesId}/books`, data),
   update: (
     seriesId: string,
     bookId: string,
     data: Partial<Pick<Book, "title" | "author" | "publishDate" | "isbn">>,
   ) => api.put<Book>(`/api/series/${seriesId}/books/${bookId}`, data),
+  toggleChapters: (
+    seriesId: string,
+    bookId: string,
+    hasChapters: boolean,
+  ) =>
+    api.patch<{ book: Book; scenesFlattened: number; chaptersRemoved: number }>(
+      `/api/series/${seriesId}/books/${bookId}`,
+      { hasChapters },
+    ),
   delete: (seriesId: string, bookId: string) =>
     api.delete<void>(`/api/series/${seriesId}/books/${bookId}`),
 };

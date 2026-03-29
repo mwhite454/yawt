@@ -29,7 +29,7 @@ export function useCreateBookMutation(seriesId: string) {
   return useMutation({
     mutationFn: (
       data: Pick<Book, "title"> &
-        Partial<Pick<Book, "author" | "publishDate" | "isbn">>,
+        Partial<Pick<Book, "author" | "publishDate" | "isbn" | "hasChapters">>,
     ) => booksApi.create(seriesId, data),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: booksKeys.all(seriesId) }),
@@ -55,5 +55,17 @@ export function useDeleteBookMutation(seriesId: string) {
     mutationFn: (bookId: string) => booksApi.delete(seriesId, bookId),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: booksKeys.all(seriesId) }),
+  });
+}
+
+export function useToggleChaptersMutation(seriesId: string, bookId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (hasChapters: boolean) =>
+      booksApi.toggleChapters(seriesId, bookId, hasChapters),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: booksKeys.detail(seriesId, bookId) });
+      qc.invalidateQueries({ queryKey: booksKeys.all(seriesId) });
+    },
   });
 }
