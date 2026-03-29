@@ -43,6 +43,8 @@ export function BookDetailPage() {
 
   const [editingScene, setEditingScene] = useState<EditingScene | null>(null);
   const [sceneText, setSceneText] = useState("");
+  const [focusMode, setFocusMode] = useState(false);
+  const [activeSceneId, setActiveSceneId] = useState<string | undefined>();
 
   const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
   const [chapterTitle, setChapterTitle] = useState("");
@@ -84,6 +86,7 @@ export function BookDetailPage() {
   function openEditScene(scene: Scene) {
     setEditingScene(scene as EditingScene);
     setSceneText(scene.text);
+    setActiveSceneId(scene.id);
   }
 
   function openEditChapter(chapter: Chapter) {
@@ -137,10 +140,13 @@ export function BookDetailPage() {
           bookId={bookId}
           chapters={chapters}
           scenes={scenes}
+          hasChapters={book?.hasChapters !== false}
+          focusMode={focusMode}
+          activeSceneId={activeSceneId}
           onReorder={(items) => reorder.mutate(items)}
           onCreateChapter={(title) => createChapter.mutate({ title })}
           onCreateScene={openNewScene}
-          onEditScene={openEditScene}
+          onSelectScene={openEditScene}
           onDeleteScene={(id) => {
             if (confirm("Delete this scene?")) deleteScene.mutate(id);
           }}
@@ -166,6 +172,8 @@ export function BookDetailPage() {
                   autoFocus
                   value={sceneText}
                   onChange={(e) => setSceneText(e.target.value)}
+                  onFocus={() => setFocusMode(true)}
+                  onBlur={() => setFocusMode(false)}
                   placeholder="Write your scene here... YAML frontmatter supported"
                   className="h-80 font-mono text-[11px]"
                 />
