@@ -76,10 +76,10 @@ export const handler: Handlers = {
       if (!existingProfile.value) {
         // First sign-in - create profile
         // Check if this is the first user in the system (more efficient with limit)
-        const existingProfiles = kv.list({
-          prefix: allUserProfilesPrefix(),
-          limit: 2, // Check up to 2 to determine if 0, 1, or 2+ users
-        });
+        const existingProfiles = kv.list(
+          { prefix: allUserProfilesPrefix() },
+          { limit: 2 }, // Check up to 2 to determine if 0, 1, or 2+ users
+        );
         let count = 0;
         for await (const _entry of existingProfiles) {
           count++;
@@ -122,10 +122,10 @@ export const handler: Handlers = {
         userCount = userCountFromFirstScan + 1;
       } else {
         // Existing user - need to count profiles
-        const allProfiles = kv.list({
-          prefix: allUserProfilesPrefix(),
-          limit: 2, // Only need to check if there are 1 or 2+ users
-        });
+        const allProfiles = kv.list(
+          { prefix: allUserProfilesPrefix() },
+          { limit: 2 }, // Only need to check if there are 1 or 2+ users
+        );
         let count = 0;
         for await (const _entry of allProfiles) {
           count++;
