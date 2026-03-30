@@ -2,10 +2,8 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import * as $_path_ from "./routes/[...path].tsx";
-import * as $_app from "./routes/_app.tsx";
+import * as $_path_ from "./routes/[...path].ts";
 import * as $_middleware from "./routes/_middleware.ts";
-import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_admin_users from "./routes/api/admin/users.ts";
 import * as $api_image from "./routes/api/image.ts";
 import * as $api_me from "./routes/api/me.ts";
@@ -44,48 +42,12 @@ import * as $api_series_seriesId_timelines_timelineId_events_eventId_reorder fro
 import * as $auth_callback from "./routes/auth/callback.ts";
 import * as $auth_signin from "./routes/auth/signin.ts";
 import * as $auth_signout from "./routes/auth/signout.ts";
-import * as $index from "./routes/index.tsx";
-import * as $series_seriesId_books_bookId_ from "./routes/series/[seriesId]/books/[bookId].tsx";
-import * as $series_seriesId_books_bookId_settings from "./routes/series/[seriesId]/books/[bookId]/settings.tsx";
-import * as $series_seriesId_character_types from "./routes/series/[seriesId]/character-types.tsx";
-import * as $series_seriesId_character_types_typeId_ from "./routes/series/[seriesId]/character-types/[typeId].tsx";
-import * as $series_seriesId_character_types_new from "./routes/series/[seriesId]/character-types/new.tsx";
-import * as $series_seriesId_characters from "./routes/series/[seriesId]/characters.tsx";
-import * as $series_seriesId_events from "./routes/series/[seriesId]/events.tsx";
-import * as $series_seriesId_index from "./routes/series/[seriesId]/index.tsx";
-import * as $series_seriesId_locations from "./routes/series/[seriesId]/locations.tsx";
-import * as $series_seriesId_timelines from "./routes/series/[seriesId]/timelines.tsx";
-import * as $series_seriesId_timelines_timelineId_ from "./routes/series/[seriesId]/timelines/[timelineId].tsx";
-import * as $series_index from "./routes/series/index.tsx";
-import * as $AdminDashboard from "./islands/AdminDashboard.tsx";
-import * as $BookCoverUploader from "./islands/BookCoverUploader.tsx";
-import * as $CharacterForm from "./islands/CharacterForm.tsx";
-import * as $CharacterImageUploader from "./islands/CharacterImageUploader.tsx";
-import * as $CharacterTypeEditor from "./islands/CharacterTypeEditor.tsx";
-import * as $DraggableList from "./islands/DraggableList.tsx";
-import * as $EventForm from "./islands/EventForm.tsx";
-import * as $HierarchicalSceneList from "./islands/HierarchicalSceneList.tsx";
-import * as $ImageUploader from "./islands/ImageUploader.tsx";
-import * as $KeyValueEditor from "./islands/KeyValueEditor.tsx";
-import * as $SceneList from "./islands/SceneList.tsx";
-import * as $TagInput from "./islands/TagInput.tsx";
-import * as $ThemeController from "./islands/ThemeController.tsx";
-import * as $_stories_CharacterForm_stories from "./islands/__stories__/CharacterForm.stories.tsx";
-import * as $_stories_CharacterImageUploader_stories from "./islands/__stories__/CharacterImageUploader.stories.tsx";
-import * as $_stories_CharacterTypeEditor_stories from "./islands/__stories__/CharacterTypeEditor.stories.tsx";
-import * as $_stories_DraggableList_stories from "./islands/__stories__/DraggableList.stories.tsx";
-import * as $_stories_EventForm_stories from "./islands/__stories__/EventForm.stories.tsx";
-import * as $_stories_KeyValueEditor_stories from "./islands/__stories__/KeyValueEditor.stories.tsx";
-import * as $_stories_SceneList_stories from "./islands/__stories__/SceneList.stories.tsx";
-import * as $_stories_ThemeController_stories from "./islands/__stories__/ThemeController.stories.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
-    "./routes/[...path].tsx": $_path_,
-    "./routes/_app.tsx": $_app,
+    "./routes/[...path].ts": $_path_,
     "./routes/_middleware.ts": $_middleware,
-    "./routes/admin/index.tsx": $admin_index,
     "./routes/api/admin/users.ts": $api_admin_users,
     "./routes/api/image.ts": $api_image,
     "./routes/api/me.ts": $api_me,
@@ -148,55 +110,8 @@ const manifest = {
     "./routes/auth/callback.ts": $auth_callback,
     "./routes/auth/signin.ts": $auth_signin,
     "./routes/auth/signout.ts": $auth_signout,
-    "./routes/index.tsx": $index,
-    "./routes/series/[seriesId]/books/[bookId].tsx":
-      $series_seriesId_books_bookId_,
-    "./routes/series/[seriesId]/books/[bookId]/settings.tsx":
-      $series_seriesId_books_bookId_settings,
-    "./routes/series/[seriesId]/character-types.tsx":
-      $series_seriesId_character_types,
-    "./routes/series/[seriesId]/character-types/[typeId].tsx":
-      $series_seriesId_character_types_typeId_,
-    "./routes/series/[seriesId]/character-types/new.tsx":
-      $series_seriesId_character_types_new,
-    "./routes/series/[seriesId]/characters.tsx": $series_seriesId_characters,
-    "./routes/series/[seriesId]/events.tsx": $series_seriesId_events,
-    "./routes/series/[seriesId]/index.tsx": $series_seriesId_index,
-    "./routes/series/[seriesId]/locations.tsx": $series_seriesId_locations,
-    "./routes/series/[seriesId]/timelines.tsx": $series_seriesId_timelines,
-    "./routes/series/[seriesId]/timelines/[timelineId].tsx":
-      $series_seriesId_timelines_timelineId_,
-    "./routes/series/index.tsx": $series_index,
   },
-  islands: {
-    "./islands/AdminDashboard.tsx": $AdminDashboard,
-    "./islands/BookCoverUploader.tsx": $BookCoverUploader,
-    "./islands/CharacterForm.tsx": $CharacterForm,
-    "./islands/CharacterImageUploader.tsx": $CharacterImageUploader,
-    "./islands/CharacterTypeEditor.tsx": $CharacterTypeEditor,
-    "./islands/DraggableList.tsx": $DraggableList,
-    "./islands/EventForm.tsx": $EventForm,
-    "./islands/HierarchicalSceneList.tsx": $HierarchicalSceneList,
-    "./islands/ImageUploader.tsx": $ImageUploader,
-    "./islands/KeyValueEditor.tsx": $KeyValueEditor,
-    "./islands/SceneList.tsx": $SceneList,
-    "./islands/TagInput.tsx": $TagInput,
-    "./islands/ThemeController.tsx": $ThemeController,
-    "./islands/__stories__/CharacterForm.stories.tsx":
-      $_stories_CharacterForm_stories,
-    "./islands/__stories__/CharacterImageUploader.stories.tsx":
-      $_stories_CharacterImageUploader_stories,
-    "./islands/__stories__/CharacterTypeEditor.stories.tsx":
-      $_stories_CharacterTypeEditor_stories,
-    "./islands/__stories__/DraggableList.stories.tsx":
-      $_stories_DraggableList_stories,
-    "./islands/__stories__/EventForm.stories.tsx": $_stories_EventForm_stories,
-    "./islands/__stories__/KeyValueEditor.stories.tsx":
-      $_stories_KeyValueEditor_stories,
-    "./islands/__stories__/SceneList.stories.tsx": $_stories_SceneList_stories,
-    "./islands/__stories__/ThemeController.stories.tsx":
-      $_stories_ThemeController_stories,
-  },
+  islands: {},
   baseUrl: import.meta.url,
 } satisfies Manifest;
 

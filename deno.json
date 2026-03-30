@@ -2,16 +2,13 @@
   "lock": false,
   "nodeModulesDir": "auto",
   "tasks": {
-    "check": "deno fmt --check && deno lint && (find routes islands components utils -type f \\( -name '*.ts' -o -name '*.tsx' \\) -print0 | /usr/bin/xargs -0 -n 50 deno check --unstable-kv) && deno check --unstable-kv dev.ts fresh.config.ts fresh.gen.ts main.ts",
-    "tailwind:build": "deno run -A npm:tailwindcss@3.4.17 -c tailwind.config.cjs -i styles/tailwind.css -o static/styles.css --minify",
-    "tailwind:watch": "deno run -A npm:tailwindcss@3.4.17 -c tailwind.config.cjs -i styles/tailwind.css -o static/styles.css --watch",
-    "fresh:build": "deno run -A --unstable-kv dev.ts build",
-    "build": "deno task tailwind:build && deno task fresh:build",
-    "start": "deno run -A npm:concurrently@9.1.2 -k -n tailwind,fresh \"deno task tailwind:watch\" \"deno run -A --unstable-kv --watch=static/,routes/,islands/,components/,styles/ dev.ts\"",
-    "preview": "deno task build && deno run -A --unstable-kv main.ts",
+    "check": "deno fmt --check && deno lint && (find routes utils -type f \\( -name '*.ts' -o -name '*.tsx' \\) -print0 | /usr/bin/xargs -0 -n 50 deno check --unstable-kv) && deno check --unstable-kv fresh.config.ts fresh.gen.ts main.ts",
+    "start": "deno run -A --unstable-kv --watch=static/,routes/ dev.ts",
+    "preview": "deno run -A --unstable-kv main.ts",
+    "build": "cd client && npm install && npm run build",
     "client:dev": "cd client && npm run dev",
     "client:build": "cd client && npm run build",
-    "start:full": "deno run -A npm:concurrently@9.1.2 -k -n tailwind,fresh,client \"deno task tailwind:watch\" \"deno run -A --unstable-kv --watch=static/,routes/,islands/,components/,styles/ dev.ts\" \"cd client && npm run dev\""
+    "start:full": "deno run -A npm:concurrently@9.1.2 -k -n fresh,client \"deno run -A --unstable-kv --watch=static/,routes/ dev.ts\" \"cd client && npm run dev\""
   },
   "lint": {
     "rules": {
@@ -21,20 +18,13 @@
   "exclude": ["**/_fresh/*"],
   "imports": {
     "$fresh/": "https://deno.land/x/fresh@1.6.1/",
-    "@components/": "./components/",
-    "@islands/": "./islands/",
     "@utils/": "./utils/",
-    "autoprefixer": "npm:autoprefixer@10.4.19",
     "concurrently": "npm:concurrently@9.1.2",
-    "daisyui": "npm:daisyui@4.12.24",
-    "preact": "https://esm.sh/preact@10.19.2",
-    "preact/": "https://esm.sh/preact@10.19.2/",
-    "preact-render-to-string": "https://esm.sh/*preact-render-to-string@6.2.2",
-    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.1",
-    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.0",
     "@deno/kv-oauth": "https://deno.land/x/deno_kv_oauth@v0.10.0/mod.ts",
     "$std/": "https://deno.land/std@0.216.0/",
-    "lucide-preact": "https://esm.sh/lucide-preact@0.468.0?deps=preact@10.19.2"
+    "preact": "https://esm.sh/preact@10.19.2",
+    "preact/": "https://esm.sh/preact@10.19.2/",
+    "preact-render-to-string": "https://esm.sh/*preact-render-to-string@6.2.2"
   },
   "compilerOptions": {
     "lib": [
@@ -43,8 +33,6 @@
       "dom.asynciterable",
       "deno.ns",
       "deno.unstable"
-    ],
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact"
+    ]
   }
 }
