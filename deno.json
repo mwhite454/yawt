@@ -5,6 +5,7 @@
     "check": "deno fmt --check && deno lint && (find routes utils -type f \\( -name '*.ts' -o -name '*.tsx' \\) -print0 | /usr/bin/xargs -0 -n 50 deno check --unstable-kv) && deno check --unstable-kv fresh.config.ts fresh.gen.ts main.ts",
     "start": "deno run -A --unstable-kv --watch=static/,routes/ dev.ts",
     "preview": "deno run -A --unstable-kv main.ts",
+    "build": "deno task client:build",
     "client:dev": "cd client && npm run dev",
     "client:build": "cd client && npm run build",
     "start:full": "deno run -A npm:concurrently@9.1.2 -k -n fresh,client \"deno run -A --unstable-kv --watch=static/,routes/ dev.ts\" \"cd client && npm run dev\""
