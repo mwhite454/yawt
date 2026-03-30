@@ -3,20 +3,36 @@
 ## Project Overview
 
 YAWT (Yet Another Writing Tool) is a modern writing tool designed for authors to
-manage series, books, scenes, characters, locations, and timelines. It's built
-with Deno and the Fresh web framework, providing a server-side rendered web
-application with an island architecture for interactive components.
+manage series, books, scenes, characters, locations, and timelines. It uses a
+**dual-stack** architecture: a Deno + Fresh backend for API, auth, and RBAC, plus
+a React + Vite SPA (`client/`) as the primary writing interface.
 
 ## Technology Stack
+
+### Backend (Deno / Fresh)
 
 - **Runtime**: Deno 2.6.4+
 - **Framework**: Fresh 1.6.1 (file-based routing with Preact)
 - **Language**: TypeScript 5.9.2
-- **UI Library**: Preact 10.19.2 (lightweight React alternative)
-- **Styling**: Tailwind CSS + daisyUI (yawt theme)
+- **UI Library**: Preact 10.19.2 (server-rendered + interactive islands)
+- **Styling**: Tailwind CSS 3 + daisyUI 4 (yawt theme)
 - **Authentication**: GitHub OAuth2 via @deno/kv-oauth
 - **Database**: Deno KV (built-in key-value database)
+- **RBAC**: Role-based access control (`admin` / `subscriber` / `free`) via `utils/auth/`
 - **Image Storage**: Cloudflare R2 (optional, for character images)
+
+### Frontend (`client/` — React SPA served at `/client`)
+
+- **Build tool**: Vite 8
+- **Framework**: React 19
+- **Language**: TypeScript 5.9.3
+- **Routing**: React Router 7 (basename `/client`)
+- **Data fetching**: TanStack Query 5
+- **Styling**: Tailwind CSS 4 + shadcn/ui (New York style, zinc base, CSS variables)
+- **Icons**: Lucide React
+- **Drag & drop**: dnd-kit
+- **Dev port**: 5173 (proxies `/api` and `/auth` to Fresh on port 8000)
+- **Production output**: `static/client/` (served by Fresh catchall `routes/[...path].tsx`)
 
 ## Development Workflow
 
@@ -27,14 +43,20 @@ application with an island architecture for interactive components.
 
 ### Commands
 
-- **Start development server**: `deno task start`
-  - Runs Tailwind in watch mode and Fresh with hot reload
-  - Server runs at `http://localhost:8000`
+- **Full-stack dev** (recommended): `deno task start:full`
+  - Runs Tailwind watch + Fresh (port 8000) + Vite dev server (port 5173) concurrently
+  - Access the React SPA at `http://localhost:5173` during development
+- **Backend only**: `deno task start`
+  - Runs Tailwind in watch mode and Fresh with hot reload at `http://localhost:8000`
+- **React client only**: `deno task client:dev` (requires Fresh already running)
+- **Build React client**: `deno task client:build`
+  - Outputs to `static/client/` (required before `deno task preview`)
 - **Build CSS**: `deno task build`
-  - Builds Tailwind CSS to `static/styles.css` (minified)
-- **Type check, lint, and format**: `deno task check`
-  - Runs `deno fmt --check`, `deno lint`, and type checks all TypeScript files
-- **Production server**: `deno task preview`
+  - Builds Tailwind CSS to `static/styles.css` (minified) + Fresh build
+- **Type check, lint, and format (backend)**: `deno task check`
+  - Runs `deno fmt --check`, `deno lint`, and type checks all Deno TypeScript files
+- **Lint React client**: `cd client && npm run lint`
+- **Production server**: `deno task client:build && deno task preview`
 
 ### Testing
 
@@ -57,16 +79,36 @@ application with an island architecture for interactive components.
 
 ### File Organization
 
+**Deno / Fresh (backend):**
+
 - **routes/**: File-based routing (Fresh convention)
   - `routes/_app.tsx`: Root application component
   - `routes/index.tsx`: Homepage
+  - `routes/[...path].tsx`: Catchall — serves the built React SPA
   - `routes/auth/`: OAuth authentication routes
+  - `routes/admin/`: Admin dashboard (RBAC-protected)
   - `routes/api/`: REST API endpoints
-  - `routes/series/`: Series-related UI routes
-- **islands/**: Interactive client-side components (hydrated on client)
-- **components/**: Shared server-side components
+- **islands/**: Interactive Preact components (hydrated on client)
+- **components/**: Shared server-side Preact components
 - **utils/**: Utility functions and shared logic
+  - `utils/auth/`: RBAC types (`types.ts`), permissions (`permissions.ts`)
+  - `utils/http.ts`: HTTP helpers including `requireUser`, `requireAdmin`, `requirePermission`
+  - `utils/story/`: Data types, KV keys, frontmatter parsing
 - **static/**: Static assets (served from root `/`)
+  - `static/client/`: Built React SPA output (generated, do not edit manually)
+
+**React SPA (`client/`):**
+
+- `client/src/api/`: Fetch helpers for each resource
+- `client/src/components/`: React UI components
+  - `client/src/components/ui/`: shadcn/ui generated components
+  - `client/src/components/layout/`: AppShell, Navbar
+- `client/src/contexts/`: React context providers
+- `client/src/hooks/`: TanStack Query hooks
+- `client/src/pages/`: Page-level components
+- `client/src/types/`: TypeScript type definitions (`story.ts`, `user.ts`)
+- `client/components.json`: shadcn/ui configuration
+- `client/vite.config.ts`: Vite config (builds to `../static/client/`)
 
 ### API Routes
 
@@ -137,12 +179,34 @@ export const handler: Handlers = {
 
 ### Styling
 
-- Use Tailwind CSS utility classes
-- daisyUI component classes are available (theme: "yawt")
+**Backend (Fresh/Preact components):**
+
+- Use Tailwind CSS 3 utility classes
+- daisyUI 4 component classes are available (theme: "yawt")
 - Global styles are in `styles/tailwind.css`
 - Built CSS output goes to `static/styles.css`
 
+**Frontend (React/shadcn components):**
+
+- Use Tailwind CSS 4 utility classes
+- shadcn/ui components live in `client/src/components/ui/`
+- Use `cn()` from `client/src/lib/utils.ts` for conditional class merging
+- CSS variables are defined in `client/src/index.css`
+- Do NOT use daisyUI classes in the React client
+
 ## Architecture Notes
+
+### Dual-stack design
+
+The project has two distinct codebases sharing the same repo:
+
+1. **Fresh backend**: handles API, auth, RBAC, KV storage, and some SSR pages
+2. **React SPA** (`client/`): the primary writing interface, built to `static/client/`
+   and served by `routes/[...path].tsx` in production
+
+During development, Vite runs on port 5173 and proxies `/api` and `/auth` to
+Fresh on port 8000. In production, everything is served from the single Fresh
+server on port 8000.
 
 ### Fresh Framework
 
@@ -150,8 +214,17 @@ export const handler: Handlers = {
   "islands" are interactive
 - Routes are defined by file structure in the `routes/` directory
 - Islands must be in the `islands/` directory and are automatically hydrated
-- No build step required during development
+- No build step required for the backend during development
 - Server-side rendering provides fast initial page loads
+
+### RBAC
+
+- Three roles: `admin`, `subscriber`, `free` (defined in `utils/auth/types.ts`)
+- Permission checking: `hasPermission(user, permission)`, `isAdmin(user)` in `utils/auth/permissions.ts`
+- HTTP guards: `requireUser(req)`, `requireAdmin(req)`, `requirePermission(req, perm)` in `utils/http.ts`
+- Admin management API: `routes/api/admin/users.ts`
+- Admin UI: `routes/admin/index.tsx` (Fresh) + `islands/AdminDashboard.tsx`
+- React client reads `user.role` from `/api/me` to conditionally show admin UI
 
 ### Data Model
 
@@ -232,42 +305,62 @@ User
 4. Use KV helpers for data access
 5. Return responses using `@utils/http.ts` utilities
 
-### Adding a New Interactive Component
+### Adding a New React Page
+
+1. Create a file in `client/src/pages/`
+2. Export a React component
+3. Add a `<Route>` in `client/src/App.tsx`
+4. Add an API fetch helper in `client/src/api/` if needed
+5. Add a TanStack Query hook in `client/src/hooks/` if needed
+
+### Adding a New shadcn/ui Component
+
+Use the shadcn CLI from inside the `client/` directory:
+
+```bash
+cd client && npx shadcn@latest add <component-name>
+```
+
+Components are added to `client/src/components/ui/`.
+
+### Adding a New Interactive Island (Fresh)
 
 1. Create a file in `islands/`
 2. Export a Preact component
-3. Import and use in routes or other components
+3. Import and use in routes or other Fresh components
 4. Component will be automatically hydrated on the client
 
 ### Adding a New Type
 
-1. Add type definition to `@utils/story/types.ts`
-2. Add KV key helper to `@utils/story/keys.ts` if needed
-3. Update API routes and UI components
+- **Backend data types**: `@utils/story/types.ts` + `@utils/story/keys.ts`
+- **React client types**: `client/src/types/story.ts` or `client/src/types/user.ts`
 
 ### Modifying Styles
 
-1. Edit `styles/tailwind.css` for global styles
-2. Use Tailwind utility classes in components
-3. Run `deno task start` to rebuild CSS automatically
-4. For production, run `deno task build`
+**Fresh/Preact components:** Edit `styles/tailwind.css` or use Tailwind + daisyUI
+classes. Run `deno task start` to rebuild automatically.
+
+**React client:** Use Tailwind 4 utility classes and/or shadcn/ui components.
+Vite handles CSS automatically during `deno task client:dev`.
 
 ## Verification and Testing
 
 ### Before Submitting Changes
 
-1. **Type Check and Lint**: Always run `deno task check` before submitting
-   - This runs formatting check, linting, and type checking
+1. **Backend type check and lint**: Always run `deno task check`
+   - Runs `deno fmt --check`, `deno lint`, and type checks all Deno TypeScript files
    - Fix any errors before committing
 
-2. **Manual Testing**: Since there are no automated tests:
-   - Start the dev server with `deno task start`
-   - Test your changes manually through the UI and API
+2. **React client lint**: Run `cd client && npm run lint`
+
+3. **Manual Testing**: Since there are no automated tests:
+   - Start the full stack with `deno task start:full`
+   - Test your changes through the UI at `http://localhost:5173`
    - Verify OAuth flow if authentication code was modified
    - Test API endpoints with curl or browser dev tools
 
-3. **Build Verification**: Run `deno task build` to ensure CSS builds
-   successfully
+4. **Build Verification**: Run `deno task client:build && deno task build` to
+   ensure both the React SPA and CSS build successfully
 
 ### Testing API Changes
 
@@ -290,24 +383,44 @@ curl -X POST http://localhost:8000/api/series \
   -d '{"title": "Test Series"}'
 ```
 
+Note: API calls always go to port 8000 regardless of dev mode.
+
 ## Quick Reference
 
 ### Most Common Tasks
 
 1. **Add new API endpoint**: Create file in `routes/api/`, use `requireUser()`,
    return with `json()`
-2. **Add interactive UI**: Create island in `islands/`, export Preact component
-3. **Add new data type**: Update `@utils/story/types.ts` and
-   `@utils/story/keys.ts`
-4. **Fix styling**: Edit component's Tailwind classes or `styles/tailwind.css`
-5. **Update dependencies**: Modify `imports` in `deno.json`
+2. **Add new React page**: Create in `client/src/pages/`, add route in `App.tsx`
+3. **Add interactive Preact island**: Create in `islands/`, export Preact component
+4. **Add shadcn/ui component**: `cd client && npx shadcn@latest add <name>`
+5. **Add new backend data type**: Update `@utils/story/types.ts` and `@utils/story/keys.ts`
+6. **Add new client-side type**: Update `client/src/types/story.ts` or `user.ts`
+7. **Fix backend styling**: Edit component's Tailwind + daisyUI classes or `styles/tailwind.css`
+8. **Fix React styling**: Edit Tailwind 4 classes or `client/src/index.css`
+9. **Update Deno dependencies**: Modify `imports` in `deno.json`
+10. **Update npm dependencies**: `cd client && npm install <pkg>`
 
 ### Key Files Reference
 
+**Backend:**
+
 - **`deno.json`** - Tasks, imports, compiler options
-- **`@utils/http.ts`** - HTTP helpers (requireUser, json, error responses)
+- **`@utils/http.ts`** - HTTP helpers (requireUser, requireAdmin, json, error responses)
 - **`@utils/kv.ts`** - Deno KV instance
-- **`@utils/story/types.ts`** - Type definitions
+- **`@utils/story/types.ts`** - Backend data type definitions
 - **`@utils/story/keys.ts`** - KV key helpers
+- **`@utils/auth/types.ts`** - RBAC types (UserRole, Permission)
+- **`@utils/auth/permissions.ts`** - RBAC helpers (isAdmin, hasPermission)
 - **`@utils/oauth.ts`** - OAuth configuration
-- **`@utils/session.ts`** - Session management
+- **`@utils/session.ts`** - Session management + User interface
+
+**React client:**
+
+- **`client/src/App.tsx`** - React Router setup and route definitions
+- **`client/src/api/`** - Resource-specific fetch helpers
+- **`client/src/hooks/`** - TanStack Query hooks
+- **`client/src/types/`** - Client-side TypeScript types
+- **`client/src/lib/utils.ts`** - `cn()` utility for Tailwind class merging
+- **`client/vite.config.ts`** - Vite config and dev proxy
+- **`client/components.json`** - shadcn/ui configuration

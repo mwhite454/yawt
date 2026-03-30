@@ -2,12 +2,15 @@
 
 yet-another-writing-tool
 
-A modern writing tool built with [Deno](https://deno.land/) and the
-[Fresh](https://fresh.deno.dev/) web framework.
+A modern writing tool with a [Deno](https://deno.land/) +
+[Fresh](https://fresh.deno.dev/) backend and a
+[React](https://react.dev/) + [Vite](https://vite.dev/) single-page application
+frontend.
 
 ## Prerequisites
 
 - [Deno](https://deno.land/) 2.6.4 or later
+- [Node.js](https://nodejs.org/) 20+ and npm (for the React client)
 
 ## Getting Started
 
@@ -44,37 +47,64 @@ cp .env.example .env
 
 ### Development
 
-Start the development server:
+**Option 1 — Full stack (Fresh + Vite, recommended):**
+
+```bash
+# Install client dependencies first (one time)
+cd client && npm install && cd ..
+
+deno task start:full
+```
+
+This starts three processes concurrently:
+
+- Tailwind CSS watch for `static/styles.css` (Fresh styles)
+- Fresh server with hot reload at `http://localhost:8000`
+- Vite dev server at `http://localhost:5173` (proxies `/api` and `/auth` to Fresh)
+
+During development, access the React SPA at `http://localhost:5173`. The Fresh
+server handles all API/auth routes.
+
+**Option 2 — Backend only:**
 
 ```bash
 deno task start
 ```
 
-This runs Tailwind+daisyUI in watch mode and rebuilds `static/styles.css` on
-changes.
+Starts Tailwind watch + Fresh server. The React SPA will be served from the
+last build at `http://localhost:8000/client`.
 
-This will start the server at `http://localhost:8000`. The server will
-automatically reload when you make changes to your code with the `--watch` flag.
+**Option 3 — React client only (requires Fresh server already running):**
 
-### Component Stories
+```bash
+deno task client:dev
+```
+
+### Component Stories (Fresh/Preact components)
 
 View component documentation and examples at `http://localhost:8000/stories/`
-when the development server is running.
+when the Fresh development server is running.
 
 This project uses [Denostories](https://github.com/CAYdenberg/denostories) for
-component development and documentation. See
-[docs/DENOSTORIES.md](docs/DENOSTORIES.md) for a guide on creating story files
-for components and islands.
+Fresh/Preact component development and documentation. See
+[docs/DENOSTORIES.md](docs/DENOSTORIES.md) for details.
 
 ### Production
 
-To run the production server:
+Build and run the production server:
 
 ```bash
+# Build the React SPA (output goes to static/client/)
+deno task client:build
+
+# Build CSS + Fresh, then start
 deno task preview
 ```
 
-To build the CSS once (useful for deploy pipelines):
+The production server serves the React SPA from `static/client/` at
+`http://localhost:8000/client`.
+
+To build only the CSS:
 
 ```bash
 deno task build
@@ -82,73 +112,98 @@ deno task build
 
 ### Code Quality
 
-Run type checking, linting, and formatting:
+Run type checking, linting, and formatting for the Deno/Fresh backend:
 
 ```bash
 deno task check
 ```
 
+For the React client:
+
+```bash
+cd client && npm run lint
+```
+
 ## Project Structure
 
 ```
-├── routes/              # Application routes (file-based routing)
+├── routes/              # Fresh file-based routing (backend + SSR pages)
 │   ├── _app.tsx        # Root application component
 │   ├── index.tsx       # Homepage route
+│   ├── [...path].tsx   # Catchall — serves the built React SPA
 │   ├── auth/           # OAuth authentication routes
 │   │   ├── signin.ts   # GitHub OAuth sign-in
 │   │   ├── signout.ts  # Sign-out route
 │   │   └── callback.ts # OAuth callback handler
+│   ├── admin/          # Admin dashboard (RBAC-protected)
 │   └── api/            # REST API routes
-│       ├── me.ts       # Get current user info
-│       ├── notes.ts    # (Legacy) List/create notes
-│       ├── notes/
-│       │   └── [id].ts # (Legacy) Get/update/delete individual note
+│       ├── me.ts       # Get/update current user info
+│       ├── admin/      # Admin user management
 │       ├── series.ts   # List/create series
-│       ├── series/
-│       │   └── [id].ts # Get/update/delete a series
 │       └── series/[seriesId]/
-│           ├── books.ts
-│           ├── books/[bookId].ts
-│           ├── books/[bookId]/scenes.ts
-│           ├── books/[bookId]/scenes/[sceneId].ts
-│           ├── books/[bookId]/scenes/[sceneId]/reorder.ts
-│           ├── characters.ts
-│           ├── characters/[characterId].ts
-│           ├── characters/[characterId]/image/upload.ts
-│           ├── locations.ts
-│           ├── locations/[locationId].ts
-│           ├── events.ts
-│           ├── events/[eventId].ts
-│           ├── timelines.ts
-│           ├── timelines/[timelineId].ts
-│           └── timelines/[timelineId]/events.ts
-├── utils/              # Utility functions
+│           ├── books.ts / books/[bookId].ts
+│           ├── books/[bookId]/scenes.ts / scenes/[sceneId].ts
+│           ├── characters.ts / characters/[characterId].ts
+│           ├── locations.ts / locations/[locationId].ts
+│           ├── events.ts / events/[eventId].ts
+│           └── timelines.ts / timelines/[timelineId](.ts|/events.ts)
+├── client/              # React + Vite SPA
+│   ├── src/
+│   │   ├── api/        # API fetch helpers (series, books, scenes, …)
+│   │   ├── components/ # React components (layout, ui/, ProtectedRoute, …)
+│   │   ├── contexts/   # React context providers
+│   │   ├── hooks/      # TanStack Query hooks
+│   │   ├── pages/      # Page components (SeriesListPage, BookDetailPage, …)
+│   │   ├── types/      # TypeScript type definitions
+│   │   ├── App.tsx     # React Router setup (basename="/client")
+│   │   └── main.tsx    # React entry point
+│   ├── components.json # shadcn/ui configuration
+│   ├── vite.config.ts  # Vite config (builds to ../static/client/)
+│   └── package.json    # npm dependencies
+├── utils/              # Deno utility functions
+│   ├── auth/           # RBAC types, permissions, guards
 │   ├── oauth.ts        # OAuth configuration
-│   └── session.ts      # Session management
-├── islands/            # Interactive client-side components
-├── components/         # Shared components
-├── static/             # Static assets (served from /)
+│   ├── session.ts      # Session management
+│   ├── http.ts         # HTTP helpers (requireUser, requireAdmin, json, …)
+│   ├── kv.ts           # Deno KV instance
+│   └── story/          # Data types, KV keys, frontmatter parsing
+├── islands/            # Preact interactive islands (Fresh)
+├── components/         # Shared Preact/server components (Fresh)
+├── static/             # Static assets served from /
+│   └── client/         # Built React SPA output (generated)
+├── styles/             # Source Tailwind CSS for Fresh
 ├── fresh.config.ts     # Fresh framework configuration
 ├── fresh.gen.ts        # Generated manifest (auto-updated)
-├── main.ts             # Application entry point (production server)
+├── main.ts             # Production server entry point
 ├── dev.ts              # Development server with hot reload
 └── deno.json           # Deno configuration and dependencies
 ```
 
 ## Technology Stack
 
-- **Runtime**: Deno 2.6.4
-- **TypeScript**: 5.9.2
-- **V8 Engine**: 14.2.231.17-rusty
-- **Framework**: Fresh (file-based routing with Preact)
-- **UI Library**: Preact 10.24.3 (lightweight React alternative)
-- **Styling**: Tailwind CSS + daisyUI (yawt theme; built to `static/styles.css`)
-- **Authentication**: GitHub OAuth2 via
-  [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
+### Backend (Deno / Fresh)
+
+- **Runtime**: Deno 2.6.4+
+- **Framework**: Fresh 1.6.1 (file-based routing, SSR, island architecture)
+- **UI Library**: Preact 10.19.2 (server-rendered + Preact islands)
+- **Styling**: Tailwind CSS 3 + daisyUI 4 (yawt theme; built to `static/styles.css`)
+- **Authentication**: GitHub OAuth2 via [@deno/kv-oauth](https://github.com/denoland/deno_kv_oauth)
 - **Storage**: Deno KV (built-in key-value database)
+- **RBAC**: Role-based access control (`admin` / `subscriber` / `free`)
 - **Images**: Optional Cloudflare R2 (uploads via same-origin API route)
-- **Component Development**: Denostories 0.3.0 (component documentation and
-  testing)
+- **Component Development**: Denostories 0.3.0
+
+### Frontend (React SPA — served at `/client`)
+
+- **Build tool**: Vite 8
+- **Framework**: React 19
+- **Language**: TypeScript 5.9.3
+- **Routing**: React Router 7 (basename `/client`)
+- **Data fetching**: TanStack Query 5
+- **Styling**: Tailwind CSS 4 + [shadcn/ui](https://ui.shadcn.com) (New York style, zinc base)
+- **Icons**: Lucide React
+- **Drag & drop**: dnd-kit
+- **Dev port**: 5173 (proxies `/api` and `/auth` to Fresh on port 8000)
 
 ## Features
 
@@ -306,16 +361,30 @@ curl http://localhost:8000/api/series/[series-id]/events
 curl http://localhost:8000/api/series/[series-id]/timelines/[timeline-id]/events
 ```
 
-## About Fresh Framework
+## Architecture
 
-Fresh is a next-generation web framework built for Deno. Key features:
+### Dual-stack design
 
-- **Zero build step**: No build process required during development
-- **Island Architecture**: Interactive components ("islands") are hydrated on
-  the client
-- **File-based routing**: Routes are defined by the file structure
-- **Server-side rendering**: Fast initial page loads with SSR
-- **TypeScript-first**: Full TypeScript support out of the box
+YAWT uses a **dual-stack** approach:
+
+1. **Fresh backend** (`routes/`, `islands/`, `components/`, `utils/`): handles
+   all authentication, API endpoints, Deno KV storage, and RBAC. Also renders
+   some server-side pages (homepage, admin dashboard, stories viewer) using
+   Preact + daisyUI.
+
+2. **React SPA** (`client/`): the primary writing interface. Built with Vite and
+   deployed to `static/client/`. Served by the Fresh catchall route
+   `routes/[...path].tsx` at `/client/*` in production. During development, Vite
+   proxies all `/api` and `/auth` calls to the Fresh server.
+
+### Fresh framework highlights
+
+- **Zero build step** for the backend: no build process required during
+  development
+- **Island architecture**: interactive Preact components are hydrated on the
+  client; most pages are server-rendered
+- **File-based routing**: routes are defined purely by file structure
+- **TypeScript-first**: full TypeScript support out of the box
 
 ## License
 

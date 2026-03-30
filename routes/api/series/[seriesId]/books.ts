@@ -98,6 +98,9 @@ export const handler: Handlers = {
       ? body.publishDate.trim()
       : undefined;
     const isbn = typeof body.isbn === "string" ? body.isbn.trim() : undefined;
+    const hasChapters = typeof body.hasChapters === "boolean"
+      ? body.hasChapters
+      : true; // default: chapters enabled
 
     let lastRank: string | undefined;
     for await (
@@ -123,6 +126,7 @@ export const handler: Handlers = {
       author,
       publishDate,
       isbn,
+      hasChapters,
       createdAt: now,
       updatedAt: now,
     };

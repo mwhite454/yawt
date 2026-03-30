@@ -8,7 +8,10 @@
     "fresh:build": "deno run -A --unstable-kv dev.ts build",
     "build": "deno task tailwind:build && deno task fresh:build",
     "start": "deno run -A npm:concurrently@9.1.2 -k -n tailwind,fresh \"deno task tailwind:watch\" \"deno run -A --unstable-kv --watch=static/,routes/,islands/,components/,styles/ dev.ts\"",
-    "preview": "deno task build && deno run -A --unstable-kv main.ts"
+    "preview": "deno task build && deno run -A --unstable-kv main.ts",
+    "client:dev": "cd client && npm run dev",
+    "client:build": "cd client && npm run build",
+    "start:full": "deno run -A npm:concurrently@9.1.2 -k -n tailwind,fresh,client \"deno task tailwind:watch\" \"deno run -A --unstable-kv --watch=static/,routes/,islands/,components/,styles/ dev.ts\" \"cd client && npm run dev\""
   },
   "lint": {
     "rules": {

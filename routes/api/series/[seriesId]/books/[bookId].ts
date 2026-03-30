@@ -7,9 +7,120 @@ import {
   readJson,
   requireUser,
 } from "@utils/http.ts";
-import type { Book } from "@utils/story/types.ts";
-import { bookKey, bookOrderKey } from "@utils/story/keys.ts";
+import type { Book, BookItem, Scene } from "@utils/story/types.ts";
+import {
+  bookItemOrderKey,
+  bookKey,
+  bookOrderKey,
+  chapterKey,
+  chapterSceneOrderKey,
+  sceneKey,
+} from "@utils/story/keys.ts";
+import { rankAfter, rankInitial } from "@utils/story/rank.ts";
 import { deleteObject, getR2Bucket } from "@utils/r2.ts";
+
+async function flattenChapters(
+  kv: Deno.Kv,
+  userId: number,
+  seriesId: string,
+  bookId: string,
+  book: Book,
+  bookEntityKey: Deno.KvKey,
+): Promise<Response> {
+  // 1. Collect all chapters (in order)
+  const chapterItems: Array<{ rank: string; id: string }> = [];
+  for await (
+    const entry of kv.list<BookItem>({
+      prefix: ["yawt", "bookItemOrder", userId, seriesId, bookId],
+    })
+  ) {
+    if (entry.value?.type === "chapter") {
+      const rankKey = entry.key[entry.key.length - 1] as string;
+      chapterItems.push({ rank: rankKey, id: entry.value.id });
+    }
+  }
+
+  let scenesFlattened = 0;
+  const chaptersRemoved = chapterItems.length;
+
+  // Find the last existing book-level item rank to append after
+  let lastBookRank: string | undefined;
+  for await (
+    const entry of kv.list<BookItem>(
+      { prefix: ["yawt", "bookItemOrder", userId, seriesId, bookId] },
+      { reverse: true, limit: 1 },
+    )
+  ) {
+    const rank = entry.key[entry.key.length - 1] as string;
+    if (typeof rank === "string") lastBookRank = rank;
+  }
+
+  for (const { rank: chapterRank, id: chapterId } of chapterItems) {
+    // Collect scenes in this chapter
+    const chapterScenes: Array<{ rank: string; sceneId: string }> = [];
+    for await (
+      const entry of kv.list({
+        prefix: ["yawt", "chapterSceneOrder", userId, seriesId, bookId, chapterId],
+      })
+    ) {
+      const key = entry.key;
+      const rank = key[key.length - 2] as string;
+      const sceneId = key[key.length - 1] as string;
+      chapterScenes.push({ rank, sceneId });
+    }
+
+    for (const { rank: sceneRank, sceneId } of chapterScenes) {
+      const newRank = lastBookRank ? rankAfter(lastBookRank) : rankInitial();
+      lastBookRank = newRank;
+
+      const sceneEntityKey = sceneKey(userId, seriesId, bookId, sceneId);
+      const sceneEntry = await kv.get<Scene>(sceneEntityKey);
+      if (!sceneEntry.value) continue;
+
+      const updatedScene: Scene = {
+        ...sceneEntry.value,
+        chapterId: undefined,
+        rank: newRank,
+        updatedAt: Date.now(),
+      };
+
+      const chapterSceneOrderEntryKey = chapterSceneOrderKey(userId, seriesId, bookId, chapterId, sceneRank, sceneId);
+
+      const sceneCommit = await kv.atomic()
+        .set(sceneEntityKey, updatedScene)
+        .set(bookItemOrderKey(userId, seriesId, bookId, newRank), {
+          type: "scene" as const,
+          id: sceneId,
+        })
+        .delete(chapterSceneOrderEntryKey)
+        .commit();
+      if (!sceneCommit.ok) {
+        throw new Error(`Failed to move scene ${sceneId} during flatten`);
+      }
+      scenesFlattened++;
+    }
+
+    // Delete the chapter entity and its bookItemOrder entry
+    const chapterCommit = await kv.atomic()
+      .delete(chapterKey(userId, seriesId, bookId, chapterId))
+      .delete(bookItemOrderKey(userId, seriesId, bookId, chapterRank))
+      .commit();
+    if (!chapterCommit.ok) {
+      throw new Error(`Failed to delete chapter ${chapterId} during flatten`);
+    }
+  }
+
+  // Update the book entity — write hasChapters: false last, only after all
+  // scene moves and chapter deletes have committed successfully.
+  const updatedBook: Book = {
+    ...book,
+    hasChapters: false,
+    updatedAt: Date.now(),
+  };
+  await kv.set(bookEntityKey, updatedBook);
+
+  return json({ book: updatedBook, scenesFlattened, chaptersRemoved }, { status: 200 });
+}
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -135,6 +246,41 @@ export const handler: Handlers = {
     }
 
     return json({ book: updated }, { status: 200 });
+  },
+
+  async PATCH(req, ctx) {
+    const userOrRes = await requireUser(req);
+    if (userOrRes instanceof Response) return userOrRes;
+    const user = userOrRes;
+    const { seriesId, bookId } = ctx.params;
+
+    const key = bookKey(user.id, seriesId, bookId);
+    const entry = await kv.get<Book>(key);
+    if (!entry.value) return notFound("Book not found");
+
+    const bodyOrRes = await readJson(req);
+    if (bodyOrRes instanceof Response) return bodyOrRes;
+    const body = bodyOrRes as Record<string, unknown>;
+
+    if (typeof body.hasChapters !== "boolean") {
+      return badRequest("hasChapters must be a boolean");
+    }
+
+    // Treat undefined as true: legacy books created before hasChapters field existed
+    const currentHasChapters = entry.value.hasChapters !== false;
+    const nextHasChapters = body.hasChapters as boolean;
+
+    if (currentHasChapters === nextHasChapters) {
+      return json({ book: entry.value, scenesFlattened: 0, chaptersRemoved: 0 }, { status: 200 });
+    }
+
+    if (!nextHasChapters) {
+      return await flattenChapters(kv, user.id, seriesId, bookId, entry.value, key);
+    } else {
+      const updated: Book = { ...entry.value, hasChapters: true, updatedAt: Date.now() };
+      await kv.set(key, updated);
+      return json({ book: updated, scenesFlattened: 0, chaptersRemoved: 0 }, { status: 200 });
+    }
   },
 
   async DELETE(req, ctx) {

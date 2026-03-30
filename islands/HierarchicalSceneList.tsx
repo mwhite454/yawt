@@ -23,6 +23,7 @@ interface Props {
   }>;
   selectedSceneId: string | null;
   selectedChapterId: string | null;
+  hasChapters: boolean;
 }
 
 // Union type for items in the unified list (book-level items only)
@@ -37,6 +38,7 @@ export default function HierarchicalSceneList({
   chapters: initialChapters,
   selectedSceneId,
   selectedChapterId,
+  hasChapters,
 }: Props) {
   // Create unified list of book-level items (chapters and book-level scenes)
   const bookLevelItems: BookLevelItem[] = [];

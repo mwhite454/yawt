@@ -100,6 +100,7 @@ export const handler: Handlers<Data> = {
       seriesId,
       rank,
       title,
+      hasChapters: true,
       createdAt: now,
       updatedAt: now,
     };

@@ -204,6 +204,10 @@ export const handler: Handlers<Data> = {
     if (!bookRes.value) return new Response("Book not found", { status: 404 });
 
     if (action === "createChapter") {
+      if (bookRes.value.hasChapters === false) {
+        return new Response("Chapters are disabled for this book", { status: 409 });
+      }
+
       const title = String(form.get("title") ?? "").trim() ||
         "Untitled chapter";
 
@@ -256,6 +260,11 @@ export const handler: Handlers<Data> = {
     if (action === "createScene") {
       const title = String(form.get("title") ?? "").trim() || "Untitled scene";
       const chapterId = String(form.get("chapterId") ?? "").trim() || undefined;
+
+      // Guard: book-level scenes are only allowed when hasChapters is false
+      if (!chapterId && bookRes.value.hasChapters !== false) {
+        return new Response("Book-level scenes are not allowed when chapters are enabled", { status: 409 });
+      }
 
       let lastRank: string | undefined;
 
@@ -456,23 +465,27 @@ export default function BookDetail({ data }: PageProps<Data>) {
                   <summary class="btn btn-sm">New</summary>
                   <div class="dropdown-content z-10 card card-compact bg-base-100 shadow w-80">
                     <div class="card-body">
-                      <form method="POST" class="grid gap-2">
-                        <input
-                          type="hidden"
-                          name="action"
-                          value="createChapter"
-                        />
-                        <input
-                          class="input input-bordered input-sm"
-                          name="title"
-                          placeholder="Chapter title"
-                          required
-                        />
-                        <button class="btn btn-primary btn-sm" type="submit">
-                          Create Chapter
-                        </button>
-                      </form>
-                      <div class="divider my-1">OR</div>
+                      {book.hasChapters !== false && (
+                        <>
+                          <form method="POST" class="grid gap-2">
+                            <input
+                              type="hidden"
+                              name="action"
+                              value="createChapter"
+                            />
+                            <input
+                              class="input input-bordered input-sm"
+                              name="title"
+                              placeholder="Chapter title"
+                              required
+                            />
+                            <button class="btn btn-primary btn-sm" type="submit">
+                              Create Chapter
+                            </button>
+                          </form>
+                          <div class="divider my-1">OR</div>
+                        </>
+                      )}
                       <form method="POST" class="grid gap-2">
                         <input
                           type="hidden"
@@ -510,6 +523,7 @@ export default function BookDetail({ data }: PageProps<Data>) {
                     chapters={chaptersWithScenes}
                     selectedSceneId={selectedScene?.id ?? null}
                     selectedChapterId={selectedChapterId}
+                    hasChapters={book.hasChapters !== false}
                   />
                 )}
             </div>
